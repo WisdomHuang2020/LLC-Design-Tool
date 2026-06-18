@@ -265,12 +265,18 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             串联谐振支路的阻抗：
           </p>
-          <MathBlock latex="Z_s = j\\omega_s L_r + \\frac{1}{j\\omega_s C_r} = jZ_0\\frac{f_n^2 - 1}{f_n}" />
+          <MathBlock
+            latex="\\begin{aligned} Z_s &= j\\omega_s L_r + \\frac{1}{j\\omega_s C_r} \\\\\\n &= jZ_0\\frac{f_n^2 - 1}{f_n} \\end{aligned}"
+            multiline
+          />
 
           <p className="text-text-secondary mt-4 mb-2">
             其中Z_0 = sqrt(L_r/C_r)为特征阻抗。磁化电感与等效负载的并联阻抗：
           </p>
-          <MathBlock latex="Z_p = j\\omega_s L_m \\parallel R_{ac} = \\frac{j\\omega_s L_m R_{ac}}{R_{ac} + j\\omega_s L_m}" />
+          <MathBlock
+            latex="\\begin{aligned} Z_p &= j\\omega_s L_m \\parallel R_{ac} \\\\\\n &= \\frac{j\\omega_s L_m R_{ac}}{R_{ac} + j\\omega_s L_m} \\end{aligned}"
+            multiline
+          />
 
           <p className="text-text-secondary mt-4 mb-2">
             代入 omega_s L_m = f_n Z_0 lambda 和 R_ac = Z_0 / Q：
@@ -285,23 +291,32 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             输入总阻抗：
           </p>
-          <MathBlock latex="Z_{in} = Z_s + Z_p = jZ_0\\frac{f_n^2 - 1}{f_n} + \\frac{j f_n Z_0 \\lambda}{1 + j f_n \\lambda Q}" />
+          <MathBlock
+            latex="\\begin{aligned} Z_{in} &= Z_s + Z_p \\\\\\n &= jZ_0\\frac{f_n^2 - 1}{f_n} + \\frac{j f_n Z_0 \\lambda}{1 + j f_n \\lambda Q} \\end{aligned}"
+            multiline
+          />
 
           <p className="text-text-secondary mt-4 mb-2">
             电压增益定义为输出电压基波与输入电压基波之比：
           </p>
-          <MathBlock latex="M = \\left| \\frac{Z_p}{Z_{in}} \\right| = \\left| \\frac{Z_p}{Z_s + Z_p} \\right|" />
+          <MathBlock
+            latex="\\begin{aligned} M &= \\left| \\frac{Z_p}{Z_{in}} \\right| \\\\\\n &= \\left| \\frac{Z_p}{Z_s + Z_p} \\right| \\end{aligned}"
+            multiline
+          />
 
           <p className="text-text-secondary mt-4 mb-2">
             经过复数运算和化简，最终得到标准的LLC增益方程：
           </p>
-          <MathBlock latex="M = \\left| \\frac{f_n^2 \\lambda}{f_n^2(1+\\lambda) - 1 + j f_n \\lambda Q (f_n^2 - 1)} \\right|" />
+          <MathBlock
+            latex="M = \\left| \\frac{f_n^2 \\lambda}{f_n^2(1+\\lambda) - 1 + j f_n \\lambda Q (f_n^2 - 1)} \\right|"
+          />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="M(f_n, \\lambda, Q) = \\left| \\frac{f_n^2 \\lambda}{\\sqrt{(f_n^2(1+\\lambda)-1)^2 + (f_n Q(f_n^2-1))^2 \\lambda^2}} \\right|"
+              latex="\\begin{aligned} M(f_n, \\lambda, Q) &= \\left| \\frac{f_n^2 \\lambda}{\\sqrt{(f_n^2(1+\\lambda)-1)^2 + (f_n Q(f_n^2-1))^2 \\lambda^2}} \\right| \\\\\\n &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{\\lambda} - \\frac{1}{\\lambda f_n^2}\\right)^2 + \\left(Q(f_n - \\frac{1}{f_n})\\right)^2}} \\end{aligned}"
               important
+              multiline
             />
           </div>
         </DerivationSection>

@@ -147,8 +147,8 @@ export default function Curves() {
             <input
               type="range"
               min={0.1}
-              max={0.5}
-              step={0.05}
+              max={10.0}
+              step={0.1}
               value={lambda}
               onChange={(e) => setLambda(parseFloat(e.target.value))}
               className="w-full h-2 bg-surface-elevated rounded-lg appearance-none cursor-pointer"
@@ -156,7 +156,7 @@ export default function Curves() {
             />
             <div className="flex justify-between text-xs text-text-muted mt-1 font-mono">
               <span>0.1</span>
-              <span>0.5</span>
+              <span>10.0</span>
             </div>
           </div>
 

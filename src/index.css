@@ -83,6 +83,17 @@
   .katex-display .katex {
     font-size: 1.1em;
   }
+  .math-block.multiline .katex-display {
+    overflow-x: auto;
+    padding: 0.5rem 0;
+  }
+  .math-block.multiline .katex-display .katex {
+    font-size: 1.05em;
+    line-height: 1.8;
+  }
+  .math-block.multiline .katex-display .katex .base {
+    margin: 0.15em 0;
+  }
 }
 
 @keyframes currentFlow {

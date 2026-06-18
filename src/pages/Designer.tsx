@@ -619,42 +619,42 @@ export default function Designer() {
 
     // Qmax2：从ZVS条件（死区时间）
     // 先估计fmax：fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
-    const fmaxEst = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMin * gMin)))
+    const fmaxEst = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMin * gMin))))
     // Lm = k * Lr, Lr = Zr / (2*pi*fr), Zr = Q * Racmin
     // Er = 0.5*(Lm+Lr)*Im², Im = Vin_min/(4*fmax*Lm)
     // 令 Er >= Ec = 0.5*(2*Coss_er+Cj)*Vin_max²
     // 化简得到 Lr_max，再转换为Qmax2
-    const cossTotal = 2 * cossEr + cj
-    const lrMaxZvs = (k + 1) * vinMin * vinMin / (16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)
-    const qmax2 = lrMaxZvs * (2 * Math.PI * fr) / racMin
+    const cossTotal = Math.max(1, 2 * cossEr + cj)  // 保护：最小1pF
+    const lrMaxZvs = (k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)
+    const qmax2 = lrMaxZvs * (2 * Math.PI * fr) / Math.max(1e-6, racMin)  // 保护racMin过小
 
     // Qmax3：从Coss能量（谐振腔电容）
     // Qmax3 = sqrt[(k+1)² * (fmax²/fr² - 1) * Rac * C]
     // 其中 C = 2*Coss_eq + Cj
-    const cEq = 2 * cossEq + cj
-    const qmax3 = Math.sqrt((k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * racMin * cEq)
+    const cEq = Math.max(1, 2 * cossEq + cj)  // 保护：最小1pF
+    const qmax3 = Math.sqrt(Math.max(0, (k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * Math.max(1e-6, racMin) * cEq))
 
     // 取Qmax最小值，留90%裕量
-    const qmax = Math.min(qmax1, qmax2, qmax3)
-    const q = qmax * 0.9
+    const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))  // 保护：最小0.001
+    const q = Math.max(0.001, qmax * 0.9)
 
     // ─── 步骤5：计算谐振参数 ───
-    const zr = q * racMin
-    const lr = zr / (2 * Math.PI * fr)
-    const cr = 1 / (2 * Math.PI * fr * zr)
+    const zr = q * Math.max(1e-6, racMin)
+    const lr = zr / Math.max(1e-6, 2 * Math.PI * fr)  // 保护fr=0
+    const cr = 1 / Math.max(1e-15, 2 * Math.PI * fr * zr)  // 保护zr=0
     const lm = k * lr
 
     // ─── 步骤6：验证 ───
     // fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
     // fmin = fr * sqrt(1 + (1/k)*(1 - 1/Gmax²))
-    const fmax = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMin * gMin)))
-    const fmin = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMax * gMax)))
+    const fmax = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMin * gMin))))
+    const fmin = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMax * gMax))))
 
     // 空载峰值增益
     const gmaxEmpty = 1 + 1 / k
 
     // ZVS验证：在fmax处
-    const imDeadtime = vinMin / (4 * fmax * lm)
+    const imDeadtime = vinMin / Math.max(1e-9, 4 * fmax * lm)  // 保护fmax或lm=0
     const er = 0.5 * (lm + lr) * imDeadtime * imDeadtime
     const ec = 0.5 * cossTotal * vinMax * vinMax
     const zvsMargin = er >= ec
@@ -663,7 +663,7 @@ export default function Designer() {
     const zvsPhaseDeg = zvsPhase(k, q)
 
     // ─── 步骤7：电流计算 ───
-    const io = pout / vout
+    const io = pout / Math.max(1e-6, vout)  // 保护vout=0
 
     // 次级电流
     let isRms: number
