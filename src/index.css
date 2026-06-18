@@ -85,6 +85,38 @@
   }
 }
 
+@keyframes currentFlow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+.current-flow {
+  stroke-dasharray: 5 5;
+  animation: currentFlow 1s linear infinite;
+}
+@keyframes dashFlow {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+.dash-flow {
+  stroke-dasharray: 6 6;
+  animation: dashFlow 0.8s linear infinite;
+}
+.dash-flow-slow {
+  stroke-dasharray: 8 8;
+  animation: dashFlow 1.2s linear infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+.pulse-glow {
+  animation: pulseGlow 1.5s ease-in-out infinite;
+}
+@keyframes dotTravel {
+  0% { offset-distance: 0%; }
+  100% { offset-distance: 100%; }
+}
+
 @layer utilities {
   .text-gradient {
     background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);

@@ -12,6 +12,13 @@ export interface DesignParameters {
   rectifier: 'full-wave' | 'center-tapped' | 'synchronous'
   loadMin: number
   loadMax: number
+  // 新增参数
+  cossEq: number
+  cossEr: number
+  cj: number
+  td: number
+  vd: number
+  ioMax: number
 }
 
 export interface CalculatedResults {
@@ -27,6 +34,20 @@ export interface CalculatedResults {
   zvsMargin: boolean
   ipRms: number
   isRms: number
+  // 新增计算结果
+  fmax: number
+  fmin: number
+  gmaxEmpty: number
+  zvsEr: number
+  zvsEc: number
+  qmax1: number
+  qmax2: number
+  qmax3: number
+  gMin: number
+  gMax: number
+  gNom: number
+  rac: number
+  zr: number
 }
 
 const defaultParams: DesignParameters = {
@@ -41,6 +62,13 @@ const defaultParams: DesignParameters = {
   rectifier: 'full-wave',
   loadMin: 10,
   loadMax: 100,
+  // 新增参数默认值
+  cossEq: 500,    // MOSFET Coss_eq (pF)
+  cossEr: 800,    // MOSFET Coss_er (pF)
+  cj: 100,        // PCB寄生电容 Cj (pF)
+  td: 300,        // 死区时间 (ns)
+  vd: 0.5,        // 输出二极管压降 (V)
+  ioMax: 25,      // 最大输出电流 (A)
 }
 
 interface DesignContextType {

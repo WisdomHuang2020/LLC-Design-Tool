@@ -14,7 +14,15 @@ import {
   Package,
   ChevronDown,
   ChevronUp,
+  Flame,
+  BatteryCharging,
+  Gauge,
+  Save,
+  GitCompare,
 } from 'lucide-react'
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import CompensationSection from '../components/CompensationSection'
+import DesignCompare, { saveDesignSnapshot } from '../components/DesignCompare'
 
 // ─── E-Series helpers ───
 const E12 = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2]
@@ -86,69 +94,111 @@ function generateSuggestions(
     lm: number
     fsw: number
     efficiency: number
+    qmax1: number
+    qmax2: number
+    qmax3: number
+    gmaxEmpty: number
+    zvsMargin: boolean
+    er: number
+    ec: number
+    fmax: number
+    fmin: number
+    kMin: number
   }
 ): Suggestion[] {
   const s: Suggestion[] = []
+  const { q, lambda, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, er, ec, fmax, fmin, kMin } = results
 
-  // 1. Q value
-  if (results.q > 1.0) {
-    s.push({ text: 'Q值偏高（>1.0），建议增大谐振电容Cr或减小谐振电感Lr以降低谐振阻抗。', level: 'critical' })
-  } else if (results.q > 0.7) {
+  // 1. k值选择
+  if (lambda < kMin * 1.05) {
+    s.push({ text: `电感比k=${lambda.toFixed(2)}过于接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k或放宽输入电压范围。`, level: 'critical' })
+  } else if (lambda < kMin * 1.2) {
+    s.push({ text: `电感比k=${lambda.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
+  } else {
+    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
+  }
+
+  // 2. Qmax对比分析
+  const qmaxMin = Math.min(qmax1, qmax2, qmax3)
+  if (qmax1 === qmaxMin) {
+    s.push({ text: `Qmax1(增益限制)=${qmax1.toFixed(3)} 为最小约束，增益范围是设计瓶颈。`, level: 'warn' })
+  } else if (qmax2 === qmaxMin) {
+    s.push({ text: `Qmax2(ZVS死区限制)=${qmax2.toFixed(3)} 为最小约束，ZVS条件是设计瓶颈。建议增大死区时间或减小Lm。`, level: 'warn' })
+  } else if (qmax3 === qmaxMin) {
+    s.push({ text: `Qmax3(Coss能量限制)=${qmax3.toFixed(3)} 为最小约束，寄生电容是设计瓶颈。建议选用低Coss MOSFET。`, level: 'warn' })
+  }
+  s.push({ text: `Qmax分解：Qmax1=${qmax1.toFixed(3)}, Qmax2=${qmax2.toFixed(3)}, Qmax3=${qmax3.toFixed(3)}，实际取Q=${q.toFixed(3)}(90%裕量)。`, level: 'good' })
+
+  // 3. Q value
+  if (q > 1.0) {
+    s.push({ text: 'Q值偏高（>1.0），谐振阻抗大，频率调节范围可能过宽。', level: 'critical' })
+  } else if (q > 0.7) {
     s.push({ text: 'Q值略高，负载变化时频率调节范围可能较宽。', level: 'warn' })
-  } else if (results.q < 0.2) {
+  } else if (q < 0.2) {
     s.push({ text: 'Q值偏低（<0.2），谐振电流纹波较大，注意滤波设计。', level: 'warn' })
   } else {
-    s.push({ text: `Q值=${results.q.toFixed(2)}处于合理范围（0.2~0.7），谐振特性良好。`, level: 'good' })
+    s.push({ text: `Q值=${q.toFixed(3)}处于合理范围（0.2~0.7），谐振特性良好。`, level: 'good' })
   }
 
-  // 2. Peak gain vs required
-  if (results.mMax < results.mRequiredMin) {
-    s.push({ text: `峰值增益不足（M_max=${results.mMax.toFixed(2)} < M_req=${results.mRequiredMin.toFixed(2)}），建议增大电感比λ或降低Q值。`, level: 'critical' })
-  } else if (results.mMax < results.mRequiredMin * 1.1) {
-    s.push({ text: '峰值增益裕量较小，建议留至少10%裕量。', level: 'warn' })
+  // 4. Peak gain vs required
+  if (mMax < mRequired) {
+    s.push({ text: `峰值增益不足（M_max=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
+  } else if (mMax < mRequired * 1.05) {
+    s.push({ text: `峰值增益裕量较小（${((mMax/mRequired - 1)*100).toFixed(1)}%），建议留至少5%裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `峰值增益裕量充足（M_max=${results.mMax.toFixed(2)} vs M_req=${results.mRequiredMin.toFixed(2)}），设计可行。`, level: 'good' })
+    s.push({ text: `峰值增益裕量充足（M_max=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
   }
 
-  // 3. Lambda
-  if (results.lambda > 0.5) {
-    s.push({ text: `电感比λ偏大（${results.lambda.toFixed(2)}），励磁电流可能过大，效率受限。`, level: 'warn' })
-  } else if (results.lambda < 0.15) {
-    s.push({ text: `电感比λ偏小（${results.lambda.toFixed(2)}），可能影响轻载ZVS实现。`, level: 'warn' })
+  // 5. ZVS分析
+  if (!zvsMargin) {
+    s.push({ text: `ZVS条件不满足！Er=${(er*1e6).toFixed(3)}μJ < Ec=${(ec*1e6).toFixed(3)}μJ。建议增大死区时间、减小Lm或选用低Coss器件。`, level: 'critical' })
   } else {
-    s.push({ text: `电感比λ=${results.lambda.toFixed(2)}合理，兼顾增益范围与励磁电流。`, level: 'good' })
+    const zvsRatio = er / ec
+    if (zvsRatio < 1.2) {
+      s.push({ text: `ZVS裕量较小（Er/Ec=${zvsRatio.toFixed(2)}），建议增大励磁电流或死区时间。`, level: 'warn' })
+    } else {
+      s.push({ text: `ZVS条件良好（Er=${(er*1e6).toFixed(3)}μJ / Ec=${(ec*1e6).toFixed(3)}μJ，裕量比${zvsRatio.toFixed(2)}）。`, level: 'good' })
+    }
   }
-
-  // 4. ZVS
-  if (results.zvsPhase < 5) {
-    s.push({ text: `ZVS裕量较小（相位=${results.zvsPhase.toFixed(1)}°），建议增加死区时间或提高开关频率。`, level: 'critical' })
-  } else if (results.zvsPhase < 15) {
-    s.push({ text: `ZVS条件基本满足（相位=${results.zvsPhase.toFixed(1)}°），建议留更多裕量。`, level: 'warn' })
+  if (zvsPhase < 5) {
+    s.push({ text: `ZVS相位裕量较小（${zvsPhase.toFixed(1)}°），建议增加死区时间或提高开关频率。`, level: 'warn' })
   } else {
-    s.push({ text: `ZVS条件良好（相位=${results.zvsPhase.toFixed(1)}°），可实现零电压开通。`, level: 'good' })
+    s.push({ text: `ZVS相位裕量=${zvsPhase.toFixed(1)}°，可实现零电压开通。`, level: 'good' })
   }
 
-  // 5. Efficiency target
-  if (results.efficiency > 97) {
-    s.push({ text: '目标效率>97%，需选用极低Rds(on) MOSFET并优化磁芯与绕组。', level: 'warn' })
-  } else if (results.efficiency < 92) {
+  // 6. 频率范围
+  const fmaxKHz = fmax / 1000
+  const fminKHz = fmin / 1000
+  const frKHz = fsw / 1000
+  if (fmaxKHz > frKHz * 2.0) {
+    s.push({ text: `频率调节范围过宽（fmax=${fmaxKHz.toFixed(1)}kHz >> fr=${frKHz.toFixed(1)}kHz），磁性元件设计困难。`, level: 'critical' })
+  } else if (fmaxKHz > frKHz * 1.5) {
+    s.push({ text: `频率范围较宽（fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz），注意磁性元件在宽频下的损耗。`, level: 'warn' })
+  } else {
+    s.push({ text: `频率范围合理：fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz（fr=${frKHz.toFixed(1)}kHz）。`, level: 'good' })
+  }
+
+  // 7. Efficiency target
+  if (efficiency > 97) {
+    s.push({ text: '目标效率>97%，需选用极低Rds(on) MOSFET、同步整流并优化磁芯与绕组。', level: 'warn' })
+  } else if (efficiency < 92) {
     s.push({ text: '目标效率较为保守，容易达到，仍有优化空间。', level: 'good' })
   } else {
-    s.push({ text: `目标效率${results.efficiency}%合理，通过优化磁芯与开关器件可实现。`, level: 'good' })
+    s.push({ text: `目标效率${efficiency}%合理，通过优化磁芯与开关器件可实现。`, level: 'good' })
   }
 
-  // 6. Component values
-  if (results.cr < 1e-9) {
+  // 8. Component values
+  if (cr < 1e-9) {
     s.push({ text: '谐振电容Cr<1nF，数值较小，PCB寄生电容可能影响谐振点。', level: 'warn' })
   }
-  if (results.lm < 50e-6) {
+  if (lm < 50e-6) {
     s.push({ text: '励磁电感Lm<50μH，注意磁芯损耗与饱和电流。', level: 'warn' })
   }
-  if (results.fsw > 500000) {
+  if (fsw > 500000) {
     s.push({ text: '开关频率>500kHz，注意开关损耗与EMI。', level: 'warn' })
   }
 
-  return s.slice(0, 7)
+  return s.slice(0, 10)
 }
 
 // ─── Waveform SVG ───
@@ -304,6 +354,170 @@ interface CalculatedData {
   rectifier: string
   rac: number
   zr: number
+  // 新增计算结果
+  fmax: number
+  fmin: number
+  gmaxEmpty: number
+  zvsEr: number
+  zvsEc: number
+  qmax1: number
+  qmax2: number
+  qmax3: number
+  gMin: number
+  gMax: number
+  gNom: number
+}
+
+// ─── Loss Analysis Types & Defaults ───
+interface LossParameters {
+  mosfetRdsOn: number // mΩ
+  mosfetTr: number // ns
+  mosfetTf: number // ns
+  mosfetCoss: number // pF @ 0V
+  mosfetVsd: number // V body diode
+  deadTime: number // ns
+  primaryTurns: number
+  coreMaterial: string
+  coreVe: number // cm³
+  coreAe: number // mm²
+  coreK: number
+  coreAlpha: number
+  coreBeta: number
+  windingRdc: number // mΩ
+  skinF0: number // kHz
+  rectVf: number // V
+  syncRectRdsOn: number // mΩ
+  lrDcr: number // mΩ
+  crEsr: number // mΩ
+}
+
+const defaultLossParams: LossParameters = {
+  mosfetRdsOn: 30,
+  mosfetTr: 15,
+  mosfetTf: 10,
+  mosfetCoss: 500,
+  mosfetVsd: 1.2,
+  deadTime: 200,
+  primaryTurns: 18,
+  coreMaterial: 'PC95',
+  coreVe: 5.0,
+  coreAe: 80,
+  coreK: 1.5,
+  coreAlpha: 1.3,
+  coreBeta: 2.5,
+  windingRdc: 50,
+  skinF0: 100,
+  rectVf: 0.6,
+  syncRectRdsOn: 5,
+  lrDcr: 30,
+  crEsr: 20,
+}
+
+interface LossBreakdown {
+  name: string
+  value: number
+  color: string
+}
+
+function calculateLosses(
+  calc: CalculatedData,
+  lp: LossParameters
+): {
+  mosfetCond: number
+  mosfetSwitchOn: number
+  mosfetSwitchOff: number
+  mosfetCoss: number
+  mosfetDiode: number
+  coreLoss: number
+  windingLoss: number
+  rectLoss: number
+  resonantLoss: number
+  totalLoss: number
+  efficiency: number
+  breakdown: LossBreakdown[]
+} {
+  const vin = calc.vinNom
+  const fsw = calc.fsw
+  const ipRms = calc.ipRms
+  const ipPeak = ipRms * Math.sqrt(2)
+  const io = calc.pout / calc.vout
+  const nSwitches = calc.topology === 'half-bridge' ? 2 : 4
+
+  // 1. MOSFET conduction loss
+  const mosfetCondPer = 0.5 * ipRms * ipRms * (lp.mosfetRdsOn / 1000)
+  const mosfetCond = mosfetCondPer * nSwitches
+
+  // 2. Switching loss (linear approximation; with ZVS Pon ideally 0)
+  const switchV = vin
+  const switchOn = 0.5 * switchV * ipPeak * (lp.mosfetTr / 1e9) * fsw * nSwitches
+  const switchOff = 0.5 * switchV * ipPeak * (lp.mosfetTf / 1e9) * fsw * nSwitches
+
+  // 3. Coss loss (non-linear model, simplified)
+  const cossF = lp.mosfetCoss / 1e12
+  const ecoss = 0.5 * cossF * vin * vin * (2 / 3)
+  const cossLoss = ecoss * fsw * nSwitches
+
+  // 4. Body diode conduction loss (approximate dead time current = Ip_peak * 0.7)
+  const idiode = ipPeak * 0.7
+  const diodeLoss = lp.mosfetVsd * idiode * (lp.deadTime / 1e9) * fsw * nSwitches
+
+  // 5. Transformer core loss (Steinmetz)
+  const aeM2 = lp.coreAe * 1e-6
+  const bPeak = (vin / (calc.topology === 'half-bridge' ? 2 : 1)) / (4 * fsw * lp.primaryTurns * aeM2)
+  const coreLoss = lp.coreK * Math.pow(fsw / 1e3, lp.coreAlpha) * Math.pow(bPeak * 1000, lp.coreBeta) * lp.coreVe
+
+  // 6. Winding loss (DC + skin effect)
+  const rdc = lp.windingRdc / 1000
+  const freqRatio = fsw / 1000 / lp.skinF0
+  const racFactor = 1 + freqRatio * freqRatio
+  const windingLoss = ipRms * ipRms * rdc * racFactor
+
+  // 7. Rectifier loss
+  let rectLoss = 0
+  if (calc.rectifier === 'synchronous') {
+    const rectSwitches = (calc.rectifier as string) === 'center-tapped' ? 2 : 4
+    const isPerSwitch = calc.isRms / Math.sqrt(2)
+    rectLoss = rectSwitches * isPerSwitch * isPerSwitch * (lp.syncRectRdsOn / 1000)
+  } else {
+    const rectDiodes = calc.rectifier === 'center-tapped' ? 2 : 4
+    const iAvgPerDiode = io / 2
+    rectLoss = rectDiodes * lp.rectVf * iAvgPerDiode
+  }
+
+  // 8. Resonant element loss
+  const lrLoss = ipRms * ipRms * (lp.lrDcr / 1000)
+  const crLoss = ipRms * ipRms * (lp.crEsr / 1000)
+  const resonantLoss = lrLoss + crLoss
+
+  const totalLoss = mosfetCond + switchOn + switchOff + cossLoss + diodeLoss + coreLoss + windingLoss + rectLoss + resonantLoss
+  const efficiency = (calc.pout / (calc.pout + totalLoss)) * 100
+
+  const breakdown: LossBreakdown[] = [
+    { name: 'MOSFET导通', value: mosfetCond, color: '#14b8a6' },
+    { name: 'MOSFET开通', value: switchOn, color: '#0f766e' },
+    { name: 'MOSFET关断', value: switchOff, color: '#134e4a' },
+    { name: 'Coss损耗', value: cossLoss, color: '#f59e0b' },
+    { name: '体二极管', value: diodeLoss, color: '#ef4444' },
+    { name: '磁芯损耗', value: coreLoss, color: '#22c55e' },
+    { name: '绕组损耗', value: windingLoss, color: '#a3a3a3' },
+    { name: '整流损耗', value: rectLoss, color: '#fbbf24' },
+    { name: '谐振元件', value: resonantLoss, color: '#737373' },
+  ].filter((d) => d.value > 0.001)
+
+  return {
+    mosfetCond,
+    mosfetSwitchOn: switchOn,
+    mosfetSwitchOff: switchOff,
+    mosfetCoss: cossLoss,
+    mosfetDiode: diodeLoss,
+    coreLoss,
+    windingLoss,
+    rectLoss,
+    resonantLoss,
+    totalLoss,
+    efficiency,
+    breakdown,
+  }
 }
 
 // ─── Main Component ───
@@ -318,7 +532,11 @@ export default function Designer() {
     suggestions: false,
     components: false,
     waveforms: false,
+    loss: false,
+    compensation: true,
+    compare: true,
   })
+  const [lossParams, setLossParams] = useState<LossParameters>(defaultLossParams)
 
   const handleCalculate = () => {
     const vinNom = form.vinNom
@@ -330,51 +548,145 @@ export default function Designer() {
     const efficiency = form.efficiency
     const vinMin = form.vinMin
     const vinMax = form.vinMax
+    const vd = form.vd
+    const cossEq = form.cossEq * 1e-12  // pF -> F
+    const cossEr = form.cossEr * 1e-12  // pF -> F
+    const cj = form.cj * 1e-12          // pF -> F
+    const td = form.td * 1e-9           // ns -> s
+    const ioMax = form.ioMax
+    const loadMin = form.loadMin
 
-    // Turns ratio
+    const voutEff = vout + vd  // 考虑二极管压降的有效输出电压
+
+    // ─── 步骤1：计算匝比n ───
     const n =
       topology === 'half-bridge'
-        ? vinNom / (2 * vout)
-        : vinNom / vout
+        ? vinNom / (2 * voutEff)
+        : vinNom / voutEff
 
-    // Equivalent AC resistance (full-bridge: 8n²/π², center-tapped: 4n²/π²)
+    // ─── 步骤2：计算增益范围 ───
+    const gMin =
+      topology === 'half-bridge'
+        ? (n * voutEff) / (vinMax / 2)
+        : (n * voutEff) / vinMax
+    const gMax =
+      topology === 'half-bridge'
+        ? (n * voutEff) / (vinMin / 2)
+        : (n * voutEff) / vinMin
+    const gNom =
+      topology === 'half-bridge'
+        ? (n * voutEff) / (vinNom / 2)
+        : (n * voutEff) / vinNom
+
+    // ─── 步骤3：选择k（λ=Lm/Lr）───
+    // 空载峰值增益: Gmax_empty = 1 + 1/k
+    // 需要 Gmax_empty > Gmax，即 k > 1/(Gmax-1)
+    const kMin = 1 / (gMax - 1)
+    const k = Math.max(kMin * 1.1, 5.0)  // 留10%裕量，最小取5
+
+    // ─── 步骤4：计算Qmax（三个约束取最小）───
+    const fr = fsw  // 设谐振频率fr = fsw
+
+    // 等效AC电阻（全桥整流: 8n²/π², 中心抽头: 4n²/π²）
     const rac =
       rectifier === 'center-tapped'
-        ? (4 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
-        : (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
+        ? (4 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
+        : (8 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
 
-    // Initial design: set fr = fsw, Q = 0.5, λ = 0.3
-    const q = 0.5
-    const lambda = 0.3
-    const fr = fsw
-    const zr = rac / q
+    // 最小负载对应的Rac
+    const pMin = pout * (loadMin / 100)
+    const racMin = rac * (pMin / pout)
+
+    // Qmax1：从Gmax和k计算（峰值增益条件）
+    // 使用二分法找到使峰值增益刚好等于Gmax的Q
+    function findQmax1(kVal: number, targetGain: number): number {
+      let lowQ = 0.001
+      let highQ = 5.0
+      const tolerance = 0.001
+      for (let iter = 0; iter < 50; iter++) {
+        const midQ = (lowQ + highQ) / 2
+        const peakM = peakGain(kVal, midQ)
+        if (peakM > targetGain) {
+          lowQ = midQ
+        } else {
+          highQ = midQ
+        }
+        if (highQ - lowQ < tolerance) break
+      }
+      return (lowQ + highQ) / 2
+    }
+    const qmax1 = findQmax1(k, gMax)
+
+    // Qmax2：从ZVS条件（死区时间）
+    // 先估计fmax：fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
+    const fmaxEst = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMin * gMin)))
+    // Lm = k * Lr, Lr = Zr / (2*pi*fr), Zr = Q * Racmin
+    // Er = 0.5*(Lm+Lr)*Im², Im = Vin_min/(4*fmax*Lm)
+    // 令 Er >= Ec = 0.5*(2*Coss_er+Cj)*Vin_max²
+    // 化简得到 Lr_max，再转换为Qmax2
+    const cossTotal = 2 * cossEr + cj
+    const lrMaxZvs = (k + 1) * vinMin * vinMin / (16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)
+    const qmax2 = lrMaxZvs * (2 * Math.PI * fr) / racMin
+
+    // Qmax3：从Coss能量（谐振腔电容）
+    // Qmax3 = sqrt[(k+1)² * (fmax²/fr² - 1) * Rac * C]
+    // 其中 C = 2*Coss_eq + Cj
+    const cEq = 2 * cossEq + cj
+    const qmax3 = Math.sqrt((k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * racMin * cEq)
+
+    // 取Qmax最小值，留90%裕量
+    const qmax = Math.min(qmax1, qmax2, qmax3)
+    const q = qmax * 0.9
+
+    // ─── 步骤5：计算谐振参数 ───
+    const zr = q * racMin
     const lr = zr / (2 * Math.PI * fr)
     const cr = 1 / (2 * Math.PI * fr * zr)
-    const lm = lambda * lr
+    const lm = k * lr
 
-    // Gain requirements
-    const mRequiredMin = topology === 'half-bridge' ? (2 * n * vout) / vinMin : (n * vout) / vinMin
-    const mRequiredMax = topology === 'half-bridge' ? (2 * n * vout) / vinMax : (n * vout) / vinMax
+    // ─── 步骤6：验证 ───
+    // fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
+    // fmin = fr * sqrt(1 + (1/k)*(1 - 1/Gmax²))
+    const fmax = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMin * gMin)))
+    const fmin = fr * Math.sqrt(1 + (1 / k) * (1 - 1 / (gMax * gMax)))
 
-    // Peak gain
-    const mMax = peakGain(lambda, q)
+    // 空载峰值增益
+    const gmaxEmpty = 1 + 1 / k
 
-    // ZVS phase at fr (fn=1)
-    const zvsPhaseDeg = zvsPhase(lambda, q)
-    const zvsMargin = zvsPhaseDeg > 5
+    // ZVS验证：在fmax处
+    const imDeadtime = vinMin / (4 * fmax * lm)
+    const er = 0.5 * (lm + lr) * imDeadtime * imDeadtime
+    const ec = 0.5 * cossTotal * vinMax * vinMax
+    const zvsMargin = er >= ec
 
-    // Current estimates
+    // ZVS相位（在fr处）
+    const zvsPhaseDeg = zvsPhase(k, q)
+
+    // ─── 步骤7：电流计算 ───
     const io = pout / vout
+
+    // 次级电流
     let isRms: number
     if (rectifier === 'center-tapped') {
       isRms = (Math.PI / 2) * io
     } else {
       isRms = (Math.PI / (2 * Math.sqrt(2))) * io
     }
-    const ipLoad = isRms / n
+
+    // 谐振电流在fr处近似
+    // 初级电压基波分量：半桥 2Vin/π，全桥 4Vin/π
+    const vFund =
+      topology === 'half-bridge'
+        ? vinNom * 2 / Math.PI
+        : vinNom * 4 / Math.PI
+    const irRmsAtFr = vFund / rac
+
+    // 磁化电流（在fmax处，近似）
     const vLm = topology === 'half-bridge' ? vinNom / 2 : vinNom
-    const imRms = vLm / (4 * Math.sqrt(3) * fsw * lm)
-    const ipRms = Math.sqrt(ipLoad * ipLoad + imRms * imRms)
+    const imRms = vLm / (4 * Math.sqrt(3) * fmax * lm)
+
+    // 初级总电流
+    const ipRms = Math.sqrt(irRmsAtFr * irRmsAtFr + imRms * imRms)
 
     const data: CalculatedData = {
       n,
@@ -383,10 +695,10 @@ export default function Designer() {
       cr,
       lm,
       q,
-      lambda,
-      mMax,
-      mRequired: mRequiredMax,
-      mRequiredMin,
+      lambda: k,
+      mMax: peakGain(k, q),
+      mRequired: gMax,
+      mRequiredMin: gMin,
       zvsMargin,
       zvsPhase: zvsPhaseDeg,
       ipRms,
@@ -402,20 +714,41 @@ export default function Designer() {
       rectifier,
       rac,
       zr,
+      fmax,
+      fmin,
+      gmaxEmpty,
+      zvsEr: er,
+      zvsEc: ec,
+      qmax1,
+      qmax2,
+      qmax3,
+      gMin,
+      gMax,
+      gNom,
     }
 
     const s = generateSuggestions(form, {
       q,
-      lambda,
-      mMax,
-      mRequired: mRequiredMax,
-      mRequiredMin,
+      lambda: k,
+      mMax: peakGain(k, q),
+      mRequired: gMax,
+      mRequiredMin: gMin,
       zvsPhase: zvsPhaseDeg,
       lr,
       cr,
       lm,
       fsw,
       efficiency,
+      qmax1,
+      qmax2,
+      qmax3,
+      gmaxEmpty,
+      zvsMargin,
+      er,
+      ec,
+      fmax,
+      fmin,
+      kMin,
     })
 
     setCalculated(data)
@@ -428,12 +761,25 @@ export default function Designer() {
       cr,
       lm,
       q,
-      lambda,
-      mMax,
-      mRequired: mRequiredMin,
+      lambda: k,
+      mMax: peakGain(k, q),
+      mRequired: gMax,
       zvsMargin,
       ipRms,
       isRms,
+      fmax,
+      fmin,
+      gmaxEmpty,
+      zvsEr: er,
+      zvsEc: ec,
+      qmax1,
+      qmax2,
+      qmax3,
+      gMin,
+      gMax,
+      gNom,
+      rac,
+      zr,
     })
     setSuggestions(s.map((item) => item.text))
     setShowResults(true)
@@ -594,6 +940,83 @@ export default function Designer() {
               </div>
             </div>
 
+            {/* ─── MOSFET / 寄生参数 ─── */}
+            <div className="mt-5 pt-4 border-t border-border">
+              <h3 className="text-sm font-semibold text-text-secondary mb-3 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-primary-light" />
+                MOSFET 与寄生参数
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>MOSFET Coss_eq (pF)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.cossEq}
+                    onChange={(e) => update('cossEq', Number(e.target.value))}
+                    placeholder="等效输出电容"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">等效Coss（谐振腔）</span>
+                </div>
+                <div>
+                  <label className={labelClass}>MOSFET Coss_er (pF)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.cossEr}
+                    onChange={(e) => update('cossEr', Number(e.target.value))}
+                    placeholder="能量相关Coss"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">能量相关Coss（ZVS）</span>
+                </div>
+                <div>
+                  <label className={labelClass}>PCB 寄生电容 Cj (pF)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.cj}
+                    onChange={(e) => update('cj', Number(e.target.value))}
+                    placeholder="PCB寄生"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">PCB走线/变压器寄生</span>
+                </div>
+                <div>
+                  <label className={labelClass}>死区时间 Td (ns)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.td}
+                    onChange={(e) => update('td', Number(e.target.value))}
+                    placeholder="死区时间"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">驱动死区</span>
+                </div>
+                <div>
+                  <label className={labelClass}>二极管压降 Vd (V)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.vd}
+                    onChange={(e) => update('vd', Number(e.target.value))}
+                    step="0.1"
+                    placeholder="整流二极管"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">输出整流压降</span>
+                </div>
+                <div>
+                  <label className={labelClass}>最大输出电流 Iomax (A)</label>
+                  <input
+                    type="number"
+                    className={inputClass}
+                    value={form.ioMax}
+                    onChange={(e) => update('ioMax', Number(e.target.value))}
+                    placeholder="最大电流"
+                  />
+                  <span className="text-xs text-text-muted mt-1 block">过载/满载电流</span>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={handleCalculate}
               className="mt-5 w-full bg-primary hover:bg-primary-light text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -626,36 +1049,55 @@ export default function Designer() {
                 </button>
                 {!collapsedSections.results && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                    <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin / (2·Vout)" />
+                    <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin / (2·(Vout+Vd))" />
                     <ResultItem label="谐振频率 fr" value={(calculated.fr / 1000).toFixed(1)} unit="kHz" formula="fr = 1/(2π√(Lr·Cr))" />
                     <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
                     <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
-                    <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = λ·Lr" />
-                    <ResultItem label="品质因数 Q" value={calculated.q.toFixed(2)} unit="" formula="Q = Zr / Rac" />
-                    <ResultItem label="电感比 λ" value={calculated.lambda.toFixed(2)} unit="" formula="λ = Lm / Lr" />
+                    <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
+                    <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = Zr / Racmin" />
+                    <ResultItem label="电感比 k" value={calculated.lambda.toFixed(2)} unit="" formula="k = Lm / Lr" />
                     <ResultItem
-                      label="所需增益 M_req"
-                      value={calculated.mRequiredMin.toFixed(3)}
+                      label="所需增益 Gmin"
+                      value={calculated.gMin.toFixed(3)}
                       unit=""
-                      formula="M = 2nVout/Vin"
-                      highlight={calculated.mMax < calculated.mRequiredMin ? 'critical' : 'good'}
+                      formula="G = n(Vout+Vd)/(Vinmax/2)"
+                      highlight="good"
                     />
                     <ResultItem
-                      label="峰值增益 M_max"
+                      label="所需增益 Gmax"
+                      value={calculated.gMax.toFixed(3)}
+                      unit=""
+                      formula="G = n(Vout+Vd)/(Vinmin/2)"
+                      highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
+                    />
+                    <ResultItem
+                      label="空载峰值增益"
+                      value={calculated.gmaxEmpty.toFixed(3)}
+                      unit=""
+                      formula="Gempty = 1 + 1/k"
+                      highlight={calculated.gmaxEmpty >= calculated.gMax ? 'good' : 'critical'}
+                    />
+                    <ResultItem
+                      label="峰值增益 Mmax"
                       value={calculated.mMax.toFixed(3)}
                       unit=""
                       formula="数值寻优峰值"
-                      highlight={calculated.mMax >= calculated.mRequiredMin ? 'good' : 'critical'}
+                      highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
                     />
+                    <ResultItem label="fmax（满载）" value={(calculated.fmax / 1000).toFixed(1)} unit="kHz" formula="fmax = fr·√[1+(1/k)(1-1/Gmin²)]" />
+                    <ResultItem label="fmin（轻载）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[1+(1/k)(1-1/Gmax²)]" />
                     <ResultItem
                       label="ZVS裕量"
                       value={calculated.zvsMargin ? '可达' : '不足'}
                       unit=""
-                      formula={`相位 ${calculated.zvsPhase.toFixed(1)}°`}
+                      formula={`Er=${(calculated.zvsEr * 1e6).toFixed(3)}μJ / Ec=${(calculated.zvsEc * 1e6).toFixed(3)}μJ`}
                       highlight={calculated.zvsMargin ? 'good' : 'critical'}
                     />
-                    <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Iload² + Im²)" />
+                    <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
                     <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula="Is = (π/2√2)·Io" />
+                    <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
+                    <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
+                    <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
                   </div>
                 )}
               </div>
@@ -831,6 +1273,85 @@ export default function Designer() {
 
               {/* Waveform Preview */}
               <WaveformPreview topology={calculated.topology} vin={calculated.vinMax} />
+
+              {/* Loss Analysis Panel */}
+              <LossAnalysisPanel calc={calculated} params={lossParams} setParams={setLossParams} toggle={() => toggleSection('loss')} collapsed={collapsedSections.loss} />
+
+              {/* Save Design & Compare */}
+              <div className={cardClass}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GitCompare className="w-5 h-5 text-primary-light" />
+                    <h2 className="text-lg font-semibold text-text-primary">设计快照</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const name = prompt('保存设计名称:', `设计 ${new Date().toLocaleTimeString()}`)
+                        if (name && calculated) {
+                          saveDesignSnapshot(name, form, {
+                            n: calculated.n,
+                            fr: calculated.fr,
+                            lr: calculated.lr,
+                            cr: calculated.cr,
+                            lm: calculated.lm,
+                            q: calculated.q,
+                            lambda: calculated.lambda,
+                            mMax: calculated.mMax,
+                            mRequired: calculated.gMax,
+                            zvsMargin: calculated.zvsMargin,
+                            ipRms: calculated.ipRms,
+                            isRms: calculated.isRms,
+                          })
+                          alert(`已保存: ${name}`)
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-light text-white text-sm rounded-lg transition-colors"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      保存当前设计
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Compensation Design */}
+              <div className={cardClass}>
+                <button
+                  onClick={() => toggleSection('compensation')}
+                  className="w-full flex items-center justify-between mb-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary-light" />
+                    <h2 className="text-lg font-semibold text-text-primary">环路补偿设计</h2>
+                  </div>
+                  {collapsedSections.compensation ? (
+                    <ChevronDown className="w-4 h-4 text-text-muted" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4 text-text-muted" />
+                  )}
+                </button>
+                {!collapsedSections.compensation && <CompensationSection />}
+              </div>
+
+              {/* A/B Compare */}
+              <div className={cardClass}>
+                <button
+                  onClick={() => toggleSection('compare')}
+                  className="w-full flex items-center justify-between mb-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <GitCompare className="w-5 h-5 text-primary-light" />
+                    <h2 className="text-lg font-semibold text-text-primary">A/B 设计对比</h2>
+                  </div>
+                  {collapsedSections.compare ? (
+                    <ChevronDown className="w-4 h-4 text-text-muted" />
+                  ) : (
+                    <ChevronUp className="w-4 h-4 text-text-muted" />
+                  )}
+                </button>
+                {!collapsedSections.compare && <DesignCompare />}
+              </div>
             </>
           )}
 
@@ -877,6 +1398,266 @@ function ResultItem({
         <span className="text-sm text-text-muted">{unit}</span>
       </div>
       <div className="text-xs text-text-muted mt-1 font-mono">{formula}</div>
+    </div>
+  )
+}
+
+function LossAnalysisPanel({
+  calc,
+  params,
+  setParams,
+  toggle,
+  collapsed,
+}: {
+  calc: CalculatedData
+  params: LossParameters
+  setParams: (p: LossParameters) => void
+  toggle: () => void
+  collapsed: boolean
+}) {
+  const losses = calculateLosses(calc, params)
+  const update = <K extends keyof LossParameters>(key: K, value: LossParameters[K]) => {
+    setParams({ ...params, [key]: value })
+  }
+  const inputClass = 'input-field w-full'
+  const labelClass = 'block text-xs font-medium text-text-secondary mb-1'
+
+  const effDiff = losses.efficiency - calc.efficiency
+
+  return (
+    <div className="card-surface p-5">
+      <button onClick={toggle} className="w-full flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Flame className="w-5 h-5 text-danger" />
+          <h2 className="text-lg font-semibold text-text-primary">损耗分析</h2>
+        </div>
+        {collapsed ? <ChevronDown className="w-4 h-4 text-text-muted" /> : <ChevronUp className="w-4 h-4 text-text-muted" />}
+      </button>
+
+      {!collapsed && (
+        <div className="mt-3 space-y-5">
+          {/* Input parameters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div>
+              <label className={labelClass}>MOSFET Rds(on) (mΩ)</label>
+              <input type="number" className={inputClass} value={params.mosfetRdsOn} onChange={(e) => update('mosfetRdsOn', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>tr (ns)</label>
+              <input type="number" className={inputClass} value={params.mosfetTr} onChange={(e) => update('mosfetTr', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>tf (ns)</label>
+              <input type="number" className={inputClass} value={params.mosfetTf} onChange={(e) => update('mosfetTf', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Coss (pF)</label>
+              <input type="number" className={inputClass} value={params.mosfetCoss} onChange={(e) => update('mosfetCoss', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Vsd (V)</label>
+              <input type="number" className={inputClass} value={params.mosfetVsd} onChange={(e) => update('mosfetVsd', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>死区时间 (ns)</label>
+              <input type="number" className={inputClass} value={params.deadTime} onChange={(e) => update('deadTime', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>初级匝数 Np</label>
+              <input type="number" className={inputClass} value={params.primaryTurns} onChange={(e) => update('primaryTurns', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>磁芯材料</label>
+              <select className={inputClass} value={params.coreMaterial} onChange={(e) => update('coreMaterial', e.target.value)}>
+                <option value="PC40">PC40</option>
+                <option value="PC95">PC95</option>
+                <option value="PC200">PC200</option>
+                <option value="3C95">3C95</option>
+                <option value="3C97">3C97</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Ve (cm³)</label>
+              <input type="number" className={inputClass} value={params.coreVe} onChange={(e) => update('coreVe', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Ae (mm²)</label>
+              <input type="number" className={inputClass} value={params.coreAe} onChange={(e) => update('coreAe', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Steinmetz k</label>
+              <input type="number" step="0.1" className={inputClass} value={params.coreK} onChange={(e) => update('coreK', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>α</label>
+              <input type="number" step="0.1" className={inputClass} value={params.coreAlpha} onChange={(e) => update('coreAlpha', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>β</label>
+              <input type="number" step="0.1" className={inputClass} value={params.coreBeta} onChange={(e) => update('coreBeta', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>绕组 Rdc (mΩ)</label>
+              <input type="number" className={inputClass} value={params.windingRdc} onChange={(e) => update('windingRdc', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>趋肤拐点 f0 (kHz)</label>
+              <input type="number" className={inputClass} value={params.skinF0} onChange={(e) => update('skinF0', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>{calc.rectifier === 'synchronous' ? '同步整流 Rds(on) (mΩ)' : '整流 Vf (V)'}</label>
+              <input type="number" step="0.1" className={inputClass} value={calc.rectifier === 'synchronous' ? params.syncRectRdsOn : params.rectVf} onChange={(e) => update(calc.rectifier === 'synchronous' ? 'syncRectRdsOn' : 'rectVf', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Lr DCR (mΩ)</label>
+              <input type="number" className={inputClass} value={params.lrDcr} onChange={(e) => update('lrDcr', Number(e.target.value))} />
+            </div>
+            <div>
+              <label className={labelClass}>Cr ESR (mΩ)</label>
+              <input type="number" className={inputClass} value={params.crEsr} onChange={(e) => update('crEsr', Number(e.target.value))} />
+            </div>
+          </div>
+
+          {/* Efficiency summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <div className="text-xs text-text-secondary mb-1">总损耗</div>
+              <div className="text-2xl font-mono font-semibold text-danger">{losses.totalLoss.toFixed(2)} W</div>
+            </div>
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <div className="text-xs text-text-secondary mb-1">实际效率</div>
+              <div className="text-2xl font-mono font-semibold text-primary-light">{losses.efficiency.toFixed(2)}%</div>
+            </div>
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <div className="text-xs text-text-secondary mb-1">与目标效率差</div>
+              <div className={`text-2xl font-mono font-semibold ${effDiff >= 0 ? 'text-success' : 'text-accent'}`}>
+                {effDiff >= 0 ? '+' : ''}{effDiff.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <h4 className="text-sm font-semibold text-text-primary mb-3">损耗分布</h4>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={losses.breakdown} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value" nameKey="name">
+                      {losses.breakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#171717', border: '1px solid #404040', borderRadius: 6, color: '#f5f5f5' }}
+                      formatter={(value: number) => [`${value.toFixed(2)} W`, '损耗']}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+              <h4 className="text-sm font-semibold text-text-primary mb-3">损耗分项对比</h4>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={losses.breakdown} layout="vertical" margin={{ left: 20, right: 20, top: 5, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
+                    <XAxis type="number" stroke="#a3a3a3" fontSize={12} tickFormatter={(v) => `${v.toFixed(1)}W`} />
+                    <YAxis type="category" dataKey="name" stroke="#a3a3a3" fontSize={11} width={70} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#171717', border: '1px solid #404040', borderRadius: 6, color: '#f5f5f5' }}
+                      formatter={(value: number) => [`${value.toFixed(2)} W`, '损耗']}
+                    />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {losses.breakdown.map((entry, index) => (
+                        <Cell key={`bar-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed loss table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="border-b border-border text-text-secondary">
+                  <th className="py-2 pr-4">损耗项</th>
+                  <th className="py-2 pr-4">功率 (W)</th>
+                  <th className="py-2 pr-4">占比</th>
+                  <th className="py-2">公式说明</th>
+                </tr>
+              </thead>
+              <tbody className="text-text-primary">
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">MOSFET 导通损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.mosfetCond.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.mosfetCond / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Pcond = Ip²·Rds(on)（每管半周）</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Pon = 0.5·Vin·Ip·tr·fsw（ZVS下≈0）</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Ip·tf·fsw</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">Coss 损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">体二极管导通</td>
+                  <td className="py-2 pr-4 font-mono">{losses.mosfetDiode.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.mosfetDiode / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Pdiode = Vsd·Id·td·fsw</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">磁芯损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.coreLoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.coreLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Pcore = k·f^α·B^β·Ve</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">绕组损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.windingLoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.windingLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">Pw = Ip²·Rdc·(1+(f/f0)²)</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">整流损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.rectLoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.rectLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' ? 'P = Is²·Rds(on)' : 'P = Vf·Io'}</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-2 pr-4 font-medium">谐振元件损耗</td>
+                  <td className="py-2 pr-4 font-mono">{losses.resonantLoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4">{((losses.resonantLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
+                  <td className="py-2 text-text-secondary">P = Ip²·(DCR+ESR)</td>
+                </tr>
+                <tr className="bg-surface-elevated">
+                  <td className="py-2 pr-4 font-bold text-primary-light">总损耗</td>
+                  <td className="py-2 pr-4 font-mono font-bold text-primary-light">{losses.totalLoss.toFixed(3)}</td>
+                  <td className="py-2 pr-4 font-bold">100%</td>
+                  <td className="py-2 text-text-secondary">η = Po / (Po + Ploss)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
