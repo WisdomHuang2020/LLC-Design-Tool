@@ -35,7 +35,7 @@ function generateData(lambda: number, Q: number) {
   const gainData: Array<Record<string, number>> = []
   const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
 
-  for (let fn = 0.5; fn <= 2.0; fn += 0.005) {
+  for (let fn = 0.0; fn <= 2.0; fn += 0.005) {
     const f = parseFloat(fn.toFixed(3))
 
     const gainPoint: Record<string, number> = { fn: f }
@@ -220,20 +220,20 @@ export default function Curves() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={gainData}
-              margin={{ top: 5, right: 20, bottom: 20, left: 10 }}
+              margin={{ top: 5, right: 20, bottom: 40, left: 10 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
               <XAxis
                 dataKey="fn"
                 type="number"
-                domain={[0.5, 2.0]}
+                domain={[0, 2.0]}
                 stroke="#a3a3a3"
                 tick={{
                   fill: '#a3a3a3',
                   fontFamily: 'JetBrains Mono',
                   fontSize: 12,
                 }}
-                tickCount={7}
+                tickCount={9}
                 label={{
                   value: '归一化频率 fn',
                   position: 'insideBottom',
@@ -264,6 +264,7 @@ export default function Curves() {
                   color: '#f5f5f5',
                   fontFamily: 'JetBrains Mono',
                   fontSize: 13,
+                  paddingTop: 20,
                 }}
               />
               <ReferenceLine
@@ -284,7 +285,7 @@ export default function Curves() {
                 label={{
                   value: 'fr₂',
                   fill: '#f59e0b',
-                  position: 'insideTopRight',
+                  position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
                   fontSize: 12,
                 }}
               />
@@ -344,14 +345,14 @@ export default function Curves() {
                 <XAxis
                   dataKey="fn"
                   type="number"
-                  domain={[0.5, 2.0]}
+                  domain={[0, 2.0]}
                   stroke="#a3a3a3"
                   tick={{
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
                   }}
-                  tickCount={7}
+                  tickCount={9}
                   label={{
                     value: '归一化频率 fn',
                     position: 'insideBottom',
@@ -394,7 +395,7 @@ export default function Curves() {
                   label={{
                     value: 'fr₂',
                     fill: '#f59e0b',
-                    position: 'insideTopRight',
+                    position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
                     fontSize: 12,
                   }}
                 />
@@ -428,14 +429,14 @@ export default function Curves() {
                 <XAxis
                   dataKey="fn"
                   type="number"
-                  domain={[0.5, 2.0]}
+                  domain={[0, 2.0]}
                   stroke="#a3a3a3"
                   tick={{
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
                   }}
-                  tickCount={7}
+                  tickCount={9}
                   label={{
                     value: '归一化频率 fn',
                     position: 'insideBottom',
@@ -478,7 +479,7 @@ export default function Curves() {
                   label={{
                     value: 'fr₂',
                     fill: '#f59e0b',
-                    position: 'insideTopRight',
+                    position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
                     fontSize: 12,
                   }}
                 />
