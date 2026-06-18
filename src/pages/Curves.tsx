@@ -54,7 +54,7 @@ function generateData(lambda: number, Q: number) {
 
 export default function Curves() {
   const { results } = useDesign()
-  const [lambda, setLambda] = useState(results?.lambda ?? 0.2)
+  const [lambda, setLambda] = useState(Math.max(results?.lambda ?? 2.0, 2.0))
   const [Q, setQ] = useState(results?.q ?? 0.5)
 
   const { gainData, impedanceData } = useMemo(
@@ -243,7 +243,7 @@ export default function Curves() {
                 }}
               />
               <YAxis
-                domain={[0, 3]}
+                domain={[0, 2]}
                 stroke="#a3a3a3"
                 tick={{
                   fill: '#a3a3a3',
