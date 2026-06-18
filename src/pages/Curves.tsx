@@ -17,11 +17,9 @@ const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
 const Q_COLORS = ['#14b8a6', '#0f766e', '#5eead4', '#2dd4bf', '#0d9488']
 
 function calcGain(fn: number, lambda: number, Q: number): number {
-  const numerator = fn * fn * lambda
-  const term1 = fn * fn * (1 + lambda) - 1
-  const term2 = fn * Q * (fn * fn - 1) * lambda
-  const denominator = Math.sqrt(term1 * term1 + term2 * term2)
-  return denominator === 0 ? 0 : numerator / denominator
+  const a = 1 + (1 / lambda) * (1 - 1 / (fn * fn))
+  const b = Q * (fn - 1 / fn)
+  return 1 / Math.sqrt(a * a + b * b)
 }
 
 function calcImpedance(fn: number, lambda: number, Q: number) {

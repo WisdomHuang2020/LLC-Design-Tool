@@ -221,18 +221,18 @@ export default function Derivations() {
           <MathBlock latex="P_{ac} = P_{out} = \\frac{V_{out}^2}{R_{load}}" />
 
           <p className="text-text-secondary mt-4 mb-2">
-            次级侧基波电压（中心抽头整流）：
+            {'次级侧基波电压（全桥整流，中心抽头为 2nVout/π）：'}
           </p>
           <MathBlock latex="V_{sec,1} = \\frac{4nV_{out}}{\\pi}" />
 
           <p className="text-text-secondary mt-4 mb-2">
-            次级侧基波电流（近似正弦）：
+            {'次级侧基波电流（近似正弦）：'}
           </p>
           <MathBlock latex="I_{sec,1} = \\frac{\\pi I_{out}}{2n}" />
 
           <HighlightBox type="info">
             <strong>推导关键：</strong>
-            功率守恒P_ac = V_sec1 * I_sec1 / 2 = V_out * I_out，结合整流器的非线性特性，可得等效电阻。
+            功率守恒P_ac = V_sec1 · I_sec1 / 2 = V_out · I_out。对于全桥整流，Rac = 8n²R_load/π²；对于中心抽头整流，Rac = 4n²R_load/π²。
           </HighlightBox>
 
           <p className="text-text-secondary mt-4 mb-2">
@@ -409,7 +409,7 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             将实部和虚部分离：
           </p>
-          <MathBlock latex="Z_{in} = \\frac{Z_0 f_n^3 \\lambda^2 Q}{(1 + f_n^2 \\lambda^2 Q^2)} + jZ_0 \\left[ \\frac{f_n^2 - 1}{f_n} + \\frac{f_n \\lambda}{1 + f_n^2 \\lambda^2 Q^2} \\right]" />
+          <MathBlock latex="Z_{in} = \\frac{Z_0 f_n^2 \\lambda^2 Q}{(1 + f_n^2 \\lambda^2 Q^2)} + jZ_0 \\left[ \\frac{f_n^2 - 1}{f_n} + \\frac{f_n \\lambda}{1 + f_n^2 \\lambda^2 Q^2} \\right]" />
 
           <HighlightBox type="info">
             <strong>ZVS条件：</strong>
@@ -449,7 +449,7 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             {'在谐振频率 f_r1 处，|Z_in| = R_ac（纯阻性），此时电流达到近似最小值：'}
           </p>
-          <MathBlock latex="I_{r,rms}(f_{r1}) = \\frac{2\\sqrt{2}V_{in}}{\\pi R_{ac}} = \\frac{2\\sqrt{2}V_{in}}{\\pi} \\cdot \\frac{Q}{Z_0}" />
+          <MathBlock latex="I_{r,rms}(f_{r1}) \\approx \\frac{2\\sqrt{2}V_{in}}{\\pi R_{ac}} = \\frac{2\\sqrt{2}V_{in}}{\\pi} \\cdot \\frac{Q}{Z_0}" />
 
           <p className="text-text-secondary mt-4 mb-2">
             磁化电流有效值（仅在L_m上）：

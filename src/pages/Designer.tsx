@@ -38,9 +38,9 @@ function nearestE(value: number, series: number[]): number {
 }
 
 // ─── LLC gain formula (standard FHA) ───
-// M(fn, λ, Q) = 1 / sqrt((1 + λ - λ/fn²)² + (Q*(fn - 1/fn))²)
+// M = 1 / sqrt((1 + 1/λ(1 - 1/fn²))² + (Q*(fn - 1/fn))²)
 function gainM(fn: number, lambda: number, q: number): number {
-  const a = 1 + lambda - lambda / (fn * fn)
+  const a = 1 + (1 / lambda) * (1 - 1 / (fn * fn))
   const b = q * (fn - 1 / fn)
   return 1 / Math.sqrt(a * a + b * b)
 }
@@ -337,8 +337,11 @@ export default function Designer() {
         ? vinNom / (2 * vout)
         : vinNom / vout
 
-    // Equivalent AC resistance
-    const rac = (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
+    // Equivalent AC resistance (full-bridge: 8n²/π², center-tapped: 4n²/π²)
+    const rac =
+      rectifier === 'center-tapped'
+        ? (4 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
+        : (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
 
     // Initial design: set fr = fsw, Q = 0.5, λ = 0.3
     const q = 0.5
@@ -427,7 +430,7 @@ export default function Designer() {
       q,
       lambda,
       mMax,
-      mRequired: mRequiredMax,
+      mRequired: mRequiredMin,
       zvsMargin,
       ipRms,
       isRms,
