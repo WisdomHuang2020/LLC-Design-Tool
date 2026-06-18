@@ -46,7 +46,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-text-muted text-sm">
-            © 2025 LLC Design Tool. 仅供学习与研究使用。
+            © 2026 LLC Design Tool. 仅供学习与研究使用。
           </p>
           <a href="#" className="flex items-center gap-2 text-text-muted hover:text-text-secondary text-sm transition-colors">
             <Github className="w-4 h-4" /> GitHub
