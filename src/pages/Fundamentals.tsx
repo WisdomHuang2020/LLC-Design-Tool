@@ -448,6 +448,26 @@ function FullBridgeSVG() {
       <line x1="340" y1="130" x2="340" y2="180" stroke="#22c55e" strokeWidth="2" />
       <circle cx="340" cy="185" r="3" fill="#a3a3a3" />
 
+      {/* Transformer */}
+      <line x1="300" y1="130" x2="340" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <g stroke="#a3a3a3" strokeWidth="2" fill="none">
+        <line x1="340" y1="110" x2="340" y2="150" />
+        <line x1="344" y1="105" x2="344" y2="155" />
+        <line x1="348" y1="100" x2="348" y2="160" />
+        <line x1="352" y1="105" x2="352" y2="155" />
+        <line x1="356" y1="110" x2="356" y2="150" />
+        <line x1="368" y1="110" x2="368" y2="150" />
+        <line x1="372" y1="105" x2="372" y2="155" />
+        <line x1="376" y1="100" x2="376" y2="160" />
+        <line x1="380" y1="105" x2="380" y2="155" />
+        <line x1="384" y1="110" x2="384" y2="150" />
+        <line x1="356" y1="90" x2="368" y2="90" strokeDasharray="3 3" />
+        <line x1="356" y1="170" x2="368" y2="170" strokeDasharray="3 3" />
+      </g>
+      <text x="362" y="95" fill="#a3a3a3" fontSize="11" textAnchor="middle">
+        T
+      </text>
+
       <text x="220" y="250" fill="#737373" fontSize="10" textAnchor="middle">
         全桥 LLC 拓扑
       </text>
@@ -771,7 +791,11 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">M</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      2n·Vout / Vin
+                      n·Vout / Vin (全桥)
+                    </code>
+                    <br />
+                    <code className="text-xs bg-bg px-2 py-1 rounded mt-1 inline-block">
+                      2n·Vout / Vin (半桥)
                     </code>
                   </td>
                   <td className="py-3 px-4">反映变换器的电压变换能力</td>

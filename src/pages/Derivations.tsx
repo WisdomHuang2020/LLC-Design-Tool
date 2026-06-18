@@ -308,13 +308,13 @@ export default function Derivations() {
             经过复数运算和化简，最终得到标准的LLC增益方程：
           </p>
           <MathBlock
-            latex="M = \\left| \\frac{f_n^2 \\lambda}{f_n^2(1+\\lambda) - 1 + j f_n \\lambda Q (f_n^2 - 1)} \\right|"
+            latex="M = \\frac{f_n^2 \\lambda}{f_n^2(1+\\lambda) - 1 + j f_n \\lambda Q (f_n^2 - 1)}"
           />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="\\begin{aligned} M(f_n, \\lambda, Q) &= \\left| \\frac{f_n^2 \\lambda}{\\sqrt{(f_n^2(1+\\lambda)-1)^2 + (f_n Q(f_n^2-1))^2 \\lambda^2}} \\right| \\\\\\n &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{\\lambda} - \\frac{1}{\\lambda f_n^2}\\right)^2 + \\left(Q(f_n - \\frac{1}{f_n})\\right)^2}} \\end{aligned}"
+              latex="\\begin{aligned} M(f_n, \\lambda, Q) &= \\frac{f_n^2 \\lambda}{\\sqrt{(f_n^2(1+\\lambda)-1)^2 + (f_n Q(f_n^2-1))^2 \\lambda^2}} \\\\\\n &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{\\lambda} - \\frac{1}{\\lambda f_n^2}\\right)^2 + \\left(Q(f_n - \\frac{1}{f_n})\\right)^2}} \\end{aligned}"
               important
               multiline
             />

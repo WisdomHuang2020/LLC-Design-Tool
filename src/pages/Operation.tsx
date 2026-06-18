@@ -943,17 +943,17 @@ export default function Operation() {
             </div>
             <div className="space-y-4">
               <p className="text-text-primary leading-relaxed">
-                LLC 谐振变换器的电压增益定义为输出反射电压与输入电压之比：
+                LLC 谐振变换器的电压增益定义为输出反射电压与输入电压之比（半桥取 2nVout/Vin，全桥取 nVout/Vin）：
               </p>
               <MathBlock
-                latex="M = \frac{2n V_{out}}{V_{in}}"
+                latex="M = \frac{n V_{out}}{V_{in}} \;(\text{全桥}) \quad M = \frac{2n V_{out}}{V_{in}} \;(\text{半桥})"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
                 基于 FHA（First Harmonic Approximation）方法，完整的 LLC 电压增益方程为：
               </p>
               <MathBlock
-                latex="M(f_n, \lambda, Q) = \left| \frac{f_n^2 \cdot \lambda}{\sqrt{(f_n^2(1+\lambda)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot \lambda^2}} \right|"
+                latex="M(f_n, \lambda, Q) = \frac{f_n^2 \cdot \lambda}{\sqrt{(f_n^2(1+\lambda)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot \lambda^2}}"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
