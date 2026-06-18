@@ -146,7 +146,7 @@ export default function Curves() {
             </div>
             <input
               type="range"
-              min={0.1}
+              min={2.0}
               max={10.0}
               step={0.1}
               value={lambda}
@@ -155,7 +155,7 @@ export default function Curves() {
               style={{ accentColor: '#14b8a6' }}
             />
             <div className="flex justify-between text-xs text-text-muted mt-1 font-mono">
-              <span>0.1</span>
+              <span>2.0</span>
               <span>10.0</span>
             </div>
           </div>
