@@ -109,13 +109,13 @@ function generateSuggestions(
   const s: Suggestion[] = []
   const { q, lambda, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, er, ec, fmax, fmin, kMin } = results
 
-  // 1. k值选择
+  // 1. k值选择与虚拟增益
   if (lambda < kMin * 1.05) {
     s.push({ text: `电感比k=${lambda.toFixed(2)}过于接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k或放宽输入电压范围。`, level: 'critical' })
   } else if (lambda < kMin * 1.2) {
     s.push({ text: `电感比k=${lambda.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
+    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，谐振频率处虚拟增益Mv=${(lambda/(lambda-1)).toFixed(3)}，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
   }
 
   // 2. Qmax对比分析
@@ -366,6 +366,7 @@ interface CalculatedData {
   gMin: number
   gMax: number
   gNom: number
+  mv: number  // 谐振频率处虚拟增益 Mv = k/(k-1)
 }
 
 // ─── Loss Analysis Types & Defaults ───
@@ -558,40 +559,58 @@ export default function Designer() {
 
     const voutEff = vout + vd  // 考虑二极管压降的有效输出电压
 
-    // ─── 步骤1：计算匝比n ───
-    const n =
-      topology === 'half-bridge'
-        ? vinNom / (2 * voutEff)
-        : vinNom / voutEff
+    // ─── 步骤1-3：迭代计算k（λ=Lm/Lr）和匝比n ───
+    // 集成变压器模型：谐振频率处虚拟增益 Mv = k/(k-1)
+    // 飞兆文档设计流程：先选k，计算Mv，再计算匝比和增益范围
+    let k = 5.0  // 初始值，典型范围3~7
+    let mv = 1.25  // 初始虚拟增益，对应k=5
+    let n = 0
+    let gMin = 0, gMax = 0, gNom = 0
+    let kMin = 0
+    for (let iter = 0; iter < 20; iter++) {
+      mv = k / (k - 1)  // 谐振频率处虚拟增益（集成变压器模型）
 
-    // ─── 步骤2：计算增益范围 ───
-    const gMin =
-      topology === 'half-bridge'
-        ? (n * voutEff) / (vinMax / 2)
-        : (n * voutEff) / vinMax
-    const gMax =
-      topology === 'half-bridge'
-        ? (n * voutEff) / (vinMin / 2)
-        : (n * voutEff) / vinMin
-    const gNom =
-      topology === 'half-bridge'
-        ? (n * voutEff) / (vinNom / 2)
-        : (n * voutEff) / vinNom
+      // 计算匝比n：谐振频率处增益=Mv，据此反推匝比
+      n =
+        topology === 'half-bridge'
+          ? (vinNom / (2 * voutEff)) * mv
+          : (vinNom / voutEff) * mv
 
-    // ─── 步骤3：选择k（λ=Lm/Lr）───
-    // 空载峰值增益: Gmax_empty = 1 + 1/k
-    // 需要 Gmax_empty > Gmax，即 k > 1/(Gmax-1)
-    const kMin = 1 / (gMax - 1)
-    const k = Math.max(kMin * 1.1, 5.0)  // 留10%裕量，最小取5
+      // 计算增益范围
+      gMin =
+        topology === 'half-bridge'
+          ? (n * voutEff) / (vinMax / 2)
+          : (n * voutEff) / vinMax
+      gMax =
+        topology === 'half-bridge'
+          ? (n * voutEff) / (vinMin / 2)
+          : (n * voutEff) / vinMin
+      gNom =
+        topology === 'half-bridge'
+          ? (n * voutEff) / (vinNom / 2)
+          : (n * voutEff) / vinNom
+
+      // 空载峰值增益需大于最大增益：1 + 1/k > gMax => k > 1/(gMax - 1)
+      kMin = 1 / (gMax - 1)
+      const kNew = Math.max(kMin * 1.1, 5.0)  // 留10%裕量，最小取5
+
+      if (Math.abs(kNew - k) < 0.001) break
+      k = kNew
+    }
+
+    // 最终虚拟增益
+    mv = k / (k - 1)
 
     // ─── 步骤4：计算Qmax（三个约束取最小）───
     const fr = fsw  // 设谐振频率fr = fsw
 
-    // 等效AC电阻（全桥整流: 8n²/π², 中心抽头: 4n²/π²）
+    // 等效AC电阻（从初级看）
+    // 半桥+中心抽头：Rac = 8n²VoutEff²/(π²Po) — 飞兆AN-4151严格公式
+    // 全桥+中心抽头：Rac = 8n²VoutEff²/(π²Po)
+    // 全桥+全波整流：Rac = 8n²VoutEff²/(π²Po)
+    // 注：飞兆文档使用8n²Vo²/(π²Po)公式，对应集成变压器半桥+中心抽头拓扑
     const rac =
-      rectifier === 'center-tapped'
-        ? (4 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
-        : (8 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
+      (8 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
 
     // 最小负载对应的Rac
     const pMin = pout * (loadMin / 100)
@@ -725,6 +744,7 @@ export default function Designer() {
       gMin,
       gMax,
       gNom,
+      mv,
     }
 
     const s = generateSuggestions(form, {
@@ -1049,7 +1069,8 @@ export default function Designer() {
                 </button>
                 {!collapsedSections.results && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                    <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin / (2·(Vout+Vd))" />
+                    <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin/(2·(Vout+Vd))·Mv" />
+                    <ResultItem label="谐振频率处增益 Mv" value={calculated.mv.toFixed(3)} unit="" formula="Mv = k/(k-1) = λ/(λ-1)" />
                     <ResultItem label="谐振频率 fr" value={(calculated.fr / 1000).toFixed(1)} unit="kHz" formula="fr = 1/(2π√(Lr·Cr))" />
                     <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
                     <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
@@ -1060,14 +1081,14 @@ export default function Designer() {
                       label="所需增益 Gmin"
                       value={calculated.gMin.toFixed(3)}
                       unit=""
-                      formula="G = n(Vout+Vd)/(Vinmax/2)"
+                      formula="Gmin = Mv·Vin_nom/Vin_max"
                       highlight="good"
                     />
                     <ResultItem
                       label="所需增益 Gmax"
                       value={calculated.gMax.toFixed(3)}
                       unit=""
-                      formula="G = n(Vout+Vd)/(Vinmin/2)"
+                      formula="Gmax = Mv·Vin_nom/Vin_min"
                       highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
                     />
                     <ResultItem
@@ -1098,6 +1119,7 @@ export default function Designer() {
                     <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
                     <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
                     <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
+                    <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²(Vout+Vd)²/(π²Po)" />
                   </div>
                 )}
               </div>
