@@ -154,23 +154,23 @@ function GainCurvePreview() {
               <line x1="170" y1="20" x2="170" y2="180" stroke="#14b8a6" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
               <text x="170" y="15" fill="#14b8a6" fontSize="9" textAnchor="middle">fr</text>
 
-              {/* Curves - approximated LLC gain curves for different Q */}
+              {/* Curves - approximated LLC gain curves for different Q: peak at fr2, all cross at fr1 */}
               <path
-                d="M 40 180 Q 90 170 130 110 Q 155 60 170 40 L 170 40 Q 190 65 220 110 Q 260 160 300 170"
+                d="M 40 180 Q 80 170 120 130 Q 140 90 170 50 L 170 50 Q 190 80 220 130 Q 260 165 300 170"
                 fill="none"
                 stroke="#f59e0b"
                 strokeWidth="2.5"
                 opacity="0.9"
               />
               <path
-                d="M 40 180 Q 90 175 130 140 Q 155 100 170 80 L 170 80 Q 190 100 220 130 Q 260 165 300 170"
+                d="M 40 180 Q 80 175 120 150 Q 145 120 170 90 L 170 90 Q 190 110 220 140 Q 260 168 300 170"
                 fill="none"
                 stroke="#14b8a6"
                 strokeWidth="2.5"
                 opacity="0.9"
               />
               <path
-                d="M 40 180 Q 90 178 130 160 Q 155 140 170 125 L 170 125 Q 190 138 220 155 Q 260 172 300 175"
+                d="M 40 180 Q 80 178 120 165 Q 140 145 170 125 L 170 125 Q 190 138 220 155 Q 260 172 300 175"
                 fill="none"
                 stroke="#f5f5f5"
                 strokeWidth="2"
