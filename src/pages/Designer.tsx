@@ -465,11 +465,15 @@ function calculateLosses(
   const switchOff = 0.5 * switchV * ipPeak * (lp.mosfetTf / 1e9) * fsw * nSwitches
 
   // 3. Coss loss (non-linear model, simplified)
+  // 系数 2/3 考虑了 MOSFET 结电容 C_oss 随 V_ds 的非线性变化
+  // 不同厂商/型号的 C_oss 非线性特性不同，精确损耗建议查手册 E_oss 曲线
   const cossF = lp.mosfetCoss / 1e12
   const ecoss = 0.5 * cossF * vin * vin * (2 / 3)
   const cossLoss = ecoss * fsw * nSwitches
 
   // 4. Body diode conduction loss (approximate dead time current = Ip_peak * 0.7)
+  // 0.7 为经验系数，实际体二极管电流波形因死区时间、C_oss 充放电波形而异
+  // 精确估算需时域仿真或示波器实测
   const idiode = ipPeak * 0.7
   const diodeLoss = lp.mosfetVsd * idiode * (lp.deadTime / 1e9) * fsw * nSwitches
 
@@ -636,6 +640,8 @@ export default function Designer() {
     const qmax1 = findQmax1(k, gMax)
 
     // Qmax2：ZVS条件（死区时间），基于能量守恒推导
+    // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·f_r·L_m 的反推
+    // 若拓扑为全桥或死区定义不同，该系数需重新推导
     // fmax估计：基于空载增益公式 fn² = G/(G*(k+1)-k)，仅当 gMin >= k/(k+1) 时可行
     const region1MinGain = k / (k + 1)
     const fmaxFeasible = gMin >= region1MinGain
@@ -648,7 +654,8 @@ export default function Designer() {
       : Infinity
 
     // Qmax3：Coss能量（谐振腔电容）
-    const cEq = Math.max(1, 2 * cossEq + cj)
+    // cossEq 和 cj 已在第575-577行转换为 F 单位，兜底值 1e-12 对应 1 pF
+    const cEq = Math.max(1e-12, 2 * cossEq + cj)
     const qmax3 = fmaxFeasible
       ? Math.sqrt(Math.max(0, (k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * Math.max(1e-6, racMin) * cEq))
       : Infinity

@@ -61,7 +61,7 @@ export default function Report() {
 
 | 参数 | 公式 | 数值 |
 |------|------|------|
-| 匝比 n | ${p.topology === 'half-bridge' ? 'Vin_nom / (2·Vout)' : 'Vin_nom / Vout'}（基于额定输入，谐振频率处 M=1） | ${r.n.toFixed(3)} |
+| 匝比 n | ${p.topology === 'half-bridge' ? 'Vin_nom / (2·(Vout+Vd))' : 'Vin_nom / (Vout+Vd)'}（基于额定输入，谐振频率处 M=1） | ${r.n.toFixed(3)} |
 | 等效负载 Rac | 8n²Vout² / (π²·Pout) | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout)).toFixed(2)} Ω |
 | 特征阻抗 Zr | Rac / Q | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout) / r.q).toFixed(2)} Ω |
 | 谐振频率 fr | 1 / (2π·√(Lr·Cr)) | ${(r.fr / 1000).toFixed(1)} kHz |
@@ -78,12 +78,12 @@ export default function Report() {
 
 ## 4. 增益分析（FHA 方法）
 
-- **所需增益**（Vin_min 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
-- **所需增益**（Vin_max 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMax : (r.n * p.vout) / p.vinMax).toFixed(3)}
+- **所需增益**（Vin_min 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
+- **所需增益**（Vin_max 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMax : (r.n * (p.vout + p.vd)) / p.vinMax).toFixed(3)}
 - **峰值增益 M_max**: ${r.mMax.toFixed(3)}
-- **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin)) - 1) * 100).toFixed(1)}%
+- **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
-${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 k 或 Q。'}
+${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 k 或 Q。'}
 
 ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
 
@@ -191,13 +191,13 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
   const racVal = hasData ? (8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout) : 0
   const mReqMin = hasData
     ? p.topology === 'half-bridge'
-      ? (2 * r.n * p.vout) / p.vinMin
-      : (r.n * p.vout) / p.vinMin
+      ? (2 * r.n * (p.vout + p.vd)) / p.vinMin
+      : (r.n * (p.vout + p.vd)) / p.vinMin
     : 0
   const mReqMax = hasData
     ? p.topology === 'half-bridge'
-      ? (2 * r.n * p.vout) / p.vinMax
-      : (r.n * p.vout) / p.vinMax
+      ? (2 * r.n * (p.vout + p.vd)) / p.vinMax
+      : (r.n * (p.vout + p.vd)) / p.vinMax
     : 0
   const gainMargin = hasData ? ((r.mMax / mReqMin - 1) * 100) : 0
 
