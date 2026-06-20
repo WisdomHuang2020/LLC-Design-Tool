@@ -369,7 +369,8 @@ export default function Curves() {
               {Q_PRESETS.map((q, i) => (
                 <Line
                   key={q}
-                  type="monotone"
+                  type="linear"
+                  isAnimationActive={false}
                   dataKey={`Q_${q}`}
                   stroke={Q_COLORS[i]}
                   strokeWidth={2}
@@ -378,7 +379,8 @@ export default function Curves() {
                 />
               ))}
               <Line
-                type="monotone"
+                type="linear"
+                isAnimationActive={false}
                 dataKey="currentQ"
                 stroke="#f59e0b"
                 strokeWidth={2.5}
@@ -477,7 +479,8 @@ export default function Curves() {
                   }}
                 />
                 <Line
-                  type="monotone"
+                  type="linear"
+                  isAnimationActive={false}
                   dataKey="mag"
                   stroke="#14b8a6"
                   strokeWidth={2}
@@ -562,7 +565,8 @@ export default function Curves() {
                 />
                 <ReferenceLine y={0} stroke="#404040" />
                 <Line
-                  type="monotone"
+                  type="linear"
+                  isAnimationActive={false}
                   dataKey="phase"
                   stroke="#2dd4bf"
                   strokeWidth={2}
