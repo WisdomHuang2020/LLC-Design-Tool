@@ -19,6 +19,7 @@ export interface DesignParameters {
   td: number
   vd: number
   ioMax: number
+  lambda: number
 }
 
 export interface CalculatedResults {
@@ -48,6 +49,13 @@ export interface CalculatedResults {
   gNom: number
   rac: number
   zr: number
+  // 电流与ZVS时间
+  irRms: number
+  imRms: number
+  zvsTimeOk: boolean
+  tZvs: number
+  // 增益曲线数据
+  gainCurveData: Array<{fn: number; m: number}>
 }
 
 const defaultParams: DesignParameters = {
@@ -69,6 +77,7 @@ const defaultParams: DesignParameters = {
   td: 300,        // 死区时间 (ns)
   vd: 0.5,        // 输出二极管压降 (V)
   ioMax: 25,      // 最大输出电流 (A)
+  lambda: 5,      // 电感比 Lm/Lr
 }
 
 interface DesignContextType {
