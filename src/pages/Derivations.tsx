@@ -179,14 +179,15 @@ export default function Derivations() {
           </p>
 
           <p className="text-text-secondary mt-4 mb-2">
-            半桥/全桥逆变器输出的方波电压可展开为傅里叶级数：
+            全桥逆变器输出的方波电压可展开为傅里叶级数（半桥幅值为其一半）：
           </p>
-          <MathBlock latex="v_{AB}(t) = \\frac{4V_{in}}{\\pi} \\sum_{\\substack{n=1 \\\\ \\text{ odd}}}^{\\infty} \\frac{1}{n} \\sin(n\\omega_s t)" />
+          <MathBlock latex="v_{AB}^{FB}(t) = \\frac{4V_{in}}{\\pi} \\sum_{\\substack{n=1 \\\\ \\text{ odd}}}^{\\infty} \\frac{1}{n} \\sin(n\\omega_s t)" />
+          <MathBlock latex="v_{AB}^{HB}(t) = \\frac{2V_{in}}{\\pi} \\sum_{\\substack{n=1 \\\\ \\text{ odd}}}^{\\infty} \\frac{1}{n} \\sin(n\\omega_s t)" />
 
           <p className="text-text-secondary mt-4 mb-2">
             FHA假设仅保留基波（n=1）分量：
           </p>
-          <MathBlock latex="v_{FHA}(t) = \\frac{4V_{in}}{\\pi} \\sin(\\omega_s t)" />
+          <MathBlock latex="v_{FHA}^{FB}(t) = \\frac{4V_{in}}{\\pi} \\sin(\\omega_s t), \\quad v_{FHA}^{HB}(t) = \\frac{2V_{in}}{\\pi} \\sin(\\omega_s t)" />
 
           <HighlightBox type="info">
             <strong>关键假设：</strong>
@@ -196,12 +197,13 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             基波分量的峰值和有效值：
           </p>
-          <MathBlock latex="V_{FHA,peak} = \\frac{4V_{in}}{\\pi}, \\quad V_{FHA,rms} = \\frac{2\\sqrt{2}V_{in}}{\\pi}" />
+          <MathBlock latex="V_{FHA,peak}^{FB} = \\frac{4V_{in}}{\\pi}, \\quad V_{FHA,rms}^{FB} = \\frac{2\\sqrt{2}V_{in}}{\\pi}" />
+          <MathBlock latex="V_{FHA,peak}^{HB} = \\frac{2V_{in}}{\\pi}, \\quad V_{FHA,rms}^{HB} = \\frac{\\sqrt{2}V_{in}}{\\pi}" />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="V_{FHA} = \\frac{4V_{in}}{\\pi}"
+              latex="V_{FHA}^{FB} = \\frac{4V_{in}}{\\pi}, \\quad V_{FHA}^{HB} = \\frac{2V_{in}}{\\pi}"
               important
             />
           </div>
@@ -475,9 +477,13 @@ export default function Derivations() {
           <MathBlock latex="I_{r,rms}(f_{r1}) \\approx \\frac{2\\sqrt{2}V_{in}}{\\pi R_{ac}} = \\frac{2\\sqrt{2}V_{in}}{\\pi} \\cdot \\frac{Q}{Z_0}" />
 
           <p className="text-text-secondary mt-4 mb-2">
-            磁化电流有效值（仅在L_m上）：
+            磁化电流有效值（仅在L_m上）。磁化电感并联在变压器初级，其电压为初级基波电压：
           </p>
-          <MathBlock latex="I_{m,rms} = \\frac{V_{out,ac}}{\\omega_s L_m} = \\frac{2\\sqrt{2}nV_{out}}{\\pi \\omega_s L_m}" />
+          <MathBlock latex="I_{m,rms} = \\frac{V_{FHA,rms}}{\\omega_s L_m}" />
+          <p className="text-text-secondary mt-4 mb-2">
+            在谐振频率处，反射到初级的次级电压与初级基波电压平衡，因此也可写成（全桥/半桥）：
+          </p>
+          <MathBlock latex="I_{m,rms} = \\frac{2\\sqrt{2}nV_{out}}{\\pi \\omega_s L_m} \\; (\\text{全桥}), \\quad \\frac{\\sqrt{2}nV_{out}}{\\pi \\omega_s L_m} \\; (\\text{半桥})" />
 
           <HighlightBox type="warning">
             <strong>峰值电流：</strong>
@@ -487,12 +493,13 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             次级电流有效值（整流后）：
           </p>
-          <MathBlock latex="I_{sec,rms} = \\frac{\\pi}{2\\sqrt{2}} I_{out} \\approx 1.11 \\, I_{out}" />
+          <MathBlock latex="I_{sec,rms}^{full} = \\frac{\\pi}{2\\sqrt{2}} I_{out} \\approx 1.11 \\, I_{out} \\quad (\\text{全波/全桥整流})" />
+          <MathBlock latex="I_{sec,rms}^{CT} = \\frac{\\pi}{4} I_{out} \\approx 0.785 \\, I_{out} \\quad (\\text{中心抽头：每绕组半波})" />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="I_{r,rms} = \\frac{2\\sqrt{2}V_{in}}{\\pi |Z_{in}|}, \\quad I_{m,rms} = \\frac{2\\sqrt{2}nV_{out}}{\\pi \\omega_s L_m}"
+              latex="I_{r,rms}^{FB} = \\frac{2\\sqrt{2}V_{in}}{\\pi |Z_{in}|}, \\quad I_{m,rms}^{FB} = \\frac{2\\sqrt{2}nV_{out}}{\\pi \\omega_s L_m}"
               important
             />
           </div>

@@ -34,27 +34,33 @@ function calcImpedance(fn: number, lambda: number, Q: number) {
 
 function generateData(lambda: number, Q: number) {
   const gainData: Array<Record<string, number>> = []
-  const impedanceData: Array<{ fn: number; mag: number | null; phase: number | null }> = []
+  const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
+  let maxGain = 0
 
   for (let fn = 0.0; fn <= 2.0; fn += 0.005) {
     const f = parseFloat(fn.toFixed(3))
 
     const gainPoint: Record<string, number> = { fn: f }
     Q_PRESETS.forEach((q) => {
-      gainPoint[`Q_${q}`] = calcGain(f, lambda, q)
+      const g = calcGain(f, lambda, q)
+      const safeG = Number.isFinite(g) ? g : 0
+      gainPoint[`Q_${q}`] = safeG
+      if (safeG > maxGain) maxGain = safeG
     })
-    gainPoint.currentQ = calcGain(f, lambda, Q)
+    const g = calcGain(f, lambda, Q)
+    const safeG = Number.isFinite(g) ? g : 0
+    gainPoint.currentQ = safeG
+    if (safeG > maxGain) maxGain = safeG
     gainData.push(gainPoint)
 
-    if (f === 0) {
-      impedanceData.push({ fn: f, mag: null, phase: null })
-    } else {
-      const { mag, phase } = calcImpedance(f, lambda, Q)
+    if (f === 0) continue
+    const { mag, phase } = calcImpedance(f, lambda, Q)
+    if (Number.isFinite(mag) && Number.isFinite(phase)) {
       impedanceData.push({ fn: f, mag, phase })
     }
   }
 
-  return { gainData, impedanceData }
+  return { gainData, impedanceData, maxGain }
 }
 
 export default function Curves() {
@@ -78,7 +84,7 @@ export default function Curves() {
     setCurves({ lambda, q: Q })
   }, [lambda, Q, setCurves])
 
-  const { gainData, impedanceData } = useMemo(
+  const { gainData, impedanceData, maxGain } = useMemo(
     () => generateData(lambda, Q),
     [lambda, Q]
   )
@@ -314,7 +320,7 @@ export default function Curves() {
                 }}
               />
               <YAxis
-                domain={[0, 2]}
+                domain={[0, Math.max(2, Math.ceil(maxGain * 1.1))]}
                 stroke="#a3a3a3"
                 tick={{
                   fill: '#a3a3a3',

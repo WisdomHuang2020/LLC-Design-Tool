@@ -344,7 +344,7 @@ function GainCurveSVG() {
         opacity="0.9"
       />
       <path
-        d="M 20 200 Q 60 195 100 170 Q 110 150 120 125 L 200 120 Q 230 125 270 130 Q 320 140 380 150"
+        d="M 20 200 Q 60 190 100 165 Q 115 145 120 135 L 200 120 Q 250 130 300 140 Q 340 150 380 160"
         fill="none"
         stroke="#f5f5f5"
         strokeWidth="2"

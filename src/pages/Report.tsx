@@ -55,7 +55,7 @@ export default function Report() {
 | 目标效率 | ${p.efficiency} | % |
 | 开关频率 | ${p.fsw} | kHz |
 | 拓扑 | ${p.topology === 'half-bridge' ? '半桥' : '全桥'} | — |
-| 整流方式 | ${p.rectifier === 'full-wave' ? '全波' : p.rectifier === 'center-tapped' ? '中心抽头' : '同步整流'} | — |
+| 整流方式 | ${p.rectifier === 'full-wave' ? '全波' : p.rectifier === 'center-tapped' ? '中心抽头' : p.rectifier === 'synchronous' ? '同步整流（全桥）' : '同步整流（中心抽头）'} | — |
 | 负载范围 | ${p.loadMin}% ~ ${p.loadMax}% | — |
 
 ## 2. 推导参数
@@ -86,25 +86,27 @@ export default function Report() {
 
 ${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 λ 或 Q。'}
 
+${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
+
 ## 5. 电流估算（FHA 等效）
 
 | 参数 | 数值 | 说明 |
 |------|------|------|
 | 初级电流 RMS | ${r.ipRms.toFixed(2)} A | 谐振腔电流，含励磁分量 |
-| 次级电流 RMS | ${r.isRms.toFixed(2)} A | ${p.rectifier === 'center-tapped' ? '中心抽头整流：每个绕组半波导通' : '全波整流：方波等效'} |
+| 次级电流 RMS | ${r.isRms.toFixed(2)} A | ${p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped' ? '中心抽头整流：每个绕组半波导通' : '全波整流：方波等效'} |
 | 输出电流 Io | ${(p.pout / p.vout).toFixed(2)} A | 直流输出电流 |
 
 ## 6. 工作点与 ZVS 分析
 
-- **ZVS 条件**: ${r.zvsMargin ? '满足' : '不满足'}（相位裕量判断，fn ≥ 1 时）
-- **开关频率范围**: 设计在感性区运行（fn ≥ 1），保证 ZVS
+- **ZVS 条件**: ${r.zvsMargin ? '满足' : '不满足'}（感性区运行，Region 1 或 Region 2 均可实现 ZVS）
+- **开关频率范围**: ${r.designFeasible === false ? '当前参数不可行，无法给出频率范围' : `fmin=${(r.fmin / 1000).toFixed(1)} kHz ~ fmax=${Number.isFinite(r.fmax) ? (r.fmax / 1000).toFixed(1) : '—'} kHz，感性区运行保证 ZVS`}
 
 ## 7. 应力分析
 
 | 器件 | 电压应力 | 电流应力 |
 |------|----------|----------|
 | 初级 MOSFET | ${Math.ceil(p.topology === 'half-bridge' ? p.vinMax : p.vinMax * 1.2)} V (耐压建议) | ${(r.ipRms * 2.5).toFixed(1)} A (RMS × 2.5) |
-| 次级整流 | ${Math.ceil(p.vout * (p.rectifier === 'center-tapped' ? 2.5 : 2))} V (耐压建议) | ${(r.isRms * 1.5).toFixed(1)} A (RMS × 1.5) |
+| 次级整流 | ${Math.ceil(p.vout * (p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped' ? 2.5 : 2))} V (耐压建议) | ${(r.isRms * 1.5).toFixed(1)} A (RMS × 1.5) |
 | 谐振电容 Cr | ${(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值，近似值) | ${r.ipRms.toFixed(2)} A (RMS) |
 | 谐振电感 Lr | — | ${r.ipRms.toFixed(2)} A (RMS) |
 
@@ -372,7 +374,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <tr className="border-b border-border/50 print:border-gray-200">
                       <td className="px-3 py-2">整流方式</td>
                       <td className="px-3 py-2">
-                        {p.rectifier === 'full-wave' ? '全波整流' : p.rectifier === 'center-tapped' ? '中心抽头' : '同步整流'}
+                        {p.rectifier === 'full-wave' ? '全波整流' : p.rectifier === 'center-tapped' ? '中心抽头' : p.rectifier === 'synchronous' ? '同步整流（全桥）' : '同步整流（中心抽头）'}
                       </td>
                       <td className="px-3 py-2">—</td>
                     </tr>
@@ -573,7 +575,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     </div>
                     {hasData && (
                       <p className="text-xs text-text-muted mt-2">
-                        {p.rectifier === 'center-tapped'
+                        {p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped'
                           ? '中心抽头整流：每个次级绕组电流为半波，RMS 值与全波整流不同。'
                           : '全波整流：次级电流为方波，RMS 值由 FHA 等效计算。'}
                       </p>
@@ -613,7 +615,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <tr className="border-b border-border/50 print:border-gray-200">
                       <td className="px-3 py-2">次级整流</td>
                       <td className="px-3 py-2 font-mono">
-                        {Math.ceil(p.vout * (p.rectifier === 'center-tapped' ? 2.5 : 2))} V (耐压建议)
+                        {Math.ceil(p.vout * (p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped' ? 2.5 : 2))} V (耐压建议)
                       </td>
                       <td className="px-3 py-2 font-mono">
                         {hasData ? (r.isRms * 1.5).toFixed(1) : '—'} A

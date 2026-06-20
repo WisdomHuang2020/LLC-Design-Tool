@@ -371,6 +371,7 @@ interface CalculatedData {
   gMin: number
   gMax: number
   gNom: number
+  designFeasible: boolean
   // 新增字段
   zvsTimeOk: boolean
   tZvs: number
@@ -485,8 +486,9 @@ function calculateLosses(
 
   // 7. Rectifier loss
   let rectLoss = 0
-  if (calc.rectifier === 'synchronous') {
-    const rectSwitches = (calc.rectifier as string) === 'center-tapped' ? 2 : 4
+  const isSync = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
+  if (isSync) {
+    const rectSwitches = calc.rectifier === 'sync-center-tapped' ? 2 : 4
     const isPerSwitch = calc.isRms / Math.sqrt(2)
     rectLoss = rectSwitches * isPerSwitch * isPerSwitch * (lp.syncRectRdsOn / 1000)
   } else {
@@ -607,13 +609,12 @@ export default function Designer() {
     // ─── 步骤4：计算Qmax ───
     const fr = fsw  // 设谐振频率fr = fsw
 
-    // 等效AC电阻
-    const rac =
-      (8 * n * n * voutEff * voutEff) / (Math.PI * Math.PI * pout)
+    // 等效AC电阻：匝比n已用Vout+Vd计算，因此Rac使用实际输出电压Vout
+    const rac = (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
 
-    // 最小负载对应的Rac
+    // 最小负载对应的Rac（负载越轻，等效电阻越大）
     const pMin = pout * (loadMin / 100)
-    const racMin = rac * (pMin / pout)
+    const racMin = rac * (pout / pMin)
 
     // Qmax1：峰值增益约束（Gmax为归一化增益，peakGain直接比较）
     function findQmax1(kVal: number, targetGain: number): number {
@@ -635,15 +636,22 @@ export default function Designer() {
     const qmax1 = findQmax1(k, gMax)
 
     // Qmax2：ZVS条件（死区时间），基于能量守恒推导
-    // fmax估计：基于空载增益公式 fn² = G/(G*(k+1)-k)
-    const fmaxEst = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+    // fmax估计：基于空载增益公式 fn² = G/(G*(k+1)-k)，仅当 gMin >= k/(k+1) 时可行
+    const region1MinGain = k / (k + 1)
+    const fmaxFeasible = gMin >= region1MinGain
+    const fmaxEst = fmaxFeasible
+      ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+      : Infinity
     const cossTotal = Math.max(1, 2 * cossEr + cj)  // 保护：最小1pF
-    const lrMaxZvs = (k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)
-    const qmax2 = lrMaxZvs * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
+    const qmax2 = fmaxFeasible
+      ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
+      : Infinity
 
     // Qmax3：Coss能量（谐振腔电容）
     const cEq = Math.max(1, 2 * cossEq + cj)
-    const qmax3 = Math.sqrt(Math.max(0, (k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * Math.max(1e-6, racMin) * cEq))
+    const qmax3 = fmaxFeasible
+      ? Math.sqrt(Math.max(0, (k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * Math.max(1e-6, racMin) * cEq))
+      : Infinity
 
     // 取Qmax，留95%裕量
     const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
@@ -657,12 +665,21 @@ export default function Designer() {
 
     // ─── 步骤6：验证 ───
     // fmax/fmin：从空载增益公式精确推导
-    const fmax = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
-    const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
+    // fmax 对应 Region 1（fn>1），要求 gMin >= k/(k+1)
+    const fmax = fmaxFeasible
+      ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+      : Infinity
+    // fmin 对应 Region 2（fn<1），分母为 +k
+    const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) + k)))
+
+    // 整体设计可行性
+    const designFeasible = fmaxFeasible
 
     // ZVS能量验证
     // 只有励磁电感 Lm 中的储能参与ZVS，Lr 在死区时间内与 Cr 谐振，不贡献ZVS能量
-    const imDeadtime = vinMin / Math.max(1e-9, 4 * fmax * lm)
+    // 半桥谐振腔电压幅值为 Vin/2，因此分母为 8*f*Lm；全桥为 4*f*Lm
+    const fmaxZvs = Number.isFinite(fmax) ? fmax : fr
+    const imDeadtime = vinMin / Math.max(1e-9, (topology === 'half-bridge' ? 8 : 4) * fmaxZvs * lm)
     const er = 0.5 * lm * imDeadtime * imDeadtime
     const ec = 0.5 * cossTotal * vinMax * vinMax
     const zvsMargin = er >= ec
@@ -682,7 +699,7 @@ export default function Designer() {
     // 中心抽头：每个绕组电流是半波正弦，峰值 = π·Io/2，有效值 = 峰值/2 = π·Io/4
     // 全波：isRms = π·Io/(2√2) ≈ 1.11·Io
     let isRms: number
-    if (rectifier === 'center-tapped') {
+    if (rectifier === 'center-tapped' || rectifier === 'sync-center-tapped') {
       isRms = (Math.PI / 4) * io
     } else {
       isRms = (Math.PI / (2 * Math.sqrt(2))) * io
@@ -755,6 +772,7 @@ export default function Designer() {
       gMin,
       gMax,
       gNom,
+      designFeasible,
       gainCurveData,
     }
 
@@ -783,6 +801,13 @@ export default function Designer() {
       fmin,
       kMin,
     })
+
+    if (!designFeasible) {
+      s.unshift({
+        text: `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 λ 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
+        level: 'critical',
+      })
+    }
 
     setCalculated(data)
     setLocalSuggestions(s)
@@ -819,6 +844,7 @@ export default function Designer() {
       imRms,
       zvsTimeOk,
       tZvs,
+      designFeasible,
       gainCurveData,
     })
     setSuggestions(s.map((item) => item.text))
@@ -952,7 +978,8 @@ export default function Designer() {
                 >
                   <option value="full-wave">全波整流</option>
                   <option value="center-tapped">中心抽头</option>
-                  <option value="synchronous">同步整流</option>
+                  <option value="synchronous">同步整流（全桥）</option>
+                  <option value="sync-center-tapped">同步整流（中心抽头）</option>
                 </select>
               </div>
               <div>
@@ -1119,6 +1146,20 @@ export default function Designer() {
                 </div>
               </div>
 
+              {!calculated.designFeasible && (
+                <div className="card-surface p-4 border border-danger/30 bg-danger/10">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-danger font-medium">设计参数不可行</p>
+                      <p className="text-xs text-text-secondary mt-1">
+                        高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或降低输入电压上限。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Calculated Results */}
               <div className={cardClass}>
                 <button
@@ -1173,8 +1214,8 @@ export default function Designer() {
                         formula="数值寻优峰值"
                         highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
                       />
-                      <ResultItem label="fmax（高输入）" value={(calculated.fmax / 1000).toFixed(1)} unit="kHz" formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
-                      <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)-k)]" />
+                      <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
+                      <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)+k)]" />
                       <ResultItem
                         label="ZVS能量裕量"
                         value={calculated.zvsMargin ? '可达' : '不足'}
@@ -1192,11 +1233,11 @@ export default function Designer() {
                       <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = V_in1 / Rac（谐振频率处近似）" />
                       <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im = Vin/(4·f·Lm)" />
                       <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
-                      <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
+                      <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
                       <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
                       <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
                       <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
-                      <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²(Vout+Vd)²/(π²Po)" />
+                      <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
                     </div>
 
                     {/* 增益-频率曲线 */}
@@ -1391,7 +1432,7 @@ export default function Designer() {
                         <ul className="text-sm text-text-secondary space-y-1">
                           <li>
                             类型:{' '}
-                            {calculated.rectifier === 'synchronous'
+                            {calculated.rectifier === 'synchronous' || calculated.rectifier === 'sync-center-tapped'
                               ? '同步整流 MOSFET'
                               : calculated.rectifier === 'center-tapped'
                               ? '肖特基二极管（中心抽头）'
@@ -1400,7 +1441,7 @@ export default function Designer() {
                           <li>
                             耐压: ≥{' '}
                             <span className="text-text-primary font-mono">
-                              {Math.ceil(calculated.vout * (calculated.rectifier === 'center-tapped' ? 2.5 : 2))}
+                              {Math.ceil(calculated.vout * (calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 2.5 : 2))}
                             </span>{' '}
                             V
                           </li>
@@ -1652,8 +1693,8 @@ function LossAnalysisPanel({
               <input type="number" className={inputClass} value={params.skinF0} onChange={(e) => update('skinF0', Number(e.target.value))} />
             </div>
             <div>
-              <label className={labelClass}>{calc.rectifier === 'synchronous' ? '同步整流 Rds(on) (mΩ)' : '整流 Vf (V)'}</label>
-              <input type="number" step="0.1" className={inputClass} value={calc.rectifier === 'synchronous' ? params.syncRectRdsOn : params.rectVf} onChange={(e) => update(calc.rectifier === 'synchronous' ? 'syncRectRdsOn' : 'rectVf', Number(e.target.value))} />
+              <label className={labelClass}>{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? '同步整流 Rds(on) (mΩ)' : '整流 Vf (V)'}</label>
+              <input type="number" step="0.1" className={inputClass} value={calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? params.syncRectRdsOn : params.rectVf} onChange={(e) => update(calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'syncRectRdsOn' : 'rectVf', Number(e.target.value))} />
             </div>
             <div>
               <label className={labelClass}>Lr DCR (mΩ)</label>
@@ -1786,7 +1827,7 @@ function LossAnalysisPanel({
                   <td className="py-2 pr-4 font-medium">整流损耗</td>
                   <td className="py-2 pr-4 font-mono">{losses.rectLoss.toFixed(3)}</td>
                   <td className="py-2 pr-4">{((losses.rectLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                  <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' ? 'P = Is²·Rds(on)' : 'P = Vf·Io'}</td>
+                  <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'P = Is²·Rds(on)' : 'P = Vf·Io'}</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4 font-medium">谐振元件损耗</td>
