@@ -955,7 +955,7 @@ export default function Operation() {
                 基于 FHA（First Harmonic Approximation）方法，完整的 LLC 电压增益方程为：
               </p>
               <MathBlock
-                latex="M(f_n, k, Q) = \frac{f_n^2 \cdot k}{\sqrt{(f_n^2(1+k)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot k^2}}"
+                latex="M(f_n, k, Q) = \frac{f_n^2 \cdot k}{\sqrt{(f_n^2(1+k)-1)^2 + k^2 Q^2 (f_n^2-1)^2}}"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
