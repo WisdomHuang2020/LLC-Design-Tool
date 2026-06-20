@@ -38,7 +38,7 @@ interface DesignSnapshot {
     cr: number
     lm: number
     q: number
-    lambda: number
+    k: number
     mMax: number
     mRequired: number
     zvsMargin: boolean
@@ -63,8 +63,8 @@ function saveDesigns(designs: DesignSnapshot[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(designs))
 }
 
-function calcGain(fn: number, lambda: number, q: number): number {
-  const a = 1 + (1 / lambda) * (1 - 1 / (fn * fn))
+function calcGain(fn: number, k: number, q: number): number {
+  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
   const b = q * (fn - 1 / fn)
   return 1 / Math.sqrt(a * a + b * b)
 }
@@ -86,7 +86,7 @@ export default function DesignCompare() {
     for (let fn = 0.5; fn <= 2.0; fn += 0.02) {
       const row: Record<string, number> = { fn }
       selectedDesigns.forEach((d) => {
-        row[`${d.name}_M`] = calcGain(fn, d.results.lambda, d.results.q)
+        row[`${d.name}_M`] = calcGain(fn, d.results.k, d.results.q)
       })
       data.push(row)
     }
@@ -138,10 +138,10 @@ export default function DesignCompare() {
     const effScore = Math.min(d.params.efficiency / 97, 1) * 40
     // Frequency range score: narrow range is better
     // Approximate fmax/fmin from gain curve: at mRequired, find fn
-    // Simplified: use Q and lambda to estimate
+    // Simplified: use Q and k to estimate
     const q = d.results.q
-    const lambda = d.results.lambda
-    const freqRangeScore = Math.max(0, 1 - (q * 0.5 + lambda)) * 30
+    const k = d.results.k
+    const freqRangeScore = Math.max(0, 1 - (q * 0.5 + k)) * 30
     // ZVS margin score
     const zvsScore = d.results.zvsMargin ? 30 : 0
     return effScore + freqRangeScore + zvsScore
@@ -275,7 +275,7 @@ export default function DesignCompare() {
                     { key: 'cr', label: 'Cr (nF)', fmt: (v: number) => (v * 1e9).toFixed(2) },
                     { key: 'lm', label: 'Lm (μH)', fmt: (v: number) => (v * 1e6).toFixed(2) },
                     { key: 'q', label: 'Q', fmt: (v: number) => v.toFixed(2) },
-                    { key: 'lambda', label: 'λ', fmt: (v: number) => v.toFixed(2) },
+                    { key: 'k', label: 'k', fmt: (v: number) => v.toFixed(2) },
                     { key: 'efficiency', label: 'η (%)', fmt: (v: number) => v.toFixed(1) },
                     { key: 'mMax', label: 'M_max', fmt: (v: number) => v.toFixed(3) },
                     { key: 'mRequired', label: 'M_req', fmt: (v: number) => v.toFixed(3) },
@@ -398,7 +398,7 @@ export default function DesignCompare() {
                             stroke={COLORS[i % COLORS.length]}
                             strokeWidth={2}
                             dot={false}
-                            name={`${d.name} (Q=${d.results.q.toFixed(2)}, λ=${d.results.lambda.toFixed(2)})`}
+                            name={`${d.name} (Q=${d.results.q.toFixed(2)}, k=${d.results.k.toFixed(2)})`}
                           />
                         ))}
                       </LineChart>

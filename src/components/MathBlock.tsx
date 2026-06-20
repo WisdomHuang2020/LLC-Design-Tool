@@ -6,9 +6,18 @@ interface MathBlockProps {
   display?: boolean
   important?: boolean
   multiline?: boolean
+  label?: string
+  stepNumber?: number
 }
 
-export default function MathBlock({ latex, display = true, important = false, multiline = false }: MathBlockProps) {
+export default function MathBlock({ 
+  latex, 
+  display = true, 
+  important = false, 
+  multiline = false,
+  label,
+  stepNumber 
+}: MathBlockProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -17,16 +26,22 @@ export default function MathBlock({ latex, display = true, important = false, mu
         throwOnError: false,
         displayMode: display,
         macros: {
-          '\\vec': '\\mathbf',
+          '\vec': '\mathbf',
         },
       })
     }
   }, [latex, display])
 
   return (
-    <div
-      className={`math-block ${important ? 'important' : ''} ${multiline ? 'multiline' : ''} my-4`}
-    >
+    <div className={`math-block ${important ? 'important' : ''} ${multiline ? 'multiline' : ''} ${label || stepNumber ? 'has-label' : ''} my-4`}>
+      {(label || stepNumber !== undefined) && (
+        <div className="math-block-label">
+          {stepNumber !== undefined && (
+            <span className="step-number">Step {stepNumber}</span>
+          )}
+          {label && <span className="label-text">{label}</span>}
+        </div>
+      )}
       <div ref={ref} />
     </div>
   )

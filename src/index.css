@@ -50,6 +50,68 @@
   .math-block.important {
     border-left: 4px solid var(--color-primary);
   }
+  .math-block.has-label {
+    padding: 0.5rem 1.5rem 1.5rem;
+  }
+  .math-block-label {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    padding-top: 0.5rem;
+  }
+  .math-block-label .step-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary-light);
+    background: var(--color-primary-dark);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+  .math-block-label .label-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+  }
+  .derivation-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .derivation-step-marker {
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-primary-dark);
+    color: var(--color-primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    margin-top: 0.25rem;
+  }
+  .derivation-step-content {
+    flex: 1;
+  }
+  .math-block .katex-display {
+    margin: 0.5rem 0;
+  }
+  .math-block .katex-display .katex {
+    font-size: 1.15em;
+  }
+  .katex-display .katex .base {
+    margin: 0.25em 0;
+  }
+  .math-block.important .katex-display .katex {
+    font-size: 1.25em;
+    font-weight: 500;
+  }
   .card-surface {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);

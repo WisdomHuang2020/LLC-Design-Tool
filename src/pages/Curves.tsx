@@ -17,22 +17,22 @@ import { Link } from 'react-router-dom'
 const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
 const Q_COLORS = ['#14b8a6', '#0f766e', '#5eead4', '#2dd4bf', '#0d9488']
 
-function calcGain(fn: number, lambda: number, Q: number): number {
-  const a = 1 + (1 / lambda) * (1 - 1 / (fn * fn))
+function calcGain(fn: number, k: number, Q: number): number {
+  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
   const b = Q * (fn - 1 / fn)
   return 1 / Math.sqrt(a * a + b * b)
 }
 
-function calcImpedance(fn: number, lambda: number, Q: number) {
-  const denom = Q * Q + fn * fn * lambda * lambda
-  const re = (Q * fn * fn * lambda * lambda) / denom
-  const im = (fn - 1 / fn) + (Q * Q * fn * lambda) / denom
+function calcImpedance(fn: number, k: number, Q: number) {
+  const denom = Q * Q + fn * fn * k * k
+  const re = (Q * fn * fn * k * k) / denom
+  const im = (fn - 1 / fn) + (Q * Q * fn * k) / denom
   const mag = Math.sqrt(re * re + im * im)
   const phase = Math.atan2(im, re) * (180 / Math.PI)
   return { mag, phase }
 }
 
-function generateData(lambda: number, Q: number) {
+function generateData(k: number, Q: number) {
   const gainData: Array<Record<string, number>> = []
   const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
   let maxGain = 0
@@ -42,18 +42,18 @@ function generateData(lambda: number, Q: number) {
 
     const gainPoint: Record<string, number> = { fn: f }
     Q_PRESETS.forEach((q) => {
-      const g = calcGain(f, lambda, q)
+      const g = calcGain(f, k, q)
       const safeG = Number.isFinite(g) ? g : 0
       gainPoint[`Q_${q}`] = safeG
       if (safeG > maxGain) maxGain = safeG
     })
-    const g = calcGain(f, lambda, Q)
+    const g = calcGain(f, k, Q)
     const safeG = Number.isFinite(g) ? g : 0
     gainPoint.currentQ = safeG
     if (safeG > maxGain) maxGain = safeG
     gainData.push(gainPoint)
 
-    const { mag, phase } = calcImpedance(f, lambda, Q)
+    const { mag, phase } = calcImpedance(f, k, Q)
     if (Number.isFinite(mag) && Number.isFinite(phase)) {
       impedanceData.push({ fn: f, mag, phase })
     }
@@ -66,29 +66,29 @@ export default function Curves() {
   const { results, curves, setCurves } = useDesign()
   const hasResults = results !== null
 
-  const [lambda, setLambda] = useState(curves.lambda)
+  const [k, setK] = useState(curves.k)
   const [Q, setQ] = useState(curves.q)
 
   // Sync with results when they change (Designer -> Curves linkage)
   useEffect(() => {
     if (results) {
-      setLambda(results.lambda)
+      setK(results.k)
       setQ(results.q)
     }
-  }, [results?.lambda, results?.q])
+  }, [results?.k, results?.q])
 
   // Persist manual slider changes
   useEffect(() => {
-    setCurves({ lambda, q: Q })
-  }, [lambda, Q, setCurves])
+    setCurves({ k, q: Q })
+  }, [k, Q, setCurves])
 
   const { gainData, impedanceData, maxGain } = useMemo(
-    () => generateData(lambda, Q),
-    [lambda, Q]
+    () => generateData(k, Q),
+    [k, Q]
   )
 
   const fr1 = 1.0
-  const fr2 = 1 / Math.sqrt(1 + lambda)
+  const fr2 = 1 / Math.sqrt(1 + k)
 
   const gainChartRef = useRef<HTMLDivElement>(null)
   const impedanceChartRef = useRef<HTMLDivElement>(null)
@@ -129,9 +129,9 @@ export default function Curves() {
 
   const syncToDesign = useCallback(() => {
     if (results) {
-      setLambda(results.lambda)
+      setK(results.k)
       setQ(results.q)
-      setCurves({ lambda: results.lambda, q: results.q })
+      setCurves({ k: results.k, q: results.q })
     }
   }, [results, setCurves])
 
@@ -162,7 +162,7 @@ export default function Curves() {
         <h1 className="text-4xl font-bold text-gradient mb-4">特性曲线分析</h1>
         <p className="text-text-secondary max-w-2xl">
           LLC 谐振变换器的增益特性与阻抗特性随归一化频率的变化关系。
-          调节 λ 和 Q 参数，观察不同工况下的曲线形态。
+          调节 k 和 Q 参数，观察不同工况下的曲线形态。
         </p>
       </div>
 
@@ -177,7 +177,7 @@ export default function Curves() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm font-mono text-text-secondary">
-              <span>λ = {results.lambda.toFixed(2)}</span>
+              <span>k = {results.k.toFixed(2)}</span>
               <span>Q = {results.q.toFixed(3)}</span>
               <span className="text-text-muted">|</span>
               <span>fr = {(results.fr / 1000).toFixed(1)} kHz</span>
@@ -205,11 +205,11 @@ export default function Curves() {
       {/* Control Panel */}
       <div className="card-surface p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* λ Slider */}
+          {/* k Slider */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-sm font-medium text-text-primary font-mono">
-                λ = {lambda.toFixed(2)}
+                k = {k.toFixed(2)}
               </label>
               <span className="text-xs text-text-muted">电感比 Lm/Lr</span>
             </div>
@@ -218,8 +218,8 @@ export default function Curves() {
               min={2.0}
               max={10.0}
               step={0.1}
-              value={lambda}
-              onChange={(e) => setLambda(parseFloat(e.target.value))}
+              value={k}
+              onChange={(e) => setK(parseFloat(e.target.value))}
               className="w-full h-2 bg-surface-elevated rounded-lg appearance-none cursor-pointer"
               style={{ accentColor: '#14b8a6' }}
             />
@@ -266,7 +266,7 @@ export default function Curves() {
           {hasResults && (
             <div className="flex items-center gap-2 text-primary-light">
               <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-              <span>设计点: λ = {results.lambda.toFixed(2)}, Q = {results.q.toFixed(3)}</span>
+              <span>设计点: k = {results.k.toFixed(2)}, Q = {results.q.toFixed(3)}</span>
             </div>
           )}
         </div>
@@ -282,7 +282,7 @@ export default function Curves() {
             onClick={() =>
               exportChart(
                 gainChartRef,
-                `gain_curve_lambda${lambda.toFixed(2)}_Q${Q.toFixed(1)}.png`
+                `gain_curve_k${k.toFixed(2)}_Q${Q.toFixed(1)}.png`
               )
             }
             className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"
@@ -403,7 +403,7 @@ export default function Curves() {
               onClick={() =>
                 exportChart(
                   impedanceChartRef,
-                  `impedance_mag_lambda${lambda.toFixed(2)}_Q${Q.toFixed(1)}.png`
+                  `impedance_mag_k${k.toFixed(2)}_Q${Q.toFixed(1)}.png`
                 )
               }
               className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"

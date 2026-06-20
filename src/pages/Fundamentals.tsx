@@ -698,7 +698,7 @@ export default function Fundamentals() {
                     励磁电感 Magnetizing Inductance
                   </h4>
                   <p className="text-text-secondary text-sm leading-relaxed">
-                    并联在谐振回路与变压器之间，不参与第一谐振频率 fr1，但影响第二谐振频率 fr2。LLC 存在两个谐振频率：fr1（Lr 与 Cr）和 fr2（Lr+Lm 与 Cr），其中 fr2 = fr1 / √(1+λ)。Lm 决定空载增益与 ZVS 范围，λ = Lm/Lr 是关键设计参数。
+                    并联在谐振回路与变压器之间，不参与第一谐振频率 fr1，但影响第二谐振频率 fr2。LLC 存在两个谐振频率：fr1（Lr 与 Cr）和 fr2（Lr+Lm 与 Cr），其中 fr2 = fr1 / √(1+k)。Lm 决定空载增益与 ZVS 范围，k = Lm/Lr 是关键设计参数。
                   </p>
                 </div>
               </div>
@@ -796,7 +796,7 @@ export default function Fundamentals() {
                     </code>
                     <br />
                     <code className="text-xs bg-bg px-2 py-1 rounded mt-1 inline-block">
-                      fr2 = fr1 / √(1+λ)
+                      fr2 = fr1 / √(1+k)
                     </code>
                   </td>
                   <td className="py-3 px-4">总电感与 Cr 的谐振频率</td>
@@ -823,7 +823,7 @@ export default function Fundamentals() {
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">电感比</td>
-                  <td className="py-3 px-4 font-mono text-primary-light">λ</td>
+                  <td className="py-3 px-4 font-mono text-primary-light">k</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">Lm / Lr</code>
                   </td>
@@ -861,7 +861,7 @@ export default function Fundamentals() {
               important
             />
             <MathBlock
-              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \lambda}}"
+              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \k}}"
               important
             />
             <MathBlock
@@ -871,7 +871,7 @@ export default function Fundamentals() {
               latex="Q = \frac{Z_r}{R_{ac}}"
             />
             <MathBlock
-              latex="\lambda = \frac{L_m}{L_r}"
+              latex="\k = \frac{L_m}{L_r}"
               important
             />
             <MathBlock
