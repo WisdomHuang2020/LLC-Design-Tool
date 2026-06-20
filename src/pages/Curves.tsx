@@ -34,7 +34,7 @@ function calcImpedance(fn: number, lambda: number, Q: number) {
 
 function generateData(lambda: number, Q: number) {
   const gainData: Array<Record<string, number>> = []
-  const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
+  const impedanceData: Array<{ fn: number; mag: number | null; phase: number | null }> = []
 
   for (let fn = 0.0; fn <= 2.0; fn += 0.005) {
     const f = parseFloat(fn.toFixed(3))
@@ -46,8 +46,12 @@ function generateData(lambda: number, Q: number) {
     gainPoint.currentQ = calcGain(f, lambda, Q)
     gainData.push(gainPoint)
 
-    const { mag, phase } = calcImpedance(f, lambda, Q)
-    impedanceData.push({ fn: f, mag, phase })
+    if (f === 0) {
+      impedanceData.push({ fn: f, mag: null, phase: null })
+    } else {
+      const { mag, phase } = calcImpedance(f, lambda, Q)
+      impedanceData.push({ fn: f, mag, phase })
+    }
   }
 
   return { gainData, impedanceData }
