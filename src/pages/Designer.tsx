@@ -648,9 +648,17 @@ export default function Designer() {
     const fmaxEst = fmaxFeasible
       ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
       : Infinity
-    const cossTotal = Math.max(1e-12, 2 * cossEr + cj)  // 保护：最小1pF = 1e-12 F
+    // Coss 参数区分：
+    // - cossEq：等效输出电容（用于 ZVS 死区时间 / qmax2）
+    // - cossEr：能量相关电容（用于 ZVS 能量 / qmax3 及后续能量校验）
+    const cossZvs = Math.max(1e-12, 2 * cossEq + cj)  // 保护：最小1pF = 1e-12 F
+    const cossTotal = Math.max(1e-12, 2 * cossEr + cj)
+
+    // Qmax2：ZVS条件（死区时间），基于能量守恒推导
+    // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·f_r·L_m 的反推
+    // 若拓扑为全桥或死区定义不同，该系数需重新推导
     const qmax2 = fmaxFeasible
-      ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
+      ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossZvs * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
       : Infinity
 
     // Qmax3：ZVS 能量约束（由励磁电感储能 ≥ Coss 总能量推导出的 Q 上限）

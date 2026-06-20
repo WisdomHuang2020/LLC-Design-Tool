@@ -133,19 +133,19 @@ $$
 f_{max,est} = f_r \sqrt{\frac{G_{min}}{G_{min}(k+1) - k}}
 $$
 
-总寄生电容：
+ZVS 死区时间约束使用**等效输出电容**（与能量相关电容区分）：
 
 $$
-C_{oss,total} = \max\left(10^{-12},\; 2C_{ossEr} + C_j\right)
+C_{oss,zvs} = \max\left(10^{-12},\; 2C_{ossEq} + C_j\right)
 $$
 
 $$
 Q_{max2} =
-\frac{(k+1)V_{in,min}^{2}}{16\,f_{max,est}^{2}\,k^{2}\,C_{oss,total}\,V_{in,max}^{2}}
+\frac{(k+1)V_{in,min}^{2}}{16\,f_{max,est}^{2}\,k^{2}\,C_{oss,zvs}\,V_{in,max}^{2}}
 \times \frac{2\pi f_r}{R_{ac,min}}
 $$
 
-> 注：系数 16 来源于半桥 LLC 死区时间近似公式 $ t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m $ 的反推。
+> 注：系数 16 来源于半桥 LLC 死区时间近似公式 $ t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m $ 的反推，其中 $C_{eq}$ 取等效输出电容 $C_{ossEq}$。
 > 若拓扑为全桥或死区定义不同，该系数需重新推导。
 
 #### Qmax3 — ZVS 能量约束（Coss 能量上限）
