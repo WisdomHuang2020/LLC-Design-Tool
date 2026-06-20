@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDesign, DesignParameters } from '../lib/DesignContext'
 import {
   Calculator,
@@ -19,7 +19,10 @@ import {
   Gauge,
   Save,
   GitCompare,
+  LineChart as LineChartIcon,
+  RotateCcw,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line, ReferenceLine } from 'recharts'
 import CompensationSection from '../components/CompensationSection'
 import DesignCompare, { saveDesignSnapshot } from '../components/DesignCompare'
@@ -545,6 +548,16 @@ export default function Designer() {
     compare: true,
   })
   const [lossParams, setLossParams] = useState<LossParameters>(defaultLossParams)
+  const [needsRecalculation, setNeedsRecalculation] = useState(false)
+  const [lastFormSnapshot, setLastFormSnapshot] = useState<DesignParameters | null>(null)
+
+  // Detect parameter changes → prompt for recalculation
+  useEffect(() => {
+    if (calculated && lastFormSnapshot) {
+      const changed = JSON.stringify(form) !== JSON.stringify(lastFormSnapshot)
+      setNeedsRecalculation(changed)
+    }
+  }, [form, lastFormSnapshot, calculated])
 
   const handleCalculate = () => {
     const vinNom = form.vinNom
@@ -774,6 +787,8 @@ export default function Designer() {
     setCalculated(data)
     setLocalSuggestions(s)
     setParams(form)
+    setLastFormSnapshot({ ...form })
+    setNeedsRecalculation(false)
     setResults({
       n,
       fr,
@@ -1055,12 +1070,22 @@ export default function Designer() {
               </div>
             </div>
 
+            {needsRecalculation && (
+              <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-lg flex items-start gap-2">
+                <RotateCcw className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-accent font-medium">参数已变更</p>
+                  <p className="text-xs text-text-secondary">输入参数已修改，请重新计算以获取最新结果。</p>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleCalculate}
               className="mt-5 w-full bg-primary hover:bg-primary-light text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <Calculator className="w-4 h-4" />
-              计算
+              {needsRecalculation ? '重新计算' : '计算'}
             </button>
           </div>
         </div>
@@ -1069,6 +1094,31 @@ export default function Designer() {
         <div className="lg:col-span-7 space-y-4">
           {calculated && (
             <>
+              {/* Linkage banner */}
+              <div className="card-surface p-4 border border-primary/30">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-sm text-primary-light font-medium">设计参数已同步</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-sm font-mono text-text-secondary">
+                    <span>λ = {calculated.lambda.toFixed(2)}</span>
+                    <span>Q = {calculated.q.toFixed(3)}</span>
+                    <span className="text-text-muted">|</span>
+                    <span>fr = {(calculated.fr / 1000).toFixed(1)} kHz</span>
+                  </div>
+                  <div className="ml-auto">
+                    <Link
+                      to="/curves"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-primary text-white hover:bg-primary-light transition-colors"
+                    >
+                      <LineChartIcon size={14} />
+                      查看增益曲线
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
               {/* Calculated Results */}
               <div className={cardClass}>
                 <button

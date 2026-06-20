@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
 export interface DesignParameters {
   vinMin: number
@@ -55,7 +55,12 @@ export interface CalculatedResults {
   zvsTimeOk: boolean
   tZvs: number
   // 增益曲线数据
-  gainCurveData: Array<{fn: number; m: number}>
+  gainCurveData: Array<{ fn: number; m: number }>
+}
+
+export interface CurvesState {
+  lambda: number
+  q: number
 }
 
 const defaultParams: DesignParameters = {
@@ -71,13 +76,52 @@ const defaultParams: DesignParameters = {
   loadMin: 10,
   loadMax: 100,
   // 新增参数默认值
-  cossEq: 500,    // MOSFET Coss_eq (pF)
-  cossEr: 800,    // MOSFET Coss_er (pF)
-  cj: 100,        // PCB寄生电容 Cj (pF)
-  td: 300,        // 死区时间 (ns)
-  vd: 0.5,        // 输出二极管压降 (V)
-  ioMax: 25,      // 最大输出电流 (A)
-  lambda: 5,      // 电感比 Lm/Lr
+  cossEq: 500,
+  cossEr: 800,
+  cj: 100,
+  td: 300,
+  vd: 0.5,
+  ioMax: 25,
+  lambda: 5,
+}
+
+const defaultCurves: CurvesState = { lambda: 5.0, q: 0.5 }
+
+const STORAGE_KEY = 'llc-design-tool-params'
+const RESULTS_KEY = 'llc-design-tool-results'
+const SUGGESTIONS_KEY = 'llc-design-tool-suggestions'
+const CURVES_KEY = 'llc-design-tool-curves'
+
+function loadParams(): DesignParameters {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) return { ...defaultParams, ...JSON.parse(raw) }
+  } catch { /* ignore */ }
+  return defaultParams
+}
+
+function loadResults(): CalculatedResults | null {
+  try {
+    const raw = localStorage.getItem(RESULTS_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return null
+}
+
+function loadSuggestions(): string[] {
+  try {
+    const raw = localStorage.getItem(SUGGESTIONS_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return []
+}
+
+function loadCurves(): CurvesState {
+  try {
+    const raw = localStorage.getItem(CURVES_KEY)
+    if (raw) return { ...defaultCurves, ...JSON.parse(raw) }
+  } catch { /* ignore */ }
+  return defaultCurves
 }
 
 interface DesignContextType {
@@ -87,6 +131,8 @@ interface DesignContextType {
   setResults: (r: CalculatedResults | null) => void
   suggestions: string[]
   setSuggestions: (s: string[]) => void
+  curves: CurvesState
+  setCurves: (c: CurvesState) => void
 }
 
 const DesignContext = createContext<DesignContextType>({
@@ -96,15 +142,38 @@ const DesignContext = createContext<DesignContextType>({
   setResults: () => {},
   suggestions: [],
   setSuggestions: () => {},
+  curves: defaultCurves,
+  setCurves: () => {},
 })
 
 export function DesignProvider({ children }: { children: ReactNode }) {
-  const [params, setParams] = useState<DesignParameters>(defaultParams)
-  const [results, setResults] = useState<CalculatedResults | null>(null)
-  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [params, setParamsState] = useState<DesignParameters>(loadParams)
+  const [results, setResultsState] = useState<CalculatedResults | null>(loadResults)
+  const [suggestions, setSuggestionsState] = useState<string[]>(loadSuggestions)
+  const [curves, setCurvesState] = useState<CurvesState>(loadCurves)
+
+  const setParams = (p: DesignParameters) => {
+    setParamsState(p)
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)) } catch { /* ignore */ }
+  }
+
+  const setResults = (r: CalculatedResults | null) => {
+    setResultsState(r)
+    try { localStorage.setItem(RESULTS_KEY, r ? JSON.stringify(r) : '') } catch { /* ignore */ }
+  }
+
+  const setSuggestions = (s: string[]) => {
+    setSuggestionsState(s)
+    try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(s)) } catch { /* ignore */ }
+  }
+
+  const setCurves = (c: CurvesState) => {
+    setCurvesState(c)
+    try { localStorage.setItem(CURVES_KEY, JSON.stringify(c)) } catch { /* ignore */ }
+  }
 
   return (
-    <DesignContext.Provider value={{ params, setParams, results, setResults, suggestions, setSuggestions }}>
+    <DesignContext.Provider value={{ params, setParams, results, setResults, suggestions, setSuggestions, curves, setCurves }}>
       {children}
     </DesignContext.Provider>
   )
