@@ -929,8 +929,8 @@ export default function Fundamentals() {
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">导通损耗</td>
-                  <td className="py-3 px-4">较低（仅 2 管导通）</td>
-                  <td className="py-3 px-4">较高（4 管导通，但电流减半）</td>
+                  <td className="py-3 px-4">较高（2 管导通，电流需加倍）</td>
+                  <td className="py-3 px-4">较低（4 管导通，电流减半，总损耗更小）</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium text-text-primary">成本 / 复杂度</td>

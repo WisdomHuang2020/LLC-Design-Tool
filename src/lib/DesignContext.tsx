@@ -9,7 +9,7 @@ export interface DesignParameters {
   efficiency: number
   fsw: number
   topology: 'half-bridge' | 'full-bridge'
-  rectifier: 'full-wave' | 'center-tapped' | 'synchronous'
+  rectifier: 'full-wave' | 'center-tapped' | 'synchronous' | 'sync-center-tapped'
   loadMin: number
   loadMax: number
   // 新增参数
@@ -54,6 +54,8 @@ export interface CalculatedResults {
   imRms: number
   zvsTimeOk: boolean
   tZvs: number
+  // 设计可行性
+  designFeasible: boolean
   // 增益曲线数据
   gainCurveData: Array<{ fn: number; m: number }>
 }
