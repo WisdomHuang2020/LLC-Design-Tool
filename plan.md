@@ -22,18 +22,18 @@
 - **错误 2g**：空载峰值增益 Gmax_empty = 1 + 1/k。对于 Region 1（fn>1），空载增益趋向 1+1/k。但设计时应使用峰值增益（从增益曲线计算），不是空载公式。
 
 ### 3. Derivations.tsx — 公式推导准确性
-- **检查**：增益公式 `M = (fn²·λ)/√[(fn²(1+λ)-1)²+(fn·Q·(fn²-1))²·λ²]` 是正确的。
+- **检查**：增益公式 `M = (fn²·k)/√[(fn²(1+k)-1)²+(fn·Q·(fn²-1))²·k²]` 是正确的。
 - **检查**：等效电阻 Rac = 8n²Rload/π² 是正确的。
 - **补充**：增加详细的阻抗推导步骤，特别是输入阻抗 Zin 的实部和虚部分解。
 - **补充**：增加峰值增益条件的推导（dM/dfn = 0）。
 
 ### 4. Curves.tsx — 阻抗计算验证
-- **检查**：`calcImpedance` 公式已验证，基本正确。但分母应为 `Q² + (λ·fn)²`，代码中写的是 `1 + Q²·fn²·λ²`。
+- **检查**：`calcImpedance` 公式已验证，基本正确。但分母应为 `Q² + (k·fn)²`，代码中写的是 `1 + Q²·fn²·k²`。
 - 让我重新验证：
-  - Zin = Zr + Zp，Zr = j(fn-1/fn)，Zp = jλfn || Q
-  - Zp = jλfn·Q / (Q + jλfn) = λfnQ(λfn - jQ) / (Q²+(λfn)²) = λ²fn²Q/(Q²+(λfn)²) + jλfnQ²/(Q²+(λfn)²)
-  - Zin/Z0 = λ²fn²Q/(Q²+(λfn)²) + j[fn-1/fn + λfnQ²/(Q²+(λfn)²)]
-- **结论**：代码中分母 `1 + Q*Q*fn*fn*lambda*lambda` 应该是 `Q*Q + fn*fn*lambda*lambda`。
+  - Zin = Zr + Zp，Zr = j(fn-1/fn)，Zp = jkfn || Q
+  - Zp = jkfn·Q / (Q + jkfn) = kfnQ(kfn - jQ) / (Q²+(kfn)²) = k²fn²Q/(Q²+(kfn)²) + jkfnQ²/(Q²+(kfn)²)
+  - Zin/Z0 = k²fn²Q/(Q²+(kfn)²) + j[fn-1/fn + kfnQ²/(Q²+(kfn)²)]
+- **结论**：代码中分母 `1 + Q*Q*fn*fn*k*k` 应该是 `Q*Q + fn*fn*k*k`。
 - **修正**：修正分母。同时检查实部和虚部系数。
 
 ### 5. Report.tsx — 跟随Designer错误

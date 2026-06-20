@@ -351,7 +351,7 @@ interface CalculatedResults {
   cr: number;          // F
   lm: number;          // H
   q: number;           // quality factor
-  lambda: number;      // Lm/Lr
+  k: number;           // Lm/Lr
   mMax: number;        // peak gain
   mRequired: number;   // required gain at vinMax
   zvsMargin: boolean;  // ZVS achievable

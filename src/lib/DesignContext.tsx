@@ -97,14 +97,7 @@ const CURVES_KEY = 'llc-design-tool-curves'
 function loadParams(): DesignParameters {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if ('lambda' in parsed && !('k' in parsed)) {
-        parsed.k = parsed.lambda
-        delete parsed.lambda
-      }
-      return { ...defaultParams, ...parsed }
-    }
+    if (raw) return { ...defaultParams, ...JSON.parse(raw) }
   } catch { /* ignore */ }
   return defaultParams
 }
@@ -112,14 +105,7 @@ function loadParams(): DesignParameters {
 function loadResults(): CalculatedResults | null {
   try {
     const raw = localStorage.getItem(RESULTS_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if ('lambda' in parsed && !('k' in parsed)) {
-        parsed.k = parsed.lambda
-        delete parsed.lambda
-      }
-      return parsed
-    }
+    if (raw) return JSON.parse(raw)
   } catch { /* ignore */ }
   return null
 }
@@ -135,14 +121,7 @@ function loadSuggestions(): string[] {
 function loadCurves(): CurvesState {
   try {
     const raw = localStorage.getItem(CURVES_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if ('lambda' in parsed && !('k' in parsed)) {
-        parsed.k = parsed.lambda
-        delete parsed.lambda
-      }
-      return { ...defaultCurves, ...parsed }
-    }
+    if (raw) return { ...defaultCurves, ...JSON.parse(raw) }
   } catch { /* ignore */ }
   return defaultCurves
 }
