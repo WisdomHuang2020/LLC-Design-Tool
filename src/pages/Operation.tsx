@@ -380,7 +380,7 @@ function GainCurveSVG() {
         opacity="0.6"
       />
       <text x="250" y="180" fill="#22c55e" fontSize="9" textAnchor="middle">
-        ZVS 区域 (f &gt; fr2)
+        Region 1 &amp; 2: ZVS 区域
       </text>
     </svg>
   )
@@ -678,19 +678,19 @@ export default function Operation() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-bg/50 rounded-lg p-5 border border-border/50">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                  <span className="text-accent font-bold text-sm">1</span>
+                <div className="w-8 h-8 rounded-full bg-primary-light/20 flex items-center justify-center">
+                  <span className="text-primary-light font-bold text-sm">1</span>
                 </div>
                 <h3 className="text-sm font-semibold text-text-primary">
-                  f &lt; fr2（低于第二谐振）
+                  Region 1: f &gt; fr1（高于第一谐振）
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                开关频率低于第二谐振频率。谐振电流呈正弦半波，但周期比开关周期长，导致二极管在电流过零后仍然导通一段时间（断续导通模式，DCM）。
+                类似SRC，Lm被输出电压钳位，不参与谐振。轻载时可能出现DCM。ZVS可靠但开关损耗增大。
               </p>
               <div className="flex items-center gap-2 text-sm">
-                <AlertCircle className="w-4 h-4 text-accent" />
-                <span className="text-accent">ZVS 可能丢失，需谨慎使用</span>
+                <CheckCircle2 className="w-4 h-4 text-success" />
+                <span className="text-success">ZVS 可靠，但开关损耗增大</span>
               </div>
             </div>
 
@@ -700,11 +700,11 @@ export default function Operation() {
                   <span className="text-primary-light font-bold text-sm">2</span>
                 </div>
                 <h3 className="text-sm font-semibold text-text-primary">
-                  fr2 &lt; f &lt; fr1（最优区间）
+                  Region 2: fr2 &lt; f &lt; fr1（最优区间）
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                开关频率介于两个谐振频率之间。谐振电流在死区时间内完成换向，Lm 被输出电压钳位，不参与谐振。此模式下原边 MOSFET 自然实现 ZVS，副边二极管自然实现 ZCS。
+                Lm参与谐振，可获得高增益。ZVS+ZCS。最优设计区域。
               </p>
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="w-4 h-4 text-success" />
@@ -712,21 +712,21 @@ export default function Operation() {
               </div>
             </div>
 
-            <div className="bg-bg/50 rounded-lg p-5 border border-border/50">
+            <div className="bg-bg/50 rounded-lg p-5 border border-accent/30">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-full bg-primary-light/20 flex items-center justify-center">
-                  <span className="text-primary-light font-bold text-sm">3</span>
+                <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                  <span className="text-accent font-bold text-sm">3</span>
                 </div>
                 <h3 className="text-sm font-semibold text-text-primary">
-                  f &gt; fr1（高于第一谐振）
+                  Region 3: f &lt; fr2（低于第二谐振）
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                开关频率高于第一谐振频率。Lm 不再被输出电压完全钳位，开始参与谐振过程。增益随频率升高而单调下降，变换器始终工作在感性区，ZVS 可靠实现。
+                容性区，ZCS。应避免。
               </p>
               <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-success" />
-                <span className="text-success">ZVS 可靠，但开关损耗增大</span>
+                <AlertCircle className="w-4 h-4 text-accent" />
+                <span className="text-accent">容性区，ZCS，设计时应避免</span>
               </div>
             </div>
           </div>
@@ -746,7 +746,7 @@ export default function Operation() {
               />
             </div>
             <p className="text-text-secondary text-sm mt-2">
-              其中 λ = Lm/Lr。fr2 始终小于 fr1，因此 LLC 总是具有两个不同的谐振频率点。
+              fr2 始终小于 fr1，因此 LLC 总是具有两个不同的谐振频率点。Region 1 和 Region 2 是 ZVS 工作区，Region 3 是 ZCS 工作区，设计时应避免。
             </p>
           </div>
         </SectionCard>
@@ -815,7 +815,7 @@ export default function Operation() {
                 <h4 className="text-sm font-semibold text-text-primary">Isec — 副边电流</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                仅在谐振电流绝对值大于励磁电流时流通，对应整流二极管导通时段。在 fr2 &lt; f &lt; fr1 时自然实现 ZCS。
+                仅在谐振电流绝对值大于励磁电流时流通，对应整流二极管导通时段。在 Region 2 时自然实现 ZCS。
               </p>
             </div>
           </div>
@@ -874,7 +874,7 @@ export default function Operation() {
                   </div>
                   <p className="text-text-secondary text-sm leading-relaxed">
                     <strong className="text-text-primary">感性区运行：</strong>
-                    输入阻抗必须呈感性（Im(Zin) &gt; 0），使感性电流滞后于电压，确保在死区时间内电流方向正确。对于典型设计，推荐 fsw &gt; fr1 以确保全负载范围内 ZVS；在轻载时 fsw &gt; fr2 亦可满足感性条件。
+                    感性区运行的条件是输入阻抗呈感性，即相位 &gt; 0°。对于典型设计推荐工作在 Region 1 或 Region 2。在 Region 1 (fsw &gt; fr1) 或 Region 2 (fr2 &lt; fsw &lt; fr1) 均可实现 ZVS，其中 Region 2 可获得更高增益，Region 1 的 ZVS 更可靠。
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
@@ -971,7 +971,7 @@ export default function Operation() {
                 <h4 className="text-sm font-semibold text-text-primary">频率调节</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                在感性区（fn &gt; 1），增益随频率升高而单调下降。通过提高开关频率降低增益，通过降低开关频率提高增益，实现宽输入电压范围的稳压输出。
+                增益在 Region 1 (f &gt; fr1) 随频率升高而单调下降；在 Region 2 (fr2 &lt; f &lt; fr1) 可能出现峰值增益；Region 3 (f &lt; fr2) 为容性区，应避免。
               </p>
             </div>
             <div className="p-4 bg-bg/50 rounded-lg border border-border/50">

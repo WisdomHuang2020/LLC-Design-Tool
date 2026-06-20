@@ -40,7 +40,7 @@ export default function Report() {
     return `# LLC谐振变换器设计报告
 
 **生成日期**: ${dateStr}  
-**设计工具**: LLC Resonant Converter Design Tool
+**设计工具**: LLC Design Tool v2.2（专业修正版）
 
 ---
 
@@ -62,7 +62,7 @@ export default function Report() {
 
 | 参数 | 公式 | 数值 |
 |------|------|------|
-| 匝比 n | ${p.topology === 'half-bridge' ? 'Vin / (2·Vout)' : 'Vin / Vout'} | ${r.n.toFixed(3)} |
+| 匝比 n | ${p.topology === 'half-bridge' ? 'Vin_nom / (2·Vout)' : 'Vin_nom / Vout'}（基于额定输入，谐振频率处 M=1） | ${r.n.toFixed(3)} |
 | 等效负载 Rac | 8n²Vout² / (π²·Pout) | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout)).toFixed(2)} Ω |
 | 特征阻抗 Zr | Rac / Q | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout) / r.q).toFixed(2)} Ω |
 | 谐振频率 fr | 1 / (2π·√(Lr·Cr)) | ${(r.fr / 1000).toFixed(1)} kHz |
@@ -77,36 +77,42 @@ export default function Report() {
 | 品质因数 Q | ${r.q.toFixed(3)} | 负载敏感度 |
 | 电感比 λ | ${r.lambda.toFixed(3)} | Lm / Lr |
 
-## 4. 增益分析
+## 4. 增益分析（FHA 方法）
 
-- **所需增益**（Vin_min 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin).toFixed(3)}
+- **所需增益**（Vin_min 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
 - **所需增益**（Vin_max 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMax : (r.n * p.vout) / p.vinMax).toFixed(3)}
 - **峰值增益 M_max**: ${r.mMax.toFixed(3)}
 - **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
 ${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 λ 或 Q。'}
 
-## 5. 工作点分析
+## 5. 电流估算（FHA 等效）
 
-- **ZVS 条件**: ${r.zvsMargin ? '满足' : '不满足'}（相位裕量判断）
-- **初级电流 RMS**: ${r.ipRms.toFixed(2)} A
-- **次级电流 RMS**: ${r.isRms.toFixed(2)} A
-- **输出电流 Io**: ${(p.pout / p.vout).toFixed(2)} A
+| 参数 | 数值 | 说明 |
+|------|------|------|
+| 初级电流 RMS | ${r.ipRms.toFixed(2)} A | 谐振腔电流，含励磁分量 |
+| 次级电流 RMS | ${r.isRms.toFixed(2)} A | ${p.rectifier === 'center-tapped' ? '中心抽头整流：每个绕组半波导通' : '全波整流：方波等效'} |
+| 输出电流 Io | ${(p.pout / p.vout).toFixed(2)} A | 直流输出电流 |
 
-## 6. 应力分析
+## 6. 工作点与 ZVS 分析
+
+- **ZVS 条件**: ${r.zvsMargin ? '满足' : '不满足'}（相位裕量判断，fn ≥ 1 时）
+- **开关频率范围**: 设计在感性区运行（fn ≥ 1），保证 ZVS
+
+## 7. 应力分析
 
 | 器件 | 电压应力 | 电流应力 |
 |------|----------|----------|
 | 初级 MOSFET | ${Math.ceil(p.topology === 'half-bridge' ? p.vinMax : p.vinMax * 1.2)} V (耐压建议) | ${(r.ipRms * 2.5).toFixed(1)} A (RMS × 2.5) |
 | 次级整流 | ${Math.ceil(p.vout * (p.rectifier === 'center-tapped' ? 2.5 : 2))} V (耐压建议) | ${(r.isRms * 1.5).toFixed(1)} A (RMS × 1.5) |
-| 谐振电容 Cr | ${(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值) | ${r.ipRms.toFixed(2)} A (RMS) |
+| 谐振电容 Cr | ${(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值，近似值) | ${r.ipRms.toFixed(2)} A (RMS) |
 | 谐振电感 Lr | — | ${r.ipRms.toFixed(2)} A (RMS) |
 
-## 7. 优化摘要
+## 8. 优化摘要
 
 ${suggestions.map((s) => `- ${s}`).join('\n')}
 
-## 8. 建议与下一步
+## 9. 建议与下一步
 
 1. 使用 SPICE/Simulink 进行详细时域仿真，验证软开关与效率。
 2. 根据 E12/E24 标准值选择实际 Cr，并微调 Lr 保持 fr 不变。
@@ -117,7 +123,7 @@ ${suggestions.map((s) => `- ${s}`).join('\n')}
 ${notes ? `## 备注\n\n${notes}\n` : ''}
 
 ---
-*本报告由 LLC Design Tool 自动生成，仅供工程参考。*
+*本报告由 LLC Design Tool v2.2（专业修正版）自动生成，仅供工程参考。基于 FHA 等效方法，电流与应力值为近似估算。*
 `
   }
 
@@ -305,7 +311,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                 </span>
                 <span className="flex items-center gap-1">
                   <Hash className="w-4 h-4" />
-                  LLC Design Tool v1.0
+                  LLC Design Tool v2.2（专业修正版）
                 </span>
               </div>
             </div>
@@ -401,7 +407,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <tr className="border-b border-border/50 print:border-gray-200">
                       <td className="px-3 py-2">匝比 n</td>
                       <td className="px-3 py-2 font-mono text-text-secondary print:text-gray-600">
-                        {p.topology === 'half-bridge' ? 'Vin / (2·Vout)' : 'Vin / Vout'}
+                        {p.topology === 'half-bridge' ? 'Vin_nom / (2·Vout)' : 'Vin_nom / Vout'}
                       </td>
                       <td className="px-3 py-2 font-mono">{hasData ? r.n.toFixed(3) : '—'}</td>
                     </tr>
@@ -538,7 +544,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     )}
                   </div>
                   <p className="text-xs text-text-muted mt-2">
-                    基于谐振腔阻抗相位判断（fn=1 时）。
+                    基于谐振腔阻抗相位判断（fn=1 时）。初级电流为谐振腔电流，包含负载分量与励磁分量。
                   </p>
                 </div>
                 <div className="bg-surface-elevated print:bg-gray-50 rounded-lg p-4 border border-border print:border-gray-300">
@@ -565,6 +571,13 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         {(p.pout / p.vout).toFixed(2)} A
                       </span>
                     </div>
+                    {hasData && (
+                      <p className="text-xs text-text-muted mt-2">
+                        {p.rectifier === 'center-tapped'
+                          ? '中心抽头整流：每个次级绕组电流为半波，RMS 值与全波整流不同。'
+                          : '全波整流：次级电流为方波，RMS 值由 FHA 等效计算。'}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -609,7 +622,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <tr className="border-b border-border/50 print:border-gray-200">
                       <td className="px-3 py-2">谐振电容 Cr</td>
                       <td className="px-3 py-2 font-mono">
-                        {(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值)
+                        {(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值，近似值)
                       </td>
                       <td className="px-3 py-2 font-mono">{hasData ? r.ipRms.toFixed(2) : '—'} A</td>
                     </tr>

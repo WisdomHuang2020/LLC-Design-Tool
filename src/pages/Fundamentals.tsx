@@ -612,14 +612,16 @@ export default function Fundamentals() {
                 品质因数 Q
               </h4>
               <p className="text-text-secondary text-sm mb-3">
-                Q 因子反映谐振电路的储能与耗能之比，决定谐振峰值的尖锐程度与带宽：
+                Q 因子反映谐振电路的储能与耗能之比，决定谐振峰值的尖锐程度与带宽。对于 LLC 谐振变换器，Q 定义为：
               </p>
               <MathBlock
-                latex="Q = \frac{\omega_r L}{R} = \frac{1}{\omega_r C R} = \frac{1}{R} \sqrt{\frac{L}{C}}"
+                latex="Q = \frac{Z_r}{R_{ac}} = \frac{\sqrt{L_r/C_r}}{R_{ac}}"
                 important
               />
               <p className="text-text-secondary text-sm mt-2">
-                Q 越高，谐振曲线越尖锐，带宽越窄，选择性越好。
+                在串联谐振电路中，Q 也可写作
+                <span className="font-mono text-xs">Q = ωᵣL/R = 1/(ωᵣCR)</span>
+                。Q 越高，谐振曲线越尖锐，带宽越窄，选择性越好。
               </p>
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
@@ -696,7 +698,7 @@ export default function Fundamentals() {
                     励磁电感 Magnetizing Inductance
                   </h4>
                   <p className="text-text-secondary text-sm leading-relaxed">
-                    并联在谐振回路与变压器之间，不参与第一谐振频率，但影响第二谐振频率 fr2。Lm 决定空载增益与 ZVS 范围，λ = Lm/Lr 是关键设计参数。
+                    并联在谐振回路与变压器之间，不参与第一谐振频率 fr1，但影响第二谐振频率 fr2。LLC 存在两个谐振频率：fr1（Lr 与 Cr）和 fr2（Lr+Lm 与 Cr），其中 fr2 = fr1 / √(1+λ)。Lm 决定空载增益与 ZVS 范围，λ = Lm/Lr 是关键设计参数。
                   </p>
                 </div>
               </div>
@@ -709,6 +711,49 @@ export default function Fundamentals() {
             </h4>
             <p className="text-text-secondary text-sm leading-relaxed">
               纯 LC 串联谐振变换器在空载时增益理论上趋于无穷大，无法实现电压调节。引入并联励磁电感 Lm 后，LLC 拓扑在空载时形成分压结构，增益被钳位在有限范围内，从而实现宽负载范围的稳定电压输出。此外，LLC 的感性区运行特性使得原边开关管在较宽负载范围内都能实现零电压开关（ZVS）。
+            </p>
+          </div>
+
+          <div className="mt-6 p-4 bg-accent/10 rounded-lg border border-accent/20">
+            <h4 className="text-sm font-semibold text-accent mb-2">
+              LLC 与 SRC、PRC 的对比
+            </h4>
+            <p className="text-text-secondary text-sm leading-relaxed mb-3">
+              LLC 谐振变换器结合了串联谐振变换器 SRC（Series Resonant Converter）和并联谐振变换器 PRC（Parallel Resonant Converter）的优点：
+            </p>
+            <ul className="text-sm text-text-secondary space-y-2 list-disc list-inside">
+              <li>
+                <strong className="text-text-primary">SRC</strong>：谐振腔环流小、效率高，但空载时无法调压，轻载频率漂移大。
+              </li>
+              <li>
+                <strong className="text-text-primary">PRC</strong>：宽负载范围可稳定调压，但谐振腔环流大、轻载效率低。
+              </li>
+              <li>
+                <strong className="text-text-primary">LLC</strong>：通过引入励磁电感 Lm，在重载时近似于 SRC（低环流、高效率），在轻载/空载时利用 Lm 的分流作用实现宽范围调压（类似 PRC 的优点），同时保持原边 ZVS 能力。
+              </li>
+            </ul>
+            <p className="text-text-secondary text-sm mt-3 leading-relaxed">
+              从直流特性来看，LLC 谐振的增益曲线有两个谐振点：Lr、Cr 谐振是高频谐振点（fr1），Cr 与 Lm 和 Lr 串联的谐振是低频谐振点（fr2）。高频谐振点位于 ZVS 工作区，是 LLC 设计的核心工作点。
+            </p>
+          </div>
+
+          <div className="mt-6 p-4 bg-bg/50 rounded-lg border border-border">
+            <h4 className="text-sm font-semibold text-text-primary mb-2">
+              FHA 归一化增益
+            </h4>
+            <p className="text-text-secondary text-sm leading-relaxed mb-3">
+              在基波近似（FHA）方法中，归一化增益定义为谐振频率处输出与输入电压之比。谐振频率处归一化增益 M = 1，高于谐振频率时 M &lt; 1，低于谐振频率时 M &gt; 1：
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MathBlock
+                latex="M = \frac{n \cdot V_{out}}{V_{in}} \quad (全桥)"
+              />
+              <MathBlock
+                latex="M = \frac{2n \cdot V_{out}}{V_{in}} \quad (半桥)"
+              />
+            </div>
+            <p className="text-text-secondary text-sm mt-3 leading-relaxed">
+              在谐振频率 fr1 处，无论负载如何，归一化增益恒为 1。设计时通过在最低输入电压处计算所需增益，确保峰值增益裕量充足。
             </p>
           </div>
         </SectionCard>
@@ -748,6 +793,10 @@ export default function Fundamentals() {
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
                       1 / (2π√((Lr+Lm)·Cr))
+                    </code>
+                    <br />
+                    <code className="text-xs bg-bg px-2 py-1 rounded mt-1 inline-block">
+                      fr2 = fr1 / √(1+λ)
                     </code>
                   </td>
                   <td className="py-3 px-4">总电感与 Cr 的谐振频率</td>
@@ -812,7 +861,7 @@ export default function Fundamentals() {
               important
             />
             <MathBlock
-              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}}"
+              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \lambda}}"
               important
             />
             <MathBlock
