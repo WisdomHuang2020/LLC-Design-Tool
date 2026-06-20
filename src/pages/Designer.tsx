@@ -637,8 +637,9 @@ export default function Designer() {
     const qmax1 = findQmax1(k, gMax)
 
     // Qmax2：从ZVS条件（死区时间）
-    // 先估计fmax：fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
-    const fmaxEst = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMin * gMin))))
+    // 先估计fmax：fmax = fr * sqrt(Gmin / (Gmin*(k+1) - k))
+    // 基于空载增益公式：fn² = G / (G*(λ+1) - λ)
+    const fmaxEst = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
     // Lm = k * Lr, Lr = Zr / (2*pi*fr), Zr = Q * Racmin
     // Er = 0.5*(Lm+Lr)*Im², Im = Vin_min/(4*fmax*Lm)
     // 令 Er >= Ec = 0.5*(2*Coss_er+Cj)*Vin_max²
@@ -664,12 +665,15 @@ export default function Designer() {
     const lm = k * lr
 
     // ─── 步骤6：验证 ───
-    // fmax = fr * sqrt(1 + (1/k)*(1 - 1/Gmin²))
-    // fmin = fr * sqrt(1 + (1/k)*(1 - 1/Gmax²))
-    const fmax = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMin * gMin))))
-    const fmin = fr * Math.sqrt(Math.max(0.001, 1 + (1 / k) * (1 - 1 / (gMax * gMax))))
+    // fmax = fr * sqrt(Gmin / (Gmin*(k+1) - k))
+    // fmin = fr * sqrt(Gmax / (Gmax*(k+1) - k))
+    // 基于空载增益公式：M = 1/|1 + 1/k - 1/(k*fn²)|，令M=G，解出fn²
+    const fmax = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+    const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
-    // 空载峰值增益
+    // 空载峰值增益（工程保守估计：当fn→fr2时，Q→0增益趋向无穷大）
+    // 在Region 2（fn<1），空载增益 M = 1/(1+1/k-1/(k*fn²))，当fn→1/√(1+k)时，M→∞
+    // 此处保留 1+1/k 作为飞兆文档中的工程经验值，但标注说明
     const gmaxEmpty = 1 + 1 / k
 
     // ZVS验证：在fmax处
@@ -1105,8 +1109,8 @@ export default function Designer() {
                       formula="数值寻优峰值"
                       highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
                     />
-                    <ResultItem label="fmax（满载）" value={(calculated.fmax / 1000).toFixed(1)} unit="kHz" formula="fmax = fr·√[1+(1/k)(1-1/Gmin²)]" />
-                    <ResultItem label="fmin（轻载）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[1+(1/k)(1-1/Gmax²)]" />
+                    <ResultItem label="fmax（满载）" value={(calculated.fmax / 1000).toFixed(1)} unit="kHz" formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
+                    <ResultItem label="fmin（轻载）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)-k)]" />
                     <ResultItem
                       label="ZVS裕量"
                       value={calculated.zvsMargin ? '可达' : '不足'}
