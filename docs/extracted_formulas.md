@@ -189,6 +189,9 @@ const qmax2 = fmaxFeasible
   : Infinity
 ```
 
+> 注：系数 16 来源于半桥 LLC 死区时间近似公式 \( t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m \) 的反推。
+> 若拓扑为全桥或死区定义不同，该系数需重新推导。
+
 ### 5.3 Qmax3：Coss 能量约束
 
 ```ts
@@ -379,11 +382,17 @@ $$E_{Coss} = \frac{1}{2} C_{oss} V_{in}^2 \cdot \frac{2}{3}$$
 
 $$P_{Coss} = E_{Coss} f_s N_{switches}$$
 
+> 注：系数 2/3 考虑了 MOSFET 结电容 \( C_{oss} \) 随 \( V_{ds} \) 的非线性变化。
+> 不同厂商/型号的 \( C_{oss} \) 非线性特性不同，精确损耗建议查手册 \( E_{oss} \) 曲线。
+
 ### 9.4 体二极管导通损耗
 
 $$I_{diode} = 0.7 I_{p,peak}$$
 
 $$P_{diode} = V_{sd} I_{diode} t_d f_s N_{switches}$$
+
+> 注：0.7 为经验系数，实际体二极管电流波形因死区时间、\( C_{oss} \) 充放电波形而异。
+> 精确估算需时域仿真或示波器实测。
 
 ### 9.5 磁芯损耗（Steinmetz）
 
