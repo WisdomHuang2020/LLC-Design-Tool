@@ -670,7 +670,7 @@ export default function Designer() {
       ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
       : Infinity
     // fmin 对应 Region 2（fn<1），分母为 +k
-    const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) + k)))
+    const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
     // 整体设计可行性
     const designFeasible = fmaxFeasible
@@ -1215,7 +1215,7 @@ export default function Designer() {
                         highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
                       />
                       <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
-                      <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)+k)]" />
+                      <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)-k)]" />
                       <ResultItem
                         label="ZVS能量裕量"
                         value={calculated.zvsMargin ? '可达' : '不足'}
