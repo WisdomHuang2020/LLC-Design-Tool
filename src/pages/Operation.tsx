@@ -737,11 +737,11 @@ export default function Operation() {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MathBlock
-                latex="f_{r1} = \frac{1}{2\pi\sqrt{L_r C_r}}"
+                latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
                 important
               />
               <MathBlock
-                latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}"
+                latex="f_{r2} = \\frac{1}{2\\pi\\sqrt{(L_r + L_m) C_r}} = \\frac{f_{r1}}{\\sqrt{1 + k}}"
                 important
               />
             </div>
@@ -902,7 +902,7 @@ export default function Operation() {
                   ZVS 能量条件（半桥）：
                 </p>
                 <MathBlock
-                  latex="\frac{1}{2} L_p I_p^2 \geq \frac{1}{2} C_{oss} V_{in}^2 \cdot 2"
+                  latex="\\frac{1}{2} L_p I_p^2 \\geq \\frac{1}{2} C_{oss} V_{in}^2 \\cdot 2"
                   important
                 />
                 <p className="text-text-secondary text-xs mt-1">
@@ -948,14 +948,14 @@ export default function Operation() {
                 LLC 谐振变换器的电压增益定义为输出反射电压与输入电压之比（半桥取 2nVout/Vin，全桥取 nVout/Vin）：
               </p>
               <MathBlock
-                latex="M = \frac{n V_{out}}{V_{in}} \;(\text{全桥}) \quad M = \frac{2n V_{out}}{V_{in}} \;(\text{半桥})"
+                latex="M = \\frac{n V_{out}}{V_{in}} \\;(\\text{全桥}) \\quad M = \\frac{2n V_{out}}{V_{in}} \\;(\\text{半桥})"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
                 基于 FHA（First Harmonic Approximation）方法，完整的 LLC 电压增益方程为：
               </p>
               <MathBlock
-                latex="M(f_n, k, Q) = \frac{f_n^2 \cdot k}{\sqrt{(f_n^2(1+k)-1)^2 + k^2 Q^2 (f_n^2-1)^2}}"
+                latex="M(f_n, k, Q) = \\frac{f_n^2 \\cdot k}{\\sqrt{(f_n^2(1+k)-1)^2 + k^2 Q^2 (f_n^2-1)^2}}"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
