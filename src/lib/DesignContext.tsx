@@ -19,7 +19,7 @@ export interface DesignParameters {
   td: number
   vd: number
   ioMax: number
-  lambda: number
+  k: number
 }
 
 export interface CalculatedResults {
@@ -29,7 +29,7 @@ export interface CalculatedResults {
   cr: number
   lm: number
   q: number
-  lambda: number
+  k: number
   mMax: number
   mRequired: number
   zvsMargin: boolean
@@ -61,7 +61,7 @@ export interface CalculatedResults {
 }
 
 export interface CurvesState {
-  lambda: number
+  k: number
   q: number
 }
 
@@ -84,10 +84,10 @@ const defaultParams: DesignParameters = {
   td: 300,
   vd: 0.5,
   ioMax: 25,
-  lambda: 5,
+  k: 5,
 }
 
-const defaultCurves: CurvesState = { lambda: 5.0, q: 0.5 }
+const defaultCurves: CurvesState = { k: 5.0, q: 0.5 }
 
 const STORAGE_KEY = 'llc-design-tool-params'
 const RESULTS_KEY = 'llc-design-tool-results'
@@ -97,7 +97,14 @@ const CURVES_KEY = 'llc-design-tool-curves'
 function loadParams(): DesignParameters {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return { ...defaultParams, ...JSON.parse(raw) }
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if ('lambda' in parsed && !('k' in parsed)) {
+        parsed.k = parsed.lambda
+        delete parsed.lambda
+      }
+      return { ...defaultParams, ...parsed }
+    }
   } catch { /* ignore */ }
   return defaultParams
 }
@@ -105,7 +112,14 @@ function loadParams(): DesignParameters {
 function loadResults(): CalculatedResults | null {
   try {
     const raw = localStorage.getItem(RESULTS_KEY)
-    if (raw) return JSON.parse(raw)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if ('lambda' in parsed && !('k' in parsed)) {
+        parsed.k = parsed.lambda
+        delete parsed.lambda
+      }
+      return parsed
+    }
   } catch { /* ignore */ }
   return null
 }
@@ -121,7 +135,14 @@ function loadSuggestions(): string[] {
 function loadCurves(): CurvesState {
   try {
     const raw = localStorage.getItem(CURVES_KEY)
-    if (raw) return { ...defaultCurves, ...JSON.parse(raw) }
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if ('lambda' in parsed && !('k' in parsed)) {
+        parsed.k = parsed.lambda
+        delete parsed.lambda
+      }
+      return { ...defaultCurves, ...parsed }
+    }
   } catch { /* ignore */ }
   return defaultCurves
 }

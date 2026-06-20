@@ -74,7 +74,7 @@ export default function Report() {
 | 谐振电容 Cr | ${(r.cr * 1e9).toFixed(2)} nF | 决定谐振频率 |
 | 励磁电感 Lm | ${(r.lm * 1e6).toFixed(2)} μH | 影响增益范围与ZVS |
 | 品质因数 Q | ${r.q.toFixed(3)} | 负载敏感度 |
-| 电感比 λ | ${r.lambda.toFixed(3)} | Lm / Lr |
+| 电感比 k | ${r.k.toFixed(3)} | Lm / Lr |
 
 ## 4. 增益分析（FHA 方法）
 
@@ -83,7 +83,7 @@ export default function Report() {
 - **峰值增益 M_max**: ${r.mMax.toFixed(3)}
 - **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
-${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 λ 或 Q。'}
+${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * p.vout) / p.vinMin : (r.n * p.vout) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 k 或 Q。'}
 
 ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
 
@@ -335,9 +335,9 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">λ</span>
+                  <span className="text-text-secondary">k</span>
                   <span className="text-text-primary font-mono">
-                    {hasData ? r.lambda.toFixed(2) : '—'}
+                    {hasData ? r.k.toFixed(2) : '—'}
                   </span>
                 </div>
               </div>
@@ -612,7 +612,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         <tr>
                           <td className="px-3 py-2 font-medium">Lm</td>
                           <td className="px-3 py-2 font-mono">{hasData ? (r.lm * 1e6).toFixed(2) : '—'} μH</td>
-                          <td className="px-3 py-2 font-mono">λ = {hasData ? r.lambda.toFixed(3) : '—'}</td>
+                          <td className="px-3 py-2 font-mono">k = {hasData ? r.k.toFixed(3) : '—'}</td>
                           <td className="px-3 py-2 text-text-secondary print:text-gray-600">变压器集成，气隙调节</td>
                         </tr>
                       </tbody>

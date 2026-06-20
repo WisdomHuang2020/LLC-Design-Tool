@@ -49,32 +49,32 @@ function nearestE(value: number, series: number[]): number {
 }
 
 // ─── LLC gain formula (standard FHA) ───
-// M = 1 / sqrt((1 + 1/λ(1 - 1/fn²))² + (Q*(fn - 1/fn))²)
-function gainM(fn: number, lambda: number, q: number): number {
-  const a = 1 + (1 / lambda) * (1 - 1 / (fn * fn))
+// M = 1 / sqrt((1 + 1/k(1 - 1/fn²))² + (Q*(fn - 1/fn))²)
+function gainM(fn: number, k: number, q: number): number {
+  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
   const b = q * (fn - 1 / fn)
   return 1 / Math.sqrt(a * a + b * b)
 }
 
-function peakGain(lambda: number, q: number): number {
+function peakGain(k: number, q: number): number {
   let maxM = 0
   const step = 0.005
   for (let fn = 0.3; fn <= 1.0; fn += step) {
-    const m = gainM(fn, lambda, q)
+    const m = gainM(fn, k, q)
     if (m > maxM) maxM = m
   }
   return maxM
 }
 
 // ZVS phase check at fsw (fn = 1 since fr = fsw in our design)
-function zvsPhase(lambda: number, q: number): number {
+function zvsPhase(k: number, q: number): number {
   // At fn=1, the real part of Zin is (ωLm)²Rac / (Rac² + (ωLm)²)
   // Imag part is ωLmRac² / (Rac² + (ωLm)²)
   // Since at fn=1, Lr and Cr cancel, Zin = jωLm || Rac
-  // Let x = ωLm / Rac = 1 / (q * λ) ... wait
-  // Actually, Zr = q * Rac, and ωLm = Zr * λ / (1) since at fr, ωLr = Zr and Lm = λ*Lr, so ωLm = λ*Zr = λ*q*Rac
-  // So ωLm / Rac = λ * q
-  const x = lambda * q
+  // Let x = ωLm / Rac = 1 / (q * k) ... wait
+  // Actually, Zr = q * Rac, and ωLm = Zr * k / (1) since at fr, ωLr = Zr and Lm = k*Lr, so ωLm = k*Zr = k*q*Rac
+  // So ωLm / Rac = k * q
+  const x = k * q
   const real = (x * x) / (1 + x * x)
   const imag = x / (1 + x * x)
   return Math.atan2(imag, real) * (180 / Math.PI)
@@ -87,7 +87,7 @@ function generateSuggestions(
   params: DesignParameters,
   results: {
     q: number
-    lambda: number
+    k: number
     mMax: number
     mRequired: number
     mRequiredMin: number
@@ -112,15 +112,15 @@ function generateSuggestions(
   }
 ): Suggestion[] {
   const s: Suggestion[] = []
-  const { q, lambda, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMin } = results
+  const { q, k, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMin } = results
 
   // 1. k值选择与虚拟增益
-  if (lambda < kMin * 1.05) {
-    s.push({ text: `电感比k=${lambda.toFixed(2)}过于接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k或放宽输入电压范围。`, level: 'critical' })
-  } else if (lambda < kMin * 1.2) {
-    s.push({ text: `电感比k=${lambda.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
+  if (k < kMin * 1.05) {
+    s.push({ text: `电感比k=${k.toFixed(2)}过于接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k或放宽输入电压范围。`, level: 'critical' })
+  } else if (k < kMin * 1.2) {
+    s.push({ text: `电感比k=${k.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
   }
 
   // 2. Qmax对比分析
@@ -340,7 +340,7 @@ interface CalculatedData {
   cr: number
   lm: number
   q: number
-  lambda: number
+  k: number
   mMax: number
   mRequired: number
   mRequiredMin: number
@@ -581,9 +581,9 @@ export default function Designer() {
 
     const voutEff = vout + vd  // 考虑二极管压降的有效输出电压
 
-    // ─── 步骤1：确定电感比k（λ=Lm/Lr）───
+    // ─── 步骤1：确定电感比k（k=Lm/Lr）───
     // k为预设值，典型范围3~10
-    const k = form.lambda
+    const k = form.k
 
     // ─── 步骤2：计算匝比n ───
     // 标准FHA方法：谐振频率处增益 = 1，不使用虚拟增益
@@ -738,7 +738,7 @@ export default function Designer() {
       cr,
       lm,
       q,
-      lambda: k,
+      k: k,
       mMax: peakGain(k, q),
       mRequired: gMax,
       mRequiredMin: gMin,
@@ -778,7 +778,7 @@ export default function Designer() {
 
     const s = generateSuggestions(form, {
       q,
-      lambda: k,
+      k: k,
       mMax: peakGain(k, q),
       mRequired: gMax,
       mRequiredMin: gMin,
@@ -804,7 +804,7 @@ export default function Designer() {
 
     if (!designFeasible) {
       s.unshift({
-        text: `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 λ 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
+        text: `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 k 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
         level: 'critical',
       })
     }
@@ -821,7 +821,7 @@ export default function Designer() {
       cr,
       lm,
       q,
-      lambda: k,
+      k: k,
       mMax: peakGain(k, q),
       mRequired: gMax,
       zvsMargin,
@@ -987,8 +987,8 @@ export default function Designer() {
                 <input
                   type="number"
                   className={inputClass}
-                  value={form.lambda}
-                  onChange={(e) => update('lambda', Number(e.target.value))}
+                  value={form.k}
+                  onChange={(e) => update('k', Number(e.target.value))}
                   step="0.5"
                   min="2"
                   max="20"
@@ -1129,7 +1129,7 @@ export default function Designer() {
                     <span className="text-sm text-primary-light font-medium">设计参数已同步</span>
                   </div>
                   <div className="flex flex-wrap items-center gap-3 text-sm font-mono text-text-secondary">
-                    <span>λ = {calculated.lambda.toFixed(2)}</span>
+                    <span>k = {calculated.k.toFixed(2)}</span>
                     <span>Q = {calculated.q.toFixed(3)}</span>
                     <span className="text-text-muted">|</span>
                     <span>fr = {(calculated.fr / 1000).toFixed(1)} kHz</span>
@@ -1185,7 +1185,7 @@ export default function Designer() {
                       <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
                       <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
                       <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = Zr / Racmin" />
-                      <ResultItem label="电感比 k" value={calculated.lambda.toFixed(2)} unit="" formula="k = Lm / Lr" />
+                      <ResultItem label="电感比 k" value={calculated.k.toFixed(2)} unit="" formula="k = Lm / Lr" />
                       <ResultItem
                         label="所需增益 Gmin"
                         value={calculated.gMin.toFixed(3)}
@@ -1244,7 +1244,7 @@ export default function Designer() {
                     <div className="mt-6 pt-4 border-t border-border">
                       <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-primary-light" />
-                        增益-频率特性曲线 (k={calculated.lambda.toFixed(1)}, Q={calculated.q.toFixed(3)})
+                        增益-频率特性曲线 (k={calculated.k.toFixed(1)}, Q={calculated.q.toFixed(3)})
                       </h3>
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
@@ -1484,7 +1484,7 @@ export default function Designer() {
                             cr: calculated.cr,
                             lm: calculated.lm,
                             q: calculated.q,
-                            lambda: calculated.lambda,
+                            k: calculated.k,
                             mMax: calculated.mMax,
                             mRequired: calculated.gMax,
                             zvsMargin: calculated.zvsMargin,

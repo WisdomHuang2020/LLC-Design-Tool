@@ -741,7 +741,7 @@ export default function Operation() {
                 important
               />
               <MathBlock
-                latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \lambda}}"
+                latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \k}}"
                 important
               />
             </div>
@@ -955,11 +955,11 @@ export default function Operation() {
                 基于 FHA（First Harmonic Approximation）方法，完整的 LLC 电压增益方程为：
               </p>
               <MathBlock
-                latex="M(f_n, \lambda, Q) = \frac{f_n^2 \cdot \lambda}{\sqrt{(f_n^2(1+\lambda)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot \lambda^2}}"
+                latex="M(f_n, \k, Q) = \frac{f_n^2 \cdot \k}{\sqrt{(f_n^2(1+\k)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot \k^2}}"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
-                其中 <span className="font-mono text-primary-light">fn = fsw / fr1</span> 为归一化频率，<span className="font-mono text-primary-light">λ = Lm / Lr</span> 为电感比，<span className="font-mono text-primary-light">Q = Zr / Rac</span> 为品质因数。
+                其中 <span className="font-mono text-primary-light">fn = fsw / fr1</span> 为归一化频率，<span className="font-mono text-primary-light">k = Lm / Lr</span> 为电感比，<span className="font-mono text-primary-light">Q = Zr / Rac</span> 为品质因数。
               </p>
             </div>
           </div>
@@ -989,7 +989,7 @@ export default function Operation() {
                 <h4 className="text-sm font-semibold text-text-primary">峰值增益</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                最大增益出现在 f = fr2 附近，峰值大小由 λ 和 Q 共同决定。设计时必须确保峰值增益大于所需的最大增益（对应最低输入电压、最大负载）。
+                最大增益出现在 f = fr2 附近，峰值大小由 k 和 Q 共同决定。设计时必须确保峰值增益大于所需的最大增益（对应最低输入电压、最大负载）。
               </p>
             </div>
           </div>
@@ -1050,11 +1050,11 @@ export default function Operation() {
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                较高的 λ（Lm/Lr）意味着更大的励磁电感，可减小变压器磁芯体积，但会缩小 ZVS 范围并降低峰值增益。较低的 λ 需要更大的磁芯以容纳更大的励磁电感，但有利于轻载 ZVS 与更高的峰值增益。
+                较高的 k（Lm/Lr）意味着更大的励磁电感，可减小变压器磁芯体积，但会缩小 ZVS 范围并降低峰值增益。较低的 k 需要更大的磁芯以容纳更大的励磁电感，但有利于轻载 ZVS 与更高的峰值增益。
               </p>
               <div className="flex items-center gap-2 text-xs text-text-muted">
                 <span className="inline-block w-2 h-2 rounded-full bg-success" />
-                典型范围：λ = 3 ~ 10 为常见工程取值
+                典型范围：k = 3 ~ 10 为常见工程取值
               </div>
             </div>
 
@@ -1092,12 +1092,12 @@ export default function Operation() {
                 </thead>
                 <tbody className="text-text-secondary">
                   <tr className="border-b border-border/50">
-                    <td className="py-2 px-3 font-medium text-text-primary">高 λ（&gt;8）</td>
+                    <td className="py-2 px-3 font-medium text-text-primary">高 k（&gt;8）</td>
                     <td className="py-2 px-3">变压器体积小，环流小</td>
                     <td className="py-2 px-3">ZVS 范围窄，峰值增益低</td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-2 px-3 font-medium text-text-primary">低 λ（&lt;5）</td>
+                    <td className="py-2 px-3 font-medium text-text-primary">低 k（&lt;5）</td>
                     <td className="py-2 px-3">ZVS 范围宽，峰值增益高</td>
                     <td className="py-2 px-3">变压器体积大，励磁损耗高</td>
                   </tr>
