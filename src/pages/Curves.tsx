@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { useDesign } from '../lib/DesignContext'
 import {
   ResponsiveContainer,
@@ -11,7 +11,8 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts'
-import { Download } from 'lucide-react'
+import { Download, Link2, RotateCcw } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
 const Q_COLORS = ['#14b8a6', '#0f766e', '#5eead4', '#2dd4bf', '#0d9488']
@@ -53,9 +54,25 @@ function generateData(lambda: number, Q: number) {
 }
 
 export default function Curves() {
-  const { results } = useDesign()
-  const [lambda, setLambda] = useState(Math.max(results?.lambda ?? 2.0, 2.0))
-  const [Q, setQ] = useState(results?.q ?? 0.5)
+  const { results, curves, setCurves } = useDesign()
+  const hasResults = results !== null
+
+  const [lambda, setLambda] = useState(curves.lambda)
+  const [Q, setQ] = useState(curves.q)
+
+  // Sync with results when they change (Designer -> Curves linkage)
+  useEffect(() => {
+    if (results) {
+      setLambda(results.lambda)
+      setQ(results.q)
+      setCurves({ lambda: results.lambda, q: results.q })
+    }
+  }, [results?.lambda, results?.q, setCurves])
+
+  // Persist manual slider changes
+  useEffect(() => {
+    setCurves({ lambda, q: Q })
+  }, [lambda, Q, setCurves])
 
   const { gainData, impedanceData } = useMemo(
     () => generateData(lambda, Q),
@@ -102,6 +119,14 @@ export default function Curves() {
     []
   )
 
+  const syncToDesign = useCallback(() => {
+    if (results) {
+      setLambda(results.lambda)
+      setQ(results.q)
+      setCurves({ lambda: results.lambda, q: results.q })
+    }
+  }, [results, setCurves])
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
     return (
@@ -132,6 +157,42 @@ export default function Curves() {
           调节 λ 和 Q 参数，观察不同工况下的曲线形态。
         </p>
       </div>
+
+      {/* Linkage Banner */}
+      {hasResults && (
+        <div className="card-surface p-4 mb-6 border border-primary/30">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              <span className="text-sm text-primary-light font-medium">
+                已关联设计参数
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-sm font-mono text-text-secondary">
+              <span>λ = {results.lambda.toFixed(2)}</span>
+              <span>Q = {results.q.toFixed(3)}</span>
+              <span className="text-text-muted">|</span>
+              <span>fr = {(results.fr / 1000).toFixed(1)} kHz</span>
+            </div>
+            <div className="flex gap-2 ml-auto">
+              <button
+                onClick={syncToDesign}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-primary/30 text-primary-light hover:bg-primary/10 transition-colors"
+              >
+                <RotateCcw size={14} />
+                同步到设计参数
+              </button>
+              <Link
+                to="/designer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-primary text-white hover:bg-primary-light transition-colors"
+              >
+                <Link2 size={14} />
+                返回设计工具
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Control Panel */}
       <div className="card-surface p-6 mb-8">
@@ -194,6 +255,12 @@ export default function Curves() {
             <span className="w-3 h-3 rounded-full bg-accent" />
             <span>fr₂ = {fr2.toFixed(3)}</span>
           </div>
+          {hasResults && (
+            <div className="flex items-center gap-2 text-primary-light">
+              <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+              <span>设计点: λ = {results.lambda.toFixed(2)}, Q = {results.q.toFixed(3)}</span>
+            </div>
+          )}
         </div>
       </div>
 
