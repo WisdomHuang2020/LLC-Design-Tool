@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 
 export interface DesignParameters {
   vinMin: number
@@ -154,25 +154,25 @@ export function DesignProvider({ children }: { children: ReactNode }) {
   const [suggestions, setSuggestionsState] = useState<string[]>(loadSuggestions)
   const [curves, setCurvesState] = useState<CurvesState>(loadCurves)
 
-  const setParams = (p: DesignParameters) => {
+  const setParams = useCallback((p: DesignParameters) => {
     setParamsState(p)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)) } catch { /* ignore */ }
-  }
+  }, [])
 
-  const setResults = (r: CalculatedResults | null) => {
+  const setResults = useCallback((r: CalculatedResults | null) => {
     setResultsState(r)
     try { localStorage.setItem(RESULTS_KEY, r ? JSON.stringify(r) : '') } catch { /* ignore */ }
-  }
+  }, [])
 
-  const setSuggestions = (s: string[]) => {
+  const setSuggestions = useCallback((s: string[]) => {
     setSuggestionsState(s)
     try { localStorage.setItem(SUGGESTIONS_KEY, JSON.stringify(s)) } catch { /* ignore */ }
-  }
+  }, [])
 
-  const setCurves = (c: CurvesState) => {
+  const setCurves = useCallback((c: CurvesState) => {
     setCurvesState(c)
     try { localStorage.setItem(CURVES_KEY, JSON.stringify(c)) } catch { /* ignore */ }
-  }
+  }, [])
 
   return (
     <DesignContext.Provider value={{ params, setParams, results, setResults, suggestions, setSuggestions, curves, setCurves }}>
