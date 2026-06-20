@@ -282,7 +282,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="\\begin{aligned} M(f_n, k, Q) &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + \\left[Q\\left(f_n - \\frac{1}{f_n}\\right)\\right]^2}} \\\\ &= \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + \\left[f_n k Q(f_n^2 - 1)\\right]^2}} \\end{aligned}"
+            latex="\\begin{aligned} M(f_n, k, Q) &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + \\left[Q\\left(f_n - \\frac{1}{f_n}\\right)\\right]^2}} \\\\ &= \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + k^2 Q^2 (f_n^2 - 1)^2}} \\end{aligned}"
             multiline
             stepNumber={5}
             label="标准 LLC 增益方程"

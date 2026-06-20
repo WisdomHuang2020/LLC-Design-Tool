@@ -56,7 +56,7 @@ $$M(f_n, k, Q) = \frac{1}{\sqrt{\left(1 + \frac{1}{k} - \frac{1}{k f_n^2}\right)
 
 ### 2.2 标准形式（Derivations / Operation）
 
-$$M(f_n, k, Q) = \frac{f_n^2 k}{\sqrt{\left[f_n^2(k+1) - 1\right]^2 + \left[f_n k Q (f_n^2 - 1)\right]^2}}$$
+$$M(f_n, k, Q) = \frac{f_n^2 k}{\sqrt{\left[f_n^2(k+1) - 1\right]^2 + k^2 Q^2 (f_n^2 - 1)^2}}$$
 
 ### 2.3 峰值增益
 
@@ -472,7 +472,7 @@ $$M = \left|\frac{Z_p}{Z_{in}}\right|$$
 
 展开后：
 
-$$M = \frac{f_n^2 k}{\sqrt{\left[f_n^2(k+1) - 1\right]^2 + \left[f_n k Q(f_n^2 - 1)\right]^2}}$$
+$$M = \frac{f_n^2 k}{\sqrt{\left[f_n^2(k+1) - 1\right]^2 + k^2 Q^2 (f_n^2 - 1)^2}}$$
 
 等价形式：
 
