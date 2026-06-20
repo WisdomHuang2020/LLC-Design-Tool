@@ -23,9 +23,9 @@ function calcGain(fn: number, lambda: number, Q: number): number {
 }
 
 function calcImpedance(fn: number, lambda: number, Q: number) {
-  const denom = 1 + Q * Q * fn * fn * lambda * lambda
+  const denom = Q * Q + fn * fn * lambda * lambda
   const re = (Q * fn * fn * lambda * lambda) / denom
-  const im = (fn - 1 / fn) + (fn * lambda) / denom
+  const im = (fn - 1 / fn) + (Q * Q * fn * lambda) / denom
   const mag = Math.sqrt(re * re + im * im)
   const phase = Math.atan2(im, re) * (180 / Math.PI)
   return { mag, phase }

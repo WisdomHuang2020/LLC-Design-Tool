@@ -419,12 +419,20 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             代入归一化参数化简：
           </p>
-          <MathBlock latex="Z_{in} = jZ_0 \\left[ \\frac{f_n^2 - 1}{f_n} + \\frac{f_n \\lambda}{1 + j f_n \\lambda Q} \\right]" />
+          <MathBlock latex="Z_{in} = jZ_0\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_0 \\lambda}{1 + j f_n \\lambda Q}" />
 
           <p className="text-text-secondary mt-4 mb-2">
             将实部和虚部分离：
           </p>
-          <MathBlock latex="Z_{in} = \\frac{Z_0 f_n^2 \\lambda^2 Q}{(1 + f_n^2 \\lambda^2 Q^2)} + jZ_0 \\left[ \\frac{f_n^2 - 1}{f_n} + \\frac{f_n \\lambda}{1 + f_n^2 \\lambda^2 Q^2} \\right]" />
+          <MathBlock latex="Z_{in} = Z_0 \\left[ \\frac{f_n^2 \\lambda^2 Q}{Q^2 + f_n^2 \\lambda^2} + j\\left(f_n - \\frac{1}{f_n} + \\frac{f_n \\lambda Q^2}{Q^2 + f_n^2 \\lambda^2}\\right) \\right]" />
+
+          <p className="text-text-secondary mt-4 mb-2">
+            归一化形式（<span className="font-mono">Z_{'{'}in{'}'}/Z_0 = R_e + jI_m</span>）：
+          </p>
+          <MathBlock
+            latex="\\begin{aligned} R_e &= \\frac{f_n^2 \\lambda^2 Q}{Q^2 + f_n^2 \\lambda^2} \\\\\\ I_m &= f_n - \\frac{1}{f_n} + \\frac{f_n \\lambda Q^2}{Q^2 + f_n^2 \\lambda^2} \\end{aligned}"
+            multiline
+          />
 
           <HighlightBox type="info">
             <strong>ZVS条件：</strong>
@@ -434,7 +442,7 @@ export default function Derivations() {
           <p className="text-text-secondary mt-4 mb-2">
             感性/容性边界条件：
           </p>
-          <MathBlock latex="\\text{Im}(Z_{in}) = 0 \\quad \\Rightarrow \\quad \\frac{f_n^2 - 1}{f_n} + \\frac{f_n \\lambda}{1 + f_n^2 \\lambda^2 Q^2} = 0" />
+          <MathBlock latex="\\text{Im}(Z_{in}) = 0 \\quad \\Rightarrow \\quad f_n - \\frac{1}{f_n} + \\frac{f_n \\lambda Q^2}{Q^2 + f_n^2 \\lambda^2} = 0" />
 
           <p className="text-text-secondary mt-4 mb-2">
             {'解此方程可得边界频率。对于 LLC 变换器，当 f_s > f_r1 时，Z_in 呈感性；在 f_r2 与 f_r1 之间，阻抗性质取决于负载条件。'}

@@ -117,7 +117,7 @@ function generateSuggestions(
   } else if (lambda < kMin * 1.2) {
     s.push({ text: `电感比k=${lambda.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，谐振频率处虚拟增益Mv=${(lambda/(lambda-1)).toFixed(3)}，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
+    s.push({ text: `电感比k=${lambda.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
   }
 
   // 2. Qmax对比分析
@@ -356,7 +356,7 @@ interface CalculatedData {
   rectifier: string
   rac: number
   zr: number
-  // 新增计算结果
+// 新增计算结果
   fmax: number
   fmin: number
   gmaxEmpty: number
@@ -368,7 +368,6 @@ interface CalculatedData {
   gMin: number
   gMax: number
   gNom: number
-  mv: number
   // 新增字段
   zvsTimeOk: boolean
   tZvs: number
@@ -571,20 +570,16 @@ export default function Designer() {
     // k为预设值，典型范围3~10
     const k = form.lambda
 
-    // ─── 步骤2：计算谐振频率处虚拟增益 Mv ───
-    // 集成变压器模型：谐振频率处虚拟增益 Mv = k/(k-1)
-    const mv = k / (k - 1)
-
-    // ─── 步骤3：计算匝比n ───
-    // Mv只用于修正匝比n，使谐振频率处输出等于额定电压
+    // ─── 步骤2：计算匝比n ───
+    // 标准FHA方法：谐振频率处增益 = 1，不使用虚拟增益
     const n =
       topology === 'half-bridge'
-        ? (vinNom / (2 * voutEff)) * mv
-        : (vinNom / voutEff) * mv
+        ? vinNom / (2 * voutEff)
+        : vinNom / voutEff
 
-    // ─── 步骤4：计算增益范围（归一化到谐振频率=1）───
-    // Gmax/Gmin 是相对于谐振频率处增益的增益变化倍数
-    // 不包含Mv，因为Mv已经体现在匝比n中
+    // ─── 步骤3：计算增益范围（归一化到谐振频率=1）───
+    // Gmax/Gmin 基于标准FHA方法：谐振频率处增益 = 1
+    // 不包含Mv，谐振频率处归一化增益为1
     const gMax = vinNom / vinMin
     const gMin = vinNom / vinMax
     const gNom = 1.0  // 谐振频率处归一化增益为1
@@ -596,7 +591,7 @@ export default function Designer() {
     // k的最小值：满足空载增益 >= Gmax
     const kMin = 1 / Math.max(1e-6, gMax - 1)
 
-    // ─── 步骤5：计算Qmax ───
+    // ─── 步骤4：计算Qmax ───
     const fr = fsw  // 设谐振频率fr = fsw
 
     // 等效AC电阻
@@ -626,7 +621,7 @@ export default function Designer() {
     }
     const qmax1 = findQmax1(k, gMax)
 
-    // Qmax2：ZVS条件（死区时间）
+    // Qmax2：ZVS条件（死区时间），基于能量守恒推导
     // fmax估计：基于空载增益公式 fn² = G/(G*(k+1)-k)
     const fmaxEst = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
     const cossTotal = Math.max(1, 2 * cossEr + cj)  // 保护：最小1pF
@@ -641,20 +636,21 @@ export default function Designer() {
     const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
     const q = Math.max(0.001, qmax * 0.95)
 
-    // ─── 步骤6：计算谐振参数 ───
+    // ─── 步骤5：计算谐振参数 ───
     const zr = q * Math.max(1e-6, racMin)
     const lr = zr / Math.max(1e-6, 2 * Math.PI * fr)
     const cr = 1 / Math.max(1e-15, 2 * Math.PI * fr * zr)
     const lm = k * lr
 
-    // ─── 步骤7：验证 ───
+    // ─── 步骤6：验证 ───
     // fmax/fmin：从空载增益公式精确推导
     const fmax = fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
     const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
     // ZVS能量验证
+    // 只有励磁电感 Lm 中的储能参与ZVS，Lr 在死区时间内与 Cr 谐振，不贡献ZVS能量
     const imDeadtime = vinMin / Math.max(1e-9, 4 * fmax * lm)
-    const er = 0.5 * (lm + lr) * imDeadtime * imDeadtime
+    const er = 0.5 * lm * imDeadtime * imDeadtime
     const ec = 0.5 * cossTotal * vinMax * vinMax
     const zvsMargin = er >= ec
 
@@ -666,24 +662,27 @@ export default function Designer() {
     // ZVS相位（在fr处）
     const zvsPhaseDeg = zvsPhase(k, q)
 
-    // ─── 步骤8：电流计算 ───
+    // ─── 步骤7：电流计算 ───
     const io = pout / Math.max(1e-6, vout)
 
     // 次级电流
+    // 中心抽头：每个绕组电流是半波正弦，峰值 = π·Io/2，有效值 = 峰值/2 = π·Io/4
+    // 全波：isRms = π·Io/(2√2) ≈ 1.11·Io
     let isRms: number
     if (rectifier === 'center-tapped') {
-      isRms = (Math.PI / 2) * io
+      isRms = (Math.PI / 4) * io
     } else {
       isRms = (Math.PI / (2 * Math.sqrt(2))) * io
     }
 
-    // 初级谐振电流（谐振电流分量，在fr处）
-    // 初级电压基波分量：半桥 2Vin/π，全桥 4Vin/π
+    // 初级谐振电流（在谐振频率处，Zr=0，总阻抗≈Rac）
+    // 初级电压基波分量幅值：半桥 2Vin/π，全桥 4Vin/π
+    // vFund 是幅值，irRms 应使用有效值 = vFund / (√2 · rac)
     const vFund =
       topology === 'half-bridge'
         ? vinNom * 2 / Math.PI
         : vinNom * 4 / Math.PI
-    const irRms = vFund / rac
+    const irRms = vFund / (Math.sqrt(2) * rac)
 
     // 励磁电流（在fr处，近似）
     const vLm = topology === 'half-bridge' ? vinNom / 2 : vinNom
@@ -692,7 +691,7 @@ export default function Designer() {
     // 初级总电流
     const ipRms = Math.sqrt(irRms * irRms + imRms * imRms)
 
-    // ─── 步骤9：设计增益曲线数据 ───
+    // ─── 步骤8：设计增益曲线数据 ───
     // 生成当前设计参数的增益曲线数据
     const gainCurveData: Array<{ fn: number; m: number }> = []
     for (let fn = 0.2; fn <= 2.0; fn += 0.01) {
@@ -743,7 +742,6 @@ export default function Designer() {
       gMin,
       gMax,
       gNom,
-      mv,
       gainCurveData,
     }
 
@@ -1090,8 +1088,7 @@ export default function Designer() {
                 {!collapsedSections.results && (
                   <div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                      <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin/(2·(Vout+Vd))·Mv" />
-                      <ResultItem label="谐振频率处增益 Mv" value={calculated.mv.toFixed(3)} unit="" formula="Mv = k/(k-1) = λ/(λ-1)" />
+                      <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin_nom/(2·(Vout+Vd)) 或 Vin_nom/(Vout+Vd)" />
                       <ResultItem label="谐振频率 fr" value={(calculated.fr / 1000).toFixed(1)} unit="kHz" formula="fr = 1/(2π√(Lr·Cr))" />
                       <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
                       <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
@@ -1142,10 +1139,10 @@ export default function Designer() {
                         formula={`t_ZVS=${(calculated.tZvs * 1e9).toFixed(1)}ns / Td=${form.td}ns`}
                         highlight={calculated.zvsTimeOk ? 'good' : 'critical'}
                       />
-                      <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = Vin/(√2·Zr)·√(fn²(M-1)²+M²)/fn" />
+                      <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = V_in1 / Rac（谐振频率处近似）" />
                       <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im = Vin/(4·f·Lm)" />
                       <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
-                      <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula="Is = (π/2√2)·Io" />
+                      <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
                       <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
                       <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
                       <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
