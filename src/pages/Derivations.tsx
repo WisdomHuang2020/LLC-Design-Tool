@@ -509,18 +509,24 @@ export default function Derivations() {
           />
 
           <p className="text-text-secondary mt-4 mb-2 font-medium">
-            2. 副边整流二极管应力
+            {'2. 副边整流二极管应力'}
           </p>
 
           <MathBlock
-            latex="V_{RRM} = 2V_o"
+            latex="V_{RRM} = 2V_o \quad \text{（中心抽头整流）}"
             stepNumber={4}
-            label="二极管反向电压应力"
+            label="二极管反向电压应力（中心抽头）"
+          />
+
+          <MathBlock
+            latex="V_{RRM} = V_o \quad \text{（全桥 / 全波整流）}"
+            stepNumber={5}
+            label="二极管反向电压应力（全桥）"
           />
 
           <MathBlock
             latex="I_{avg} = \\frac{I_o}{2}"
-            stepNumber={5}
+            stepNumber={6}
             label="二极管平均电流"
           />
 
