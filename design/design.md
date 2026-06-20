@@ -186,14 +186,14 @@ SVG Circuit Assets (to be drawn as inline React components):
 1. **What is Resonance?**: LC tank circuit basics, resonant frequency formula, impedance behavior, animated SVG of LC tank with sinusoidal waveforms
 2. **Series vs Parallel Resonance**: Comparison table, impedance curves, Q factor definition, bandwidth
 3. **LLC Resonant Tank**: The three components Lr, Cr, Lm, their roles, equivalent circuit model, why LLC not just LC
-4. **Key Parameters**: Definitions table — resonant frequency fr, normalized frequency fn, inductance ratio λ (Lm/Lr), quality factor Q, characteristic impedance Zr
+4. **Key Parameters**: Definitions table — resonant frequency fr, normalized frequency fn, inductance ratio k (Lm/Lr), quality factor Q, characteristic impedance Zr
 5. **Topology Variants**: Half-bridge vs full-bridge, transformer integration, center-tapped vs bridge rectifier
 
 ### Math Content
 - fr = 1 / (2π√(Lr×Cr))
 - Zr = √(Lr/Cr)
 - Q = Zr / Rac = √(Lr/Cr) / Rac
-- λ = Lm / Lr
+- k = Lm / Lr
 
 ---
 
@@ -220,13 +220,13 @@ SVG Circuit Assets (to be drawn as inline React components):
 1. **FHA (First Harmonic Approximation)**: Why FHA is used, Fourier analysis of square wave, assumptions
 2. **Equivalent AC Circuit Model**: Converting rectifier + load to equivalent Rac, derivation of Rac = 8n²Rload/π²
 3. **Voltage Gain Derivation**: Starting from FHA, deriving the complete gain equation:
-   - M(fn, λ, Q) = | (fn² × λ) / √[ (fn²(1+λ)-1)² + (fn×Q×(fn²-1))² × λ² ] |
+   - M(fn, k, Q) = | (fn² × k) / √[ (fn²(1+k)-1)² + (fn×Q×(fn²-1))² × k² ] |
    - Step-by-step derivation with circuit analysis, complex impedance, voltage divider
 4. **Resonant Frequencies**: Derivation of fr1 = 1/(2π√(LrCr)) and fr2 = 1/(2π√((Lr+Lm)Cr))
 5. **Peak Gain**: Condition for maximum gain, solving dM/dfn = 0, expression for peak gain
 6. **Impedance Analysis**: Input impedance Zin derivation, resonant condition, inductive/capacitive region boundary
 7. **Current Stress**: Derivation of primary current, secondary current, RMS values, peak current at switching transitions
-8. **Component Selection**: Lr, Cr, Lm selection formulas based on Q, λ, and power requirements
+8. **Component Selection**: Lr, Cr, Lm selection formulas based on Q, k, and power requirements
 
 ### Layout
 - Each derivation is a collapsible accordion or numbered section
@@ -243,18 +243,18 @@ SVG Circuit Assets (to be drawn as inline React components):
    - X-axis: Normalized frequency fn (0.5 to 2.0)
    - Y-axis: Voltage gain M (0 to 3.0)
    - Multiple curves for different Q values (0.2, 0.5, 1.0, 2.0, 5.0)
-   - Sliders: λ (0.1 to 0.5), Q (0.1 to 5.0)
+   - Sliders: k (0.1 to 0.5), Q (0.1 to 5.0)
    - Highlight point: current operating frequency, hover tooltip shows exact gain
    - Mark fr1 and fr2 as vertical reference lines
 2. **Impedance vs Frequency**: 
    - Input impedance magnitude and phase vs frequency
    - Shows resonant dips and peaks
-3. **3D Gain Surface** (optional): Gain as function of fn and Q, λ fixed, interactive rotation
+3. **3D Gain Surface** (optional): Gain as function of fn and Q, k fixed, interactive rotation
 4. **Load Regulation**: Gain vs load (Q) at fixed frequency, showing how load affects gain
 5. **Phase Plot**: Phase angle of input impedance vs frequency, critical for ZVS region identification
 
 ### Controls Panel
-- Left panel: parameter inputs (λ slider, Q slider, fn range)
+- Left panel: parameter inputs (k slider, Q slider, fn range)
 - Right/main: chart canvas
 - Top: toggle which curves to display (gain, impedance, phase)
 - Export: PNG download of current chart
@@ -278,13 +278,13 @@ SVG Circuit Assets (to be drawn as inline React components):
    - Turns ratio n
    - Resonant frequency fr
    - Lr, Cr, Lm values
-   - Q, λ values
+   - Q, k values
    - Peak gain required vs achieved
    - ZVS margin check
    - Current stress estimates
 3. **Optimization Suggestions**:
    - If Q too high → suggest lower Lr or higher Cr
-   - If peak gain insufficient → suggest higher λ or lower fr
+   - If peak gain insufficient → suggest higher k or lower fr
    - If efficiency target not met → suggest frequency/loss trade-off
    - If ZVS margin small → suggest dead time adjustment
    - Color-coded: green (good), amber (warning), red (critical)
@@ -364,4 +364,4 @@ State flows:
 - Designer page owns the input form and calculation logic
 - Results are stored in shared context or localStorage
 - Report page reads from shared context to render
-- Curves page can read λ and Q from context to pre-populate sliders
+- Curves page can read k and Q from context to pre-populate sliders
