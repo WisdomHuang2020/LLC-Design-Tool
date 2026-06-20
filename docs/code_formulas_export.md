@@ -1,959 +1,1107 @@
 # LLC Design Tool — Code Formula Export
 
-> Auto-extracted from the `src/` TypeScript/TSX source. This file collects arithmetic design formulas, loss-model equations, compensator expressions, and the KaTeX `latex` strings displayed through `MathBlock` components.
+This document is a comprehensive extraction of arithmetic / design-calculation expressions and displayed mathematical formulas from the current LLC Design Tool source code (`src/`).
+
+- **Code-calculation files** (`Designer.tsx`, `Curves.tsx`, `Report.tsx`, `CompensationSection.tsx`, `DesignCompare.tsx`): extracted as Markdown/LaTeX formulas with brief notes.
+- **Derivation pages** (`Derivations.tsx`, `Operation.tsx`, `Fundamentals.tsx`): extracted from `MathBlock latex="..."` / `MathBlock` KaTeX strings.
+- Engineering annotations for `Qmax2`/`16`, `Coss` loss `2/3`, and body-diode `0.7` are inserted exactly where the relevant formulas appear.
 
 ---
 
-## src/pages/Designer.tsx
+## 1. `src/pages/Designer.tsx` — Main Design Calculations & Loss Analysis
 
-### Component / E-series helper
+### 1.1 E-Series standard-value helper
 
-- **E-series nearest-value selection**
-  ```
-  exponent = floor(log10(value))
-  mantissa = value / 10^exponent
-  closest  = argmin_v |mantissa - v|   (v from E12/E24 series)
-  return closest * 10^exponent
-  ```
-  Selects a standard E12/E24 value for Lr/Cr.
+Nearest standard value:
 
-### LLC gain and ZVS helpers
+\[
+\text{exponent} = \lfloor \log_{10}(\text{value}) \rfloor,\quad
+\text{mantissa} = \frac{\text{value}}{10^{\text{exponent}}}
+\]
 
-- **Normalized FHA voltage gain `gainM(fn,k,Q)`**
-  $$
-  M(f_n,k,Q)=\frac{1}{\sqrt{\left[1+\frac{1}{k}\left(1-\frac{1}{f_n^2}\right)\right]^2+\left[Q\left(f_n-\frac{1}{f_n}\right)\right]^2}}
-  $$
-  Computes the LLC resonant-tank gain versus normalized frequency.
+Return closest mantissa from `E12`/`E24` multiplied by \(10^{\text{exponent}}\).
 
-- **Peak gain `peakGain(k,Q)`**
-  $$
-  M_{max}=\max_{f_n\in[0.3,1.0]} M(f_n,k,Q)
-  $$
-  Evaluated numerically in 0.005 steps.
+### 1.2 LLC voltage gain (FHA)
 
-- **Input-impedance phase at $f_n=1$ (`zvsPhase`)**
-  $$
-  x=kQ,\quad \text{Re}=\frac{x^2}{1+x^2},\quad \text{Im}=\frac{x}{1+x^2}
-  $$
-  $$
-  \varphi=\arctan2(\text{Im},\text{Re})\cdot\frac{180}{\pi}
-  $$
-  Gives the inductive phase margin used for ZVS screening.
+\[
+M(f_n,k,Q) = \frac{1}{\sqrt{\left[1 + \frac{1}{k}\left(1 - \frac{1}{f_n^{2}}\right)\right]^{2} + \left[Q\left(f_n - \frac{1}{f_n}\right)\right]^{2}}}
+\]
 
-### Main design calculation (`handleCalculate`)
+Code implementation (`gainM`):
 
-- **Unit scaling**
-  $$
-  f_{sw}=\text{form.fsw}\times1000,\quad C_{oss,eq}=\text{form.cossEq}\times10^{-12},\quad C_{oss,er}=\text{form.cossEr}\times10^{-12}
-  $$
-  $$
-  C_j=\text{form.cj}\times10^{-12},\quad T_d=\text{form.td}\times10^{-9}
-  $$
+```ts
+const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
+const b = q * (fn - 1 / fn)
+return 1 / Math.sqrt(a * a + b * b)
+```
 
-- **Effective output voltage (includes diode drop)**
-  $$
-  V_{out,eff}=V_{out}+V_d
-  $$
+**Note:** Peak gain is found by numerical search over \(f_n = 0.3 \sim 1.0\) (`peakGain`).
 
-- **Transformer turns ratio**
-  $$
-  n=\begin{cases}
-  \dfrac{V_{in,nom}}{2V_{out,eff}} & \text{half-bridge}\\[6pt]
-  \dfrac{V_{in,nom}}{V_{out,eff}} & \text{full-bridge}
-  \end{cases}
-  $$
+### 1.3 ZVS phase at resonance
 
-- **Required normalized gain range**
-  $$
-  G_{max}=\frac{V_{in,nom}}{V_{in,min}},\quad G_{min}=\frac{V_{in,nom}}{V_{in,max}},\quad G_{nom}=1
-  $$
+At \(f_n = 1\), let \(x = kQ\). The input-impedance phase is:
 
-- **No-load Region-1 gain and minimum $k$**
-  $$
-  G_{empty}=1+\frac{1}{k},\quad k_{min}=\frac{1}{G_{max}-1}
-  $$
+\[
+\varphi = \arctan2\left(\frac{x}{1+x^{2}},\; \frac{x^{2}}{1+x^{2}}\right) \times \frac{180}{\pi}
+\]
 
-- **Resonant frequency assumption**
-  $$
-  f_r=f_{sw}
-  $$
+Code (`zvsPhase`):
 
-- **Equivalent AC load resistance (FHA)**
-  $$
-  R_{ac}=\frac{8n^2V_{out}^2}{\pi^2P_{out}}
-  $$
+```ts
+const x = k * q
+const real = (x * x) / (1 + x * x)
+const imag = x / (1 + x * x)
+return Math.atan2(imag, real) * (180 / Math.PI)
+```
 
-- **Light-load $R_{ac}$**
-  $$
-  P_{min}=P_{out}\cdot\frac{\text{loadMin}}{100},\quad R_{ac,min}=R_{ac}\cdot\frac{P_{out}}{P_{min}}
-  $$
+### 1.4 Main design calculation flow (`handleCalculate`)
 
-- **Region-1 no-load gain limit and feasibility**
-  $$
-  G_{region1,min}=\frac{k}{k+1},\quad \text{feasible}=G_{min}\ge G_{region1,min}
-  $$
+#### Unit conversions
 
-- **Estimated maximum frequency**
-  $$
-  f_{max,est}=f_r\sqrt{\frac{G_{min}}{G_{min}(k+1)-k}}\quad(\text{when feasible})
-  $$
+\[
+f_{sw} = f_{sw,\text{kHz}} \times 1000,\quad
+C_{ossEq} = C_{ossEq,\text{pF}} \times 10^{-12},\quad
+C_{ossEr} = C_{ossEr,\text{pF}} \times 10^{-12},\quad
+C_j = C_{j,\text{pF}} \times 10^{-12},\quad
+T_d = T_{d,\text{ns}} \times 10^{-9}
+\]
 
-- **Total switched-node capacitance**
-  $$
-  C_{oss,total}=\max\left(10^{-12},\;2C_{oss,er}+C_j\right)
-  $$
+#### Effective output voltage
 
-- **Qmax constraints**
-  $$
-  Q_{max1}=\text{bisection solution of } M_{max}(k,Q)=G_{max}
-  $$
-  $$
-  Q_{max2}=\frac{(k+1)V_{in,min}^2}{16f_{max,est}^2k^2C_{oss,total}V_{in,max}^2}\cdot\frac{2\pi f_r}{R_{ac,min}}
-  $$
-  > 注：系数 16 来源于半桥 LLC 死区时间近似公式 \( t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m \) 的反推。
-  > 若拓扑为全桥或死区定义不同，该系数需重新推导。
-  $$
-  C_{eq}=\max\left(1,\;2C_{oss,eq}+C_j\right)
-  $$
-  $$
-  Q_{max3}=\sqrt{(k+1)^2\left(\frac{f_{max,est}^2}{f_r^2}-1\right)R_{ac,min}C_{eq}}
-  $$
+\[
+V_{out,eff} = V_{out} + V_d
+\]
 
-- **Selected quality factor (95 % margin)**
-  $$
-  Q_{max}=\max\left(0.001,\;\min(Q_{max1},Q_{max2},Q_{max3})\right),\quad Q=\max\left(0.001,\;0.95Q_{max}\right)
-  $$
+#### Transformer turns ratio
 
-- **Resonant-tank elements**
-  $$
-  Z_r=Q\,R_{ac,min},\quad L_r=\frac{Z_r}{2\pi f_r},\quad C_r=\frac{1}{2\pi f_rZ_r},\quad L_m=kL_r
-  $$
+\[
+n = \begin{cases}
+\dfrac{V_{in,nom}}{2V_{out,eff}} & \text{half-bridge} \\[6pt]
+\dfrac{V_{in,nom}}{V_{out,eff}} & \text{full-bridge}
+\end{cases}
+\]
 
-- **Exact operating frequency limits**
-  $$
-  f_{max}=f_r\sqrt{\frac{G_{min}}{G_{min}(k+1)-k}},\quad f_{min}=f_r\sqrt{\frac{G_{max}}{G_{max}(k+1)-k}}
-  $$
+#### Required normalized gains
 
-- **ZVS magnetizing current and energy check**
-  $$
-  f_{max,ZVS}=\text{isFinite}(f_{max})?f_{max}:f_r
-  $$
-  $$
-  I_{m,dead}=\frac{V_{in,min}}{(8\text{ or }4)\,f_{max,ZVS}\,L_m}
-  $$
-  (8 for half-bridge, 4 for full-bridge)
-  $$
-  E_r=\frac{1}{2}L_mI_{m,dead}^2,\quad E_c=\frac{1}{2}C_{oss,total}V_{in,max}^2,\quad \text{zvsMargin}=E_r\ge E_c
-  $$
+\[
+G_{max} = \frac{V_{in,nom}}{V_{in,min}},\quad
+G_{min} = \frac{V_{in,nom}}{V_{in,max}},\quad
+G_{nom} = 1.0
+\]
 
-- **ZVS transition-time check**
-  $$
-  t_{ZVS}=\frac{C_{oss,total}V_{in,max}}{I_{m,dead}},\quad \text{zvsTimeOk}=t_{ZVS}\le T_d
-  $$
+#### No-load Region-1 gain & minimum \(k\)
 
-- **Output and winding currents**
-  $$
-  I_o=\frac{P_{out}}{V_{out}}
-  $$
-  $$
-  I_{s,rms}=\begin{cases}
-  \dfrac{\pi}{4}I_o & \text{center-tapped / sync-center-tapped}\\[6pt]
-  \dfrac{\pi}{2\sqrt{2}}I_o & \text{full-wave / synchronous}
-  \end{cases}
-  $$
+\[
+G_{empty} = 1 + \frac{1}{k},\qquad
+k_{min} = \frac{1}{G_{max} - 1}
+\]
 
-- **Primary resonant and magnetizing currents (at $f_r$)**
-  $$
-  V_{fund}=\begin{cases}
-  \dfrac{2V_{in,nom}}{\pi} & \text{half-bridge}\\[6pt]
-  \dfrac{4V_{in,nom}}{\pi} & \text{full-bridge}
-  \end{cases}
-  $$
-  $$
-  I_{r,rms}=\frac{V_{fund}}{\sqrt{2}\,R_{ac}},\quad V_{Lm}=\begin{cases}V_{in,nom}/2 & \text{half-bridge}\\ V_{in,nom} & \text{full-bridge}\end{cases}
-  $$
-  $$
-  I_{m,rms}=\frac{V_{Lm}}{4\sqrt{3}\,f_rL_m},\quad I_{p,rms}=\sqrt{I_{r,rms}^2+I_{m,rms}^2}
-  $$
+#### Resonant frequency
 
-### Loss model (`calculateLosses`)
+\[
+f_r = f_{sw}
+\]
 
-- **Peak primary current and output current**
-  $$
-  I_{p,peak}=I_{p,rms}\sqrt{2},\quad I_o=\frac{P_{out}}{V_{out}}
-  $$
+#### Equivalent AC resistance
 
-- **MOSFET conduction loss**
-  $$
-  P_{cond,per}=0.5\,I_{p,rms}^2\,R_{ds(on)},\quad P_{cond}=P_{cond,per}\cdot N_{switches}
-  $$
-  where $N_{switches}=2$ (half-bridge) or $4$ (full-bridge).
+\[
+R_{ac} = \frac{8 n^{2} V_{out}^{2}}{\pi^{2} P_{out}}
+\]
 
-- **Linear switching losses**
-  $$
-  P_{on}=0.5\,V_{in}\,I_{p,peak}\,\frac{t_r}{10^9}\,f_{sw}\,N_{switches}
-  $$
-  $$
-  P_{off}=0.5\,V_{in}\,I_{p,peak}\,\frac{t_f}{10^9}\,f_{sw}\,N_{switches}
-  $$
+#### Light-load \(R_{ac}\)
 
-- **Coss energy loss**
-  $$
-  C_{oss}=\frac{C_{oss,pF}}{10^{12}},\quad E_{coss}=0.5\,C_{oss}\,V_{in}^2\cdot\frac{2}{3},\quad P_{coss}=E_{coss}\,f_{sw}\,N_{switches}
-  $$
-  > 注：系数 2/3 考虑了 MOSFET 结电容 \( C_{oss} \) 随 \( V_{ds} \) 的非线性变化。
-  > 不同厂商/型号的 \( C_{oss} \) 非线性特性不同，精确损耗建议查手册 \( E_{oss} \) 曲线。
+\[
+P_{min} = P_{out} \times \frac{load_{min}}{100},\qquad
+R_{ac,min} = R_{ac} \times \frac{P_{out}}{P_{min}}
+\]
 
-- **Body-diode conduction loss**
-  $$
-  I_{diode}=0.7\,I_{p,peak},\quad P_{diode}=V_{sd}\,I_{diode}\,\frac{T_d}{10^9}\,f_{sw}\,N_{switches}
-  $$
-  > 注：0.7 为经验系数，实际体二极管电流波形因死区时间、\( C_{oss} \) 充放电波形而异。
-  > 精确估算需时域仿真或示波器实测。
+#### Qmax1 — peak-gain constraint
 
-- **Transformer core loss (Steinmetz)**
-  $$
-  A_e[m^2]=A_{e,mm^2}\cdot10^{-6},\quad B_{peak}=\frac{V_{in}/(\text{1 or 2})}{4f_{sw}N_pA_e}
-  $$
-  $$
-  P_{core}=K\,\left(\frac{f_{sw}}{10^3}\right)^\alpha\,(B_{peak}\cdot1000)^\beta\,V_e
-  $$
+Numerical bisection (`findQmax1`) finds \(Q_{max1}\) such that the peak gain equals \(G_{max}\).
 
-- **Winding loss (DC + skin effect)**
-  $$
-  R_{dc}=\frac{R_{dc,m\Omega}}{1000},\quad FR=1+\left(\frac{f_{sw}/1000}{f_0}\right)^2,\quad P_w=I_{p,rms}^2R_{dc}\,FR
-  $$
+#### Qmax2 — ZVS dead-time constraint
 
-- **Rectifier loss**
-  - Synchronous: $N_{sr}=2$ (center-tapped) or $4$ (full-wave),
-    $$
-    I_{sr,per}=\frac{I_{s,rms}}{\sqrt{2}},\quad P_{rect}=N_{sr}\,I_{sr,per}^2\,R_{ds(on),sr}
-    $$
-  - Diode: $N_D=2$ (center-tapped) or $4$ (full-wave),
-    $$
-    I_{D,avg}=\frac{I_o}{2},\quad P_{rect}=N_D\,V_f\,I_{D,avg}
-    $$
+Region-1 minimum gain:
 
-- **Resonant-element ESR/DCR loss**
-  $$
-  P_{Lr}=I_{p,rms}^2\,R_{DCR,Lr},\quad P_{Cr}=I_{p,rms}^2\,R_{ESR,Cr},\quad P_{res}=P_{Lr}+P_{Cr}
-  $$
+\[
+G_{region1,min} = \frac{k}{k+1}
+\]
 
-- **Total loss and actual efficiency**
-  $$
-  P_{loss}=P_{cond}+P_{on}+P_{off}+P_{coss}+P_{diode}+P_{core}+P_w+P_{rect}+P_{res}
-  $$
-  $$
-  \eta=\frac{P_{out}}{P_{out}+P_{loss}}\times100
-  $$
+Estimated maximum frequency (Region 1):
 
-### Design-rule thresholds (`generateSuggestions`)
+\[
+f_{max,est} = f_r \sqrt{\frac{G_{min}}{G_{min}(k+1) - k}}
+\]
 
-- $k < 1.05k_{min}$ → critical (too close to minimum $k$)
-- $k < 1.2k_{min}$ → warning
-- $Q > 1.0$ → critical; $Q > 0.7$ → warning; $Q < 0.2$ → warning
-- $M_{max} < G_{max}$ → critical; $M_{max} < 1.05G_{max}$ → warning
-- $E_r/E_c < 1.2$ → warning
-- $t_{ZVS} > T_d$ → critical
-- $f_{max}>2f_r$ → critical; $f_{max}>1.5f_r$ → warning
-- $C_r<1\text{nF}$, $L_m<50\mu\text{H}$, $f_{sw}>500\text{kHz}$ → warnings
+Total parasitic capacitance:
 
-### Component-stress / selection rules shown in the UI
+\[
+C_{oss,total} = \max\left(10^{-12},\; 2C_{ossEr} + C_j\right)
+\]
 
-- Primary MOSFET voltage rating suggestion: $\lceil V_{in,max}\rceil$ (half-bridge) or $\lceil 1.2V_{in,max}\rceil$ (full-bridge).
-- Primary MOSFET current suggestion: $2.5\,I_{p,rms}$.
-- Secondary rectifier voltage suggestion: $\lceil 2.5V_{out}\rceil$ (center-tapped) or $\lceil 2V_{out}\rceil$ (full-wave).
-- Secondary rectifier current suggestion: $1.5\,I_{s,rms}$.
-- Resonant-capacitor voltage estimate: $V_{in,max}/2$ (half-bridge) or $V_{in,max}$ (full-bridge).
+\[
+Q_{max2} =
+\frac{(k+1)V_{in,min}^{2}}{16\,f_{max,est}^{2}\,k^{2}\,C_{oss,total}\,V_{in,max}^{2}}
+\times \frac{2\pi f_r}{R_{ac,min}}
+\]
 
+> 注：系数 16 来源于半桥 LLC 死区时间近似公式 \( t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m \) 的反推。
+> 若拓扑为全桥或死区定义不同，该系数需重新推导。
+
+#### Qmax3 — Coss energy constraint
+
+Equivalent resonant-capacitor Coss:
+
+\[
+C_{eq} = \max\left(10^{-12},\; 2C_{ossEq} + C_j\right)
+\]
+
+\[
+Q_{max3} = \sqrt{(k+1)^{2}\left(\frac{f_{max,est}^{2}}{f_r^{2}} - 1\right) R_{ac,min}\,C_{eq}}
+\]
+
+#### Selected \(Q\)
+
+\[
+Q_{max} = \max\left(0.001,\; \min(Q_{max1}, Q_{max2}, Q_{max3})\right),\qquad
+Q = 0.95 \, Q_{max}
+\]
+
+#### Resonant tank elements
+
+\[
+Z_r = Q \, R_{ac,min},\qquad
+L_r = \frac{Z_r}{2\pi f_r},\qquad
+C_r = \frac{1}{2\pi f_r Z_r},\qquad
+L_m = k L_r
+\]
+
+#### Operating frequency limits
+
+\[
+f_{max} = f_r \sqrt{\frac{G_{min}}{G_{min}(k+1) - k}},\qquad
+f_{min} = f_r \sqrt{\frac{G_{max}}{G_{max}(k+1) - k}}
+\]
+
+#### ZVS energy check
+
+Dead-time magnetizing current:
+
+\[
+I_{m,dead} = \frac{V_{in,min}}{(8\text{ or }4)\,f_{max}\,L_m}
+\]
+
+(Use 8 for half-bridge, 4 for full-bridge.)
+
+\[
+E_r = \frac{1}{2} L_m I_{m,dead}^{2},\qquad
+E_c = \frac{1}{2} C_{oss,total} V_{in,max}^{2},\qquad
+\text{ZVS margin} = E_r \ge E_c
+\]
+
+#### ZVS time check
+
+\[
+t_{ZVS} = \frac{C_{oss,total} V_{in,max}}{I_{m,dead}},\qquad
+\text{ZVS time OK} = t_{ZVS} \le T_d
+\]
+
+#### Current calculations
+
+Output current:
+
+\[
+I_o = \frac{P_{out}}{V_{out}}
+\]
+
+Secondary RMS current:
+
+\[
+I_{s,rms} = \begin{cases}
+\dfrac{\pi}{4} I_o & \text{center-tapped / sync-center-tapped} \\[6pt]
+\dfrac{\pi}{2\sqrt{2}} I_o & \text{full-wave / synchronous}
+\end{cases}
+\]
+
+Primary fundamental voltage amplitude:
+
+\[
+V_{fund} = \begin{cases}
+\dfrac{2 V_{in,nom}}{\pi} & \text{half-bridge} \\[6pt]
+\dfrac{4 V_{in,nom}}{\pi} & \text{full-bridge}
+\end{cases}
+\]
+
+Resonant current RMS:
+
+\[
+I_{r,rms} = \frac{V_{fund}}{\sqrt{2}\,R_{ac}}
+\]
+
+Magnetizing voltage and current:
+
+\[
+V_{Lm} = \begin{cases}
+V_{in,nom}/2 & \text{half-bridge} \\[4pt]
+V_{in,nom} & \text{full-bridge}
+\end{cases}
+\]
+
+\[
+I_{m,rms} = \frac{V_{Lm}}{4\sqrt{3}\,f_r L_m}
+\]
+
+Total primary RMS current:
+
+\[
+I_{p,rms} = \sqrt{I_{r,rms}^{2} + I_{m,rms}^{2}}
+\]
 
 ---
 
-## src/pages/Curves.tsx
+### 1.5 Loss analysis (`calculateLosses`)
 
-- **Normalized FHA gain (same model as Designer)**
-  $$
-  M(f_n,k,Q)=\frac{1}{\sqrt{\left[1+\frac{1}{k}\left(1-\frac{1}{f_n^2}\right)\right]^2+\left[Q\left(f_n-\frac{1}{f_n}\right)\right]^2}}
-  $$
+Peak primary current:
 
-- **Input impedance in normalized form (`calcImpedance`)**
-  $$
-  D=Q^2+f_n^2k^2
-  $$
-  $$
-  \text{Re}(Z_{in}/Z_r)=\frac{Qf_n^2k^2}{D}
-  $$
-  $$
-  \text{Im}(Z_{in}/Z_r)=\left(f_n-\frac{1}{f_n}\right)+\frac{Q^2f_nk}{D}
-  $$
-  $$
-  |Z_{in}/Z_r|=\sqrt{\text{Re}^2+\text{Im}^2},\quad \varphi=\arctan2(\text{Im},\text{Re})\cdot\frac{180}{\pi}
-  $$
+\[
+I_{p,pk} = I_{p,rms}\sqrt{2}
+\]
 
-- **Characteristic resonant frequencies marked on charts**
-  $$
-  f_{r1}=1,\quad f_{r2}=\frac{1}{\sqrt{1+k}}
-  $$
+Number of primary switches:
 
----
+\[
+N_{sw} = \begin{cases} 2 & \text{half-bridge} \\ 4 & \text{full-bridge} \end{cases}
+\]
 
-## src/pages/Report.tsx
+#### MOSFET conduction loss
 
-### Derived parameters
+\[
+P_{cond,per} = \frac{1}{2} I_{p,rms}^{2} R_{ds(on)},\qquad
+P_{cond} = N_{sw} \, P_{cond,per}
+\]
 
-- **Equivalent AC resistance**
-  $$
-  R_{ac}=\frac{8n^2V_{out}^2}{\pi^2P_{out}}
-  $$
+(Units: `mosfetRdsOn` is in mΩ, converted to Ω.)
 
-- **Characteristic impedance**
-  $$
-  Z_r=\sqrt{\frac{L_r}{C_r}}
-  $$
+#### Switching loss (linear approximation)
 
-- **Resonant frequency**
-  $$
-  f_r=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
+\[
+P_{on} = \frac{1}{2} V_{in} I_{p,pk} \, t_r \, f_{sw} \, N_{sw}
+\]
 
-### Gain analysis
+\[
+P_{off} = \frac{1}{2} V_{in} I_{p,pk} \, t_f \, f_{sw} \, N_{sw}
+\]
 
-- **Required gain at input extremes**
-  $$
-  M_{req,min}=\begin{cases}\dfrac{2nV_{out}}{V_{in,min}} & \text{half-bridge}\\[6pt]\dfrac{nV_{out}}{V_{in,min}} & \text{full-bridge}\end{cases}
-  $$
-  $$
-  M_{req,max}=\begin{cases}\dfrac{2nV_{out}}{V_{in,max}} & \text{half-bridge}\\[6pt]\dfrac{nV_{out}}{V_{in,max}} & \text{full-bridge}\end{cases}
-  $$
+(Units: \(t_r, t_f\) in ns, converted to seconds.)
 
-- **Design gain margin**
-  $$
-  \text{GainMargin}=\left(\frac{M_{max}}{M_{req,min}}-1\right)\times100\%
-  $$
+#### Coss loss
 
-### Currents
+\[
+C_{oss,F} = C_{oss,\text{pF}} \times 10^{-12}
+\]
 
-- **Output DC current**
-  $$
-  I_o=\frac{P_{out}}{V_{out}}
-  $$
+\[
+E_{coss} = \frac{1}{2} C_{oss,F} V_{in}^{2} \times \frac{2}{3},\qquad
+P_{coss} = E_{coss} \, f_{sw} \, N_{sw}
+\]
 
-### Stress estimates
+> 注：系数 2/3 考虑了 MOSFET 结电容 \( C_{oss} \) 随 \( V_{ds} \) 的非线性变化。
+> 不同厂商/型号的 \( C_{oss} \) 非线性特性不同，精确损耗建议查手册 \( E_{oss} \) 曲线。
 
-- **Primary MOSFET voltage/current stress**
-  $$
-  V_{DS,suggest}=\begin{cases}V_{in,max} & \text{half-bridge}\\ 1.2V_{in,max} & \text{full-bridge}\end{cases}
-  $$
-  $$
-  I_{MOS,suggest}=2.5\,I_{p,rms}
-  $$
+#### Body-diode conduction loss
 
-- **Secondary rectifier stress**
-  $$
-  V_{RRM,suggest}=\begin{cases}2.5V_{out} & \text{center-tapped}\\ 2V_{out} & \text{full-wave}\end{cases}
-  $$
-  $$
-  I_{rec,suggest}=1.5\,I_{s,rms}
-  $$
+\[
+I_{diode} = I_{p,pk} \times 0.7,\qquad
+P_{diode} = V_{sd} \, I_{diode} \, T_d \, f_{sw} \, N_{sw}
+\]
 
-- **Resonant-capacitor voltage estimate**
-  $$
-  V_{Cr}=\begin{cases}0.5V_{in,max} & \text{half-bridge}\\ V_{in,max} & \text{full-bridge}\end{cases}
-  $$
+> 注：0.7 为经验系数，实际体二极管电流波形因死区时间、\( C_{oss} \) 充放电波形而异。
+> 精确估算需时域仿真或示波器实测。
 
----
+#### Transformer core loss (Steinmetz)
 
-## src/components/CompensationSection.tsx
+\[
+A_e\,[m^{2}] = A_{e,\text{mm}^{2}} \times 10^{-6}
+\]
 
-### Helpers
+\[
+B_{peak} = \frac{V_{in} / (2\text{ or }1)}{4 f_{sw} N_p A_e}
+\]
 
-- **Engineering unit formatter**
-  ```
-  value >= 1e6  → value/1e6  M
-  value >= 1e3  → value/1e3  k
-  value >= 1    → value
-  value >= 1e-3 → value*1e3  m
-  value >= 1e-6 → value*1e6  μ
-  value >= 1e-9 → value*1e9  n
-  else          → exponential
-  ```
+\[
+P_{core} = k \left(\frac{f_{sw}}{1000}\right)^{\alpha} \left(B_{peak} \times 1000\right)^{\beta} V_e
+\]
 
-- **Radians to degrees**
-  $$
-  \theta_{deg}=\theta_{rad}\cdot\frac{180}{\pi}
-  $$
+(Use 2 for half-bridge voltage denominator, 1 for full-bridge.)
 
-### Plant transfer-function (`plantGainPhase`)
+#### Winding loss
 
-- **Angular frequency**
-  $$
-  \omega=2\pi f
-  $$
+\[
+R_{dc} = R_{dc,\text{mΩ}} / 1000,\qquad
+\text{freqRatio} = \frac{f_{sw}/1000}{f_{skin0}}
+\]
 
-- **Integrator model**
-  $$
-  G_p(s)=\frac{K_p}{s}\Rightarrow |G_p|=\frac{K_p}{\omega},\quad \varphi_p=-90^{\circ}
-  $$
+\[
+R_{ac,factor} = 1 + \text{freqRatio}^{2},\qquad
+P_{winding} = I_{p,rms}^{2} R_{dc} R_{ac,factor}
+\]
 
-- **Integrator + output pole**
-  $$
-  G_p(s)=\frac{K_p}{s(1+s/\omega_{p,out})}\Rightarrow |G_p|=\frac{K_p}{\omega\sqrt{1+(\omega/\omega_{p,out})^2}}
-  $$
-  $$
-  \varphi_p=-90^{\circ}-\arctan\left(\frac{\omega}{\omega_{p,out}}\right)
-  $$
+#### Rectifier loss
 
-- **Integrator + pole + ESR zero**
-  $$
-  G_p(s)=\frac{K_p(1+s/\omega_{z,ESR})}{s(1+s/\omega_{p,out})}
-  $$
-  $$
-  |G_p|=\frac{K_p\sqrt{1+(\omega/\omega_{z,ESR})^2}}{\omega\sqrt{1+(\omega/\omega_{p,out})^2}}
-  $$
-  $$
-  \varphi_p=-90^{\circ}+\arctan\left(\frac{\omega}{\omega_{z,ESR}}\right)-\arctan\left(\frac{\omega}{\omega_{p,out}}\right)
-  $$
+Synchronous rectifier:
 
-- **dB conversion**
-  $$
-  G_{dB}=20\log_{10}\bigl(\max(|G_p|,10^{-12})\bigr)
-  $$
+\[
+N_{rect} = \begin{cases} 2 & \text{sync-center-tapped} \\ 4 & \text{synchronous} \end{cases},\qquad
+I_{s,per} = \frac{I_{s,rms}}{\sqrt{2}}
+\]
 
-### Plant poles/zeros from component values
+\[
+P_{rect} = N_{rect} \, I_{s,per}^{2} \, R_{ds(on),rect}
+\]
 
-- **Output pole**
-  $$
-  \omega_{p,out}=\frac{1}{R_{load}C_{out}\cdot10^{-6}}
-  $$
+Diode rectifier:
 
-- **ESR zero**
-  $$
-  \omega_{z,ESR}=\frac{1}{R_{ESR}\cdot10^{-3}\cdot C_{out}\cdot10^{-6}}
-  $$
+\[
+N_{diodes} = \begin{cases} 2 & \text{center-tapped} \\ 4 & \text{full-wave} \end{cases},\qquad
+I_{avg,diode} = \frac{I_o}{2}
+\]
 
-### Compensator transfer-function (`compGainPhase`)
+\[
+P_{rect} = N_{diodes} \, V_f \, I_{avg,diode}
+\]
 
-- **Type-II**
-  $$
-  G_c(s)=K\frac{1+s/\omega_{z1}}{s(1+s/\omega_{p1})}
-  $$
+#### Resonant-element loss
 
-- **Type-III**
-  $$
-  G_c(s)=K\frac{(1+s/\omega_{z1})(1+s/\omega_{z2})}{s(1+s/\omega_{p1})(1+s/\omega_{p2})}
-  $$
+\[
+P_{Lr} = I_{p,rms}^{2} R_{DCR,Lr},\qquad
+P_{Cr} = I_{p,rms}^{2} ESR_{Cr},\qquad
+P_{res} = P_{Lr} + P_{Cr}
+\]
 
-- Magnitude is evaluated as the product of zero/pole distances from the $j\omega$ axis and converted to dB.
+#### Total loss and efficiency
 
-### Compensator design (`handleDesign`)
+\[
+P_{loss,total} = P_{cond} + P_{on} + P_{off} + P_{coss} + P_{diode} + P_{core} + P_{winding} + P_{rect} + P_{res}
+\]
 
-- **Crossover angular frequency**
-  $$
-  \omega_c=2\pi f_c
-  $$
-
-- **Required compensator gain at crossover**
-  $$
-  |G_p(f_c)|_{lin}=10^{|G_p(f_c)|_{dB}/20},\quad G_{c,needed}=\frac{1}{|G_p(f_c)|_{lin}}
-  $$
-
-- **Required compensator phase**
-  $$
-  \varphi_{c,req}=PM_{target}-180^{\circ}-\varphi_p(f_c)
-  $$
-
-- **Target phase boost and K-factor (Type-II)**
-  $$
-  \text{boost}=\varphi_{c,req}+180^{\circ},\quad \text{boost}\in[10^{\circ},160^{\circ}]
-  $$
-  $$
-  K=\tan\left(\frac{\text{boost}\cdot\pi}{360}\right),\quad K\in[0.2,10]
-  $$
-
-- **Target phase boost and K-factor (Type-III)**
-  $$
-  \text{boost}\in[10^{\circ},170^{\circ}]
-  $$
-  $$
-  K=\tan\left(\frac{(\text{boost}+180^{\circ})\pi}{720}\right),\quad K\in[0.2,20]
-  $$
-
-- **Zero / pole placement**
-  $$
-  f_{z1}=\frac{f_c}{K},\quad f_{p1}=Kf_c
-  $$
-  For Type-III: $f_{z2}=f_{z1}$ and $f_{p2}=f_{p1}$.
-
-- **Feedback resistor $R_2$**
-  $$
-  R_2=\begin{cases}R_1\,G_{c,needed} & \text{Type-II}\\[4pt]\dfrac{R_1\,G_{c,needed}}{K} & \text{Type-III}\end{cases}
-  $$
-  Clamped to $[1\text{k}\Omega,10\text{M}\Omega]$.
-
-- **Compensator capacitors**
-  $$
-  C_1=\frac{1}{R_2\,2\pi f_{z1}}
-  $$
-  $$
-  C_2=\frac{1}{R_2\,2\pi f_{p1}}
-  $$
-  For Type-III:
-  $$
-  R_3=\max\left(\frac{R_1}{10},100\Omega\right),\quad C_3=\frac{1}{R_3\,2\pi f_{p2}}
-  $$
-
-- **Actual phase margin**
-  $$
-  PM_{actual}=180^{\circ}+\varphi_p(f_c)+\varphi_c(f_c)
-  $$
-
-- **Crossover search**
-  $$
-  |G_{ol}(f)|_{dB}=|G_p(f)|_{dB}+|G_c(f)|_{dB},\quad f_{c,actual}=\argmin_f\bigl||G_{ol}(f)|_{dB}\bigr|
-  $$
-
-### Bode chart data
-
-- **Open-loop response**
-  $$
-  |G_{ol}|_{dB}=|G_p|_{dB}+|G_c|_{dB},\quad \varphi_{ol}=\varphi_p+\varphi_c
-  $$
+\[
+\eta = \frac{P_{out}}{P_{out} + P_{loss,total}} \times 100\%
+\]
 
 ---
 
-## src/components/DesignCompare.tsx
+## 2. `src/pages/Curves.tsx` — Gain & Impedance Characteristic Curves
 
-- **Normalized FHA gain (re-used for comparison curves)**
-  $$
-  M(f_n,k,Q)=\frac{1}{\sqrt{\left[1+\frac{1}{k}\left(1-\frac{1}{f_n^2}\right)\right]^2+\left[Q\left(f_n-\frac{1}{f_n}\right)\right]^2}}
-  $$
+### 2.1 LLC gain (normalized)
 
-- **Design score (`scoreDesign`)**
-  $$
-  S_{eff}=\min\left(\frac{\eta}{97},1\right)\times40
-  $$
-  $$
-  S_{freq}=\max\bigl(0,\;1-(0.5Q+k)\bigr)\times30
-  $$
-  $$
-  S_{ZVS}=\begin{cases}30 & \text{if zvsMargin}\\0 & \text{otherwise}\end{cases}
-  $$
-  $$
-  S_{total}=S_{eff}+S_{freq}+S_{ZVS}
-  $$
+Same FHA formula as Designer:
 
-- **Comparison-table spread**
-  $$
-  \text{Spread}=\frac{\max-\min}{\min}\times100\%
-  $$
+\[
+M(f_n,k,Q) = \frac{1}{\sqrt{\left[1 + \frac{1}{k}\left(1 - \frac{1}{f_n^{2}}\right)\right]^{2} + \left[Q\left(f_n - \frac{1}{f_n}\right)\right]^{2}}}
+\]
 
+### 2.2 Input impedance (normalized to \(Z_r\))
+
+\[
+D = Q^{2} + f_n^{2} k^{2}
+\]
+
+\[
+\text{Re}(Z_{in}) = Z_r \frac{Q f_n^{2} k^{2}}{D},\qquad
+\text{Im}(Z_{in}) = Z_r \left(f_n - \frac{1}{f_n} + \frac{Q^{2} f_n k}{D}\right)
+\]
+
+\[
+|Z_{in}| = \sqrt{\text{Re}^{2} + \text{Im}^{2}},\qquad
+\varphi = \arctan2(\text{Im}, \text{Re}) \times \frac{180}{\pi}
+\]
+
+### 2.3 Resonance markers
+
+\[
+f_{r1} = 1.0\;\text{(normalized)},\qquad
+f_{r2} = \frac{1}{\sqrt{1+k}}
+\]
 
 ---
 
-## src/pages/Derivations.tsx
+## 3. `src/pages/Report.tsx` — Design Report Generation
 
-> The following `MathBlock` LaTeX strings are reproduced verbatim (with JSX backslash escaping normalized so they render correctly in Markdown).
+### 3.1 Derived parameters used in report tables
 
-### Section 1 — 基本拓扑与工作原理
+\[
+R_{ac} = \frac{8 n^{2} V_{out}^{2}}{\pi^{2} P_{out}}
+\]
 
-- **第一谐振频率（串联谐振）**
-  $$
-  \omega_r=\frac{1}{\sqrt{L_rC_r}}\quad\Rightarrow\quad f_r=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
+### 3.2 Required gains
 
-- **第二谐振频率（串并联谐振）**
-  $$
-  \omega_m=\frac{1}{\sqrt{(L_r+L_m)C_r}}\quad\Rightarrow\quad f_m=\frac{1}{2\pi\sqrt{(L_r+L_m)C_r}}
-  $$
+Half-bridge:
 
-- **两个谐振频率的关系**
-  $$
-  \begin{aligned}
-  f_m&=\frac{1}{2\pi\sqrt{(L_r+L_m)C_r}}\\
-  &=\frac{1}{2\pi\sqrt{L_rC_r\cdot\left(1+\frac{L_m}{L_r}\right)}}\\
-  &=\frac{f_r}{\sqrt{1+k}}
-  \end{aligned}
-  $$
+\[
+M_{req,min} = \frac{2n(V_{out}+V_d)}{V_{in,min}},\qquad
+M_{req,max} = \frac{2n(V_{out}+V_d)}{V_{in,max}}
+\]
 
-- **核心参数汇总**
-  $$
-  k=\frac{L_m}{L_r},\quad f_r=\frac{1}{2\pi\sqrt{L_rC_r}},\quad f_m=\frac{f_r}{\sqrt{1+k}}
-  $$
+Full-bridge:
 
-### Section 2 — 稳态增益与 FHA 推导
+\[
+M_{req,min} = \frac{n(V_{out}+V_d)}{V_{in,min}},\qquad
+M_{req,max} = \frac{n(V_{out}+V_d)}{V_{in,max}}
+\]
 
-- **半桥基波电压有效值**
-  $$
-  V_{ab,1}=\frac{2\sqrt{2}}{\pi}V_{in}
-  $$
+### 3.3 Gain margin
 
-- **全桥基波电压有效值**
-  $$
-  V_{ab,1}=\frac{4\sqrt{2}}{\pi}V_{in}
-  $$
+\[
+\text{Gain margin} = \left(\frac{M_{max}}{M_{req,min}} - 1\right) \times 100\%
+\]
 
-- **等效交流负载电阻**
-  $$
-  \begin{aligned}
-  R_{ac}&=\frac{8n^2}{\pi^2}\cdot R_L\\
-  &=\frac{8n^2}{\pi^2}\cdot\frac{V_o^2}{P_o}
-  \end{aligned}
-  $$
+### 3.4 Stress estimates
 
-- **电压增益定义（分压形式）**
-  $$
-  M=\left|\frac{Z_2}{Z_1+Z_2}\right|
-  $$
+Primary MOSFET voltage recommendation:
 
-- **标准 LLC 增益方程**
-  $$
-  \begin{aligned}
-  M(f_n,k,Q)&=\frac{1}{\sqrt{\left(1+\frac{1}{k}-\frac{1}{kf_n^2}\right)^2+\left[Q\left(f_n-\frac{1}{f_n}\right)\right]^2}}\\
-  &=\frac{f_n^2k}{\sqrt{\left[f_n^2(k+1)-1\right]^2+k^2Q^2(f_n^2-1)^2}}
-  \end{aligned}
-  $$
+\[
+V_{ds,max} = \begin{cases} V_{in,max} & \text{half-bridge} \\ 1.2 V_{in,max} & \text{full-bridge} \end{cases}
+\]
 
-- **负载独立点**
-  $$
-  M(1,k,Q)=1
-  $$
+Primary MOSFET current recommendation:
 
-- **空载增益**
-  $$
-  M_{empty}(f_n,k)=\frac{1}{\left|1-\frac{1}{f_n^2(1+k)}\right|}
-  $$
+\[
+I_{MOS,rms} = 2.5 \, I_{p,rms}
+\]
 
-- **最终 FHA 增益公式**
-  $$
-  M=\frac{1}{\sqrt{\left(1+\frac{1}{k}-\frac{1}{kf_n^2}\right)^2+\left[Q\left(f_n-\frac{1}{f_n}\right)\right]^2}}
-  $$
+Secondary rectifier voltage recommendation:
 
-### Section 3 — 谐振频率与特征参数
+\[
+V_{RRM} = \begin{cases} 2.5 V_{out} & \text{center-tapped / sync-center-tapped} \\ 2 V_{out} & \text{full-wave / synchronous} \end{cases}
+\]
 
-- **第一 / 第二谐振频率**
-  $$
-  f_r=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
-  $$
-  f_m=\frac{1}{2\pi\sqrt{(L_r+L_m)C_r}}=\frac{f_r}{\sqrt{1+k}}
-  $$
+Secondary rectifier current recommendation:
 
-- **特征阻抗**
-  $$
-  Z_0=\sqrt{\frac{L_r}{C_r}}=\omega_rL_r=\frac{1}{\omega_rC_r}
-  $$
+\[
+I_{sec,rms} = 1.5 \, I_{s,rms}
+\]
 
-- **品质因数**
-  $$
-  Q=\frac{Z_0}{R_{ac}}=\frac{\sqrt{L_r/C_r}}{R_{ac}}
-  $$
+Resonant-capacitor voltage estimate:
 
-- **最终公式汇总**
-  $$
-  f_r=\frac{1}{2\pi\sqrt{L_rC_r}},\quad f_m=\frac{f_r}{\sqrt{1+k}},\quad Z_0=\sqrt{\frac{L_r}{C_r}},\quad Q=\frac{Z_0}{R_{ac}}
-  $$
-
-### Section 4 — 峰值增益与边界条件
-
-- **增益平方表达式**
-  $$
-  M^2=\frac{x^2k^2}{\left[x(k+1)-1\right]^2+xk^2Q^2(x-1)^2},\quad x=f_n^2
-  $$
-
-- **峰值频率边界条件**
-  $$
-  \frac{dM}{df_n}=0\quad\text{at}\quad f_n=f_{n,peak}
-  $$
-
-### Section 5 — 输入阻抗与 ZVS 条件
-
-- **输入阻抗定义**
-  $$
-  Z_{in}=j\omega_sL_r+\frac{1}{j\omega_sC_r}+\left(j\omega_sL_m\parallel R_{ac}\right)
-  $$
-
-- **实部与虚部**
-  $$
-  \begin{aligned}
-  \text{Re}(Z_{in})&=Z_0\cdot\frac{f_n^2k^2Q}{Q^2+f_n^2k^2}\\
-  \text{Im}(Z_{in})&=Z_0\left(f_n-\frac{1}{f_n}+\frac{f_nkQ^2}{Q^2+f_n^2k^2}\right)
-  \end{aligned}
-  $$
-
-- **感性 / 容性边界**
-  $$
-  \text{Im}(Z_{in})=0\quad\Rightarrow\quad f_n-\frac{1}{f_n}+\frac{f_nkQ^2}{Q^2+f_n^2k^2}=0
-  $$
-
-- **ZVS 能量准则**
-  $$
-  \frac{1}{2}L_mI_{m,off}^2\ge\frac{1}{2}C_{oss}V_{in}^2
-  $$
-
-- **感性区相位（$f_n=1$）**
-  $$
-  \begin{aligned}
-  \text{令 }x&=kQ\\
-  \frac{\text{Im}(Z_{in})}{Z_0}&=\frac{x}{1+x^2},\quad \frac{\text{Re}(Z_{in})}{Z_0}=\frac{x^2}{1+x^2}\\
-  \frac{\text{Im}}{\text{Re}}&=\frac{1}{x}=\frac{1}{kQ}\\
-  \varphi&=\arctan\left(\frac{1}{kQ}\right)\cdot\frac{180}{\pi}
-  \end{aligned}
-  $$
-
-- **最终输入阻抗公式**
-  $$
-  Z_{in}=jZ_0\left(f_n-\frac{1}{f_n}\right)+\frac{jf_nZ_0k}{1+jf_nkQ}
-  $$
-
-### Section 6 — 功率器件应力计算
-
-- **MOSFET 电压应力**
-  $$
-  V_{ds,max}=V_{in}
-  $$
-
-- **MOSFET 峰值电流**
-  $$
-  I_{pk}=\frac{2n(V_o+V_f)}{\pi Z_0Q}+\frac{n(V_o+V_f)}{2f_sL_m}
-  $$
-
-- **MOSFET 有效值电流**
-  $$
-  I_{rms}=\frac{I_{pk}}{\sqrt{2}}
-  $$
-
-- **副边整流二极管反向电压**
-  $$
-  V_{RRM}=2V_o\quad\text{（中心抽头整流）}
-  $$
-  $$
-  V_{RRM}=V_o\quad\text{（全桥 / 全波整流）}
-  $$
-
-- **二极管平均电流**
-  $$
-  I_{avg}=\frac{I_o}{2}
-  $$
-
-- **谐振电容电流**
-  $$
-  I_{C_r,rms}=I_{r,rms}
-  $$
-
-- **变压器原边电流有效值**
-  $$
-  I_{p,rms}=\sqrt{I_{r,rms}^2+I_{m,rms}^2}
-  $$
-
-### Section 7 — 功率器件损耗模型
-
-- **MOSFET 导通损耗**
-  $$
-  P_{cond}=I_{rms}^2\cdot R_{ds(on)}
-  $$
-
-- **体二极管损耗（简化）**
-  $$
-  P_{diode}=V_f\cdot I_{avg,diode}
-  $$
-
-- **关断损耗**
-  $$
-  P_{off}=\frac{1}{2}V_{in}\cdot I_{m,pk}\cdot(t_r+t_f)\cdot f_s
-  $$
-
-- **驱动损耗**
-  $$
-  P_{drv}=Q_g\cdot V_{drv}\cdot f_s
-  $$
-
-- **MOSFET 总损耗**
-  $$
-  P_{total,MOS}=P_{cond}+P_{diode}+P_{off}+P_{drv}
-  $$
-
-- **整流二极管导通损耗**
-  $$
-  P_{cond,D}=V_f\cdot I_o
-  $$
-
-- **反向恢复损耗**
-  $$
-  P_{rr}=\frac{1}{2}Q_{rr}\cdot V_{RRM}\cdot f_s
-  $$
-
-- **变压器铜损**
-  $$
-  P_{Cu}=I_p^2\cdot R_{ac,pri}+I_s^2\cdot R_{ac,sec}
-  $$
-
-- **磁芯损耗（Steinmetz）**
-  $$
-  P_{core}=C_m\cdot f^{\alpha}\cdot B^{\beta}\cdot V_e
-  $$
-
-- **工作磁密（方波激励）**
-  $$
-  B=\frac{V_p}{4N_pA_ef_s}
-  $$
-
-### Section 8 — 谐振腔与变压器设计
-
-- **变压器匝比（半桥）**
-  $$
-  n=\frac{V_{in,nom}}{2(V_o+V_f)}
-  $$
-
-- **变压器匝比（全桥）**
-  $$
-  n=\frac{V_{in,nom}}{V_o+V_f}
-  $$
-
-- **等效交流负载电阻**
-  $$
-  R_{ac}=\frac{8n^2}{\pi^2}\cdot\frac{V_o^2}{P_o}
-  $$
-
-- **最大 / 最小增益需求**
-  $$
-  \begin{aligned}
-  M_{max}&=\frac{V_{in,nom}}{V_{in,min}}\\
-  M_{min}&=\frac{V_{in,nom}}{V_{in,max}}
-  \end{aligned}
-  $$
-
-- **最大允许品质因数**
-  $$
-  Q_{max}=\min(Q_{max1},Q_{max2})
-  $$
-
-- **特征阻抗**
-  $$
-  Z_0=Q_s\cdot R_{ac}
-  $$
-
-- **谐振电容**
-  $$
-  C_r=\frac{1}{2\pi f_rZ_0}=\frac{1}{2\pi f_rQ_sR_{ac}}
-  $$
-
-- **谐振电感**
-  $$
-  L_r=\frac{Z_0}{2\pi f_r}=\frac{Q_sR_{ac}}{2\pi f_r}
-  $$
-
-- **励磁电感**
-  $$
-  L_m=k\cdot L_r=\frac{kQ_sR_{ac}}{2\pi f_r}
-  $$
-
-- **最终谐振腔公式汇总**
-  $$
-  L_r=\frac{Q_sR_{ac}}{2\pi f_r},\quad C_r=\frac{1}{2\pi f_rQ_sR_{ac}},\quad L_m=kL_r
-  $$
-
+\[
+V_{Cr,peak} = \begin{cases} 0.5 V_{in,max} & \text{half-bridge} \\ V_{in,max} & \text{full-bridge} \end{cases}
+\]
 
 ---
 
-## src/pages/Operation.tsx
+## 4. `src/components/CompensationSection.tsx` — Loop Compensation Design
 
-> `MathBlock` LaTeX strings (normalized for Markdown rendering).
+### 4.1 E-Series / value formatting
 
-- **第一谐振频率**
-  $$
-  f_{r1}=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
+Same `nearestE` helper as Designer.
 
-- **第二谐振频率**
-  $$
-  f_{r2}=\frac{1}{2\pi\sqrt{(L_r+L_m)C_r}}=\frac{f_{r1}}{\sqrt{1+k}}
-  $$
+### 4.2 Power-stage poles
 
-- **ZVS 能量条件（半桥）**
-  $$
-  \frac{1}{2}L_pI_p^2\ge\frac{1}{2}C_{oss}V_{in}^2\cdot2
-  $$
+Output pole:
 
-- **电压增益定义**
-  $$
-  M=\frac{nV_{out}}{V_{in}}\;(\text{全桥})\quad M=\frac{2nV_{out}}{V_{in}}\;(\text{半桥})
-  $$
+\[
+\omega_{p,out} = \frac{1}{R_{load} C_{out}}
+\]
 
-- **完整 FHA LLC 电压增益方程**
-  $$
-  M(f_n,k,Q)=\frac{f_n^2\cdot k}{\sqrt{\left(f_n^2(1+k)-1\right)^2+k^2Q^2(f_n^2-1)^2}}
-  $$
+ESR zero:
+
+\[
+\omega_{p,zero} = \frac{1}{ESR \cdot C_{out}}
+\]
+
+(Units: \(C_{out}\) in μF, \(ESR\) in mΩ, converted to F/Ω internally.)
+
+### 4.3 Plant transfer-function models
+
+**Integrator:**
+
+\[
+G_p(s) = \frac{K_p}{s},\qquad |G_p| = \frac{K_p}{\omega},\qquad \angle G_p = -90°
+\]
+
+**Integrator + output pole:**
+
+\[
+G_p(s) = \frac{K_p}{s(1 + s/\omega_{p,out})},\qquad
+|G_p| = \frac{K_p}{\omega \sqrt{1 + (\omega/\omega_{p,out})^{2}}}
+\]
+
+\[
+\angle G_p = -90° - \tan^{-1}\left(\frac{\omega}{\omega_{p,out}}\right)
+\]
+
+**Integrator + pole + ESR zero:**
+
+\[
+G_p(s) = \frac{K_p(1 + s/\omega_{p,zero})}{s(1 + s/\omega_{p,out})}
+\]
+
+\[
+|G_p| = K_p \frac{\sqrt{1 + (\omega/\omega_{p,zero})^{2}}}{\omega \sqrt{1 + (\omega/\omega_{p,out})^{2}}}
+\]
+
+\[
+\angle G_p = -90° + \tan^{-1}\left(\frac{\omega}{\omega_{p,zero}}\right) - \tan^{-1}\left(\frac{\omega}{\omega_{p,out}}\right)
+\]
+
+### 4.4 Compensator gain/phase
+
+Type II / Type III transfer-function magnitude/phase evaluated numerically at each frequency.
+
+### 4.5 Required compensator gain at crossover
+
+\[
+G_{c,needed} = \frac{1}{G_{p,linear}(f_c)}
+\]
+
+### 4.6 K-factor design
+
+Required compensator phase:
+
+\[
+\varphi_{c,req} = PM_{target} - 180° - \varphi_{plant}(f_c)
+\]
+
+Target boost:
+
+\[
+\text{boost}_{target} = \varphi_{c,req} + 180°\quad (\text{clamped to practical range})
+\]
+
+**Type II:**
+
+\[
+K = \tan\left(\frac{\text{boost}_{target} \cdot \pi}{360}\right),\qquad
+f_{z1} = \frac{f_c}{K},\qquad
+f_{p1} = K f_c
+\]
+
+**Type III:**
+
+\[
+K = \tan\left(\frac{(\text{boost}_{target} + 180°)\pi}{720}\right),\qquad
+f_{z1}=f_{z2}=\frac{f_c}{K},\qquad
+f_{p1}=f_{p2}=K f_c
+\]
+
+### 4.7 Component calculation
+
+\[
+R_2 = \begin{cases}
+R_1 \, G_{c,needed} & \text{Type II} \\[4pt]
+R_1 \, G_{c,needed} / K & \text{Type III}
+\end{cases}
+\]
+
+\[
+C_1 = \frac{1}{R_2 \, 2\pi f_{z1}},\qquad
+C_2 = \frac{1}{R_2 \, 2\pi f_{p1}}
+\]
+
+For Type III:
+
+\[
+R_3 = \max(100,\; R_1/10),\qquad
+C_3 = \frac{1}{R_3 \, 2\pi f_{p2}}
+\]
+
+### 4.8 Verification
+
+\[
+PM_{actual} = 180° + \varphi_{plant}(f_c) + \varphi_{comp}(f_c)
+\]
+
+Actual crossover frequency is found by scanning \(0.1 f_c \sim 10 f_c\) and minimizing \(|G_{open}|\) in dB.
 
 ---
 
-## src/pages/Fundamentals.tsx
+## 5. `src/components/DesignCompare.tsx` — A/B Design Comparison
 
-> `MathBlock` LaTeX strings (normalized for Markdown rendering).
+### 5.1 Gain curve comparison
 
-- **串联 LC 谐振频率**
-  $$
-  f_r=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
+Same FHA `calcGain` formula evaluated for each saved design.
 
-- **角频率关系**
-  $$
-  \omega_r=2\pi f_r=\frac{1}{\sqrt{L_rC_r}}
-  $$
+### 5.2 Design scoring
 
-- **LLC 品质因数**
-  $$
-  Q=\frac{Z_r}{R_{ac}}=\frac{\sqrt{L_r/C_r}}{R_{ac}}
-  $$
+\[
+\text{effScore} = \min\left(\frac{\eta}{97}, 1\right) \times 40
+\]
 
-- **串联谐振带宽**
-  $$
-  BW=\frac{f_r}{Q}=f_2-f_1
-  $$
+\[
+\text{freqRangeScore} = \max\left(0,\; 1 - (0.5 Q + k)\right) \times 30
+\]
 
-- **归一化增益（全桥）**
-  $$
-  M=\frac{n\cdot V_{out}}{V_{in}}
-  $$
+\[
+\text{zvsScore} = \begin{cases} 30 & \text{ZVS OK} \\ 0 & \text{otherwise} \end{cases}
+\]
 
-- **归一化增益（半桥）**
-  $$
-  M=\frac{2n\cdot V_{out}}{V_{in}}
-  $$
+\[
+\text{totalScore} = \text{effScore} + \text{freqRangeScore} + \text{zvsScore}
+\]
 
-- **LLC 第一谐振频率**
-  $$
-  f_{r1}=\frac{1}{2\pi\sqrt{L_rC_r}}
-  $$
+### 5.3 Parameter spread
 
-- **LLC 第二谐振频率**
-  $$
-  f_{r2}=\frac{1}{2\pi\sqrt{(L_r+L_m)C_r}}=\frac{f_{r1}}{\sqrt{1+k}}
-  $$
+For numeric compared values:
 
-- **特征阻抗**
-  $$
-  Z_r=\sqrt{\frac{L_r}{C_r}}
-  $$
+\[
+\text{spread} = \frac{\max - \min}{\min} \times 100\%
+\]
 
-- **品质因数**
-  $$
-  Q=\frac{Z_r}{R_{ac}}
-  $$
+---
 
-- **电感比**
-  $$
-  k=\frac{L_m}{L_r}
-  $$
+## 6. `src/pages/Derivations.tsx` — Formula Derivations (KaTeX Display Math)
 
-- **归一化频率**
-  $$
-  f_n=\frac{f_{sw}}{f_{r1}}
-  $$
+### 6.1 Section 1 — Basic Topology & Operating Principle
+
+**First resonant frequency (series resonance):**
+
+\[
+\omega_r = \frac{1}{\sqrt{L_r C_r}} \quad \Rightarrow \quad f_r = \frac{1}{2\pi\sqrt{L_r C_r}}
+\]
+
+**Second resonant frequency (series-parallel resonance):**
+
+\[
+\omega_m = \frac{1}{\sqrt{(L_r + L_m) C_r}} \quad \Rightarrow \quad f_m = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}}
+\]
+
+**Relation between the two resonant frequencies:**
+
+\[
+\begin{aligned}
+f_m &= \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} \\
+&= \frac{1}{2\pi\sqrt{L_r C_r \cdot \left(1 + \frac{L_m}{L_r}\right)}} \\
+&= \frac{f_r}{\sqrt{1 + k}}
+\end{aligned}
+\]
+
+**Core parameters:**
+
+\[
+k = \frac{L_m}{L_r}, \quad f_r = \frac{1}{2\pi\sqrt{L_r C_r}}, \quad f_m = \frac{f_r}{\sqrt{1 + k}}
+\]
+
+### 6.2 Section 2 — Steady-State Gain & FHA Derivation
+
+**Half-bridge fundamental RMS voltage:**
+
+\[
+V_{ab,1} = \frac{2\sqrt{2}}{\pi} V_{in}
+\]
+
+**Full-bridge fundamental RMS voltage:**
+
+\[
+V_{ab,1} = \frac{4\sqrt{2}}{\pi} V_{in}
+\]
+
+**Equivalent AC load resistance:**
+
+\[
+\begin{aligned}
+R_{ac} &= \frac{8n^2}{\pi^2} \cdot R_L \\ &= \frac{8n^2}{\pi^2} \cdot \frac{V_o^2}{P_o}
+\end{aligned}
+\]
+
+**Voltage gain definition:**
+
+\[
+M = \left| \frac{Z_2}{Z_1 + Z_2} \right|
+\]
+
+**Standard LLC gain equation:**
+
+\[
+\begin{aligned}
+M(f_n, k, Q) &= \frac{1}{\sqrt{\left(1 + \frac{1}{k} - \frac{1}{k f_n^2}\right)^2 + \left[Q\left(f_n - \frac{1}{f_n}\right)\right]^2}} \\ &= \frac{f_n^2 k}{\sqrt{\left[f_n^2(k+1) - 1\right]^2 + k^2 Q^2 (f_n^2 - 1)^2}}
+\end{aligned}
+\]
+
+**Load-independent point:**
+
+\[
+M(1, k, Q) = 1 \quad \text{（与 } Q \text{ 无关）}
+\]
+
+**No-load gain:**
+
+\[
+M_{empty}(f_n, k) = \frac{1}{\left|1 - \frac{1}{f_n^2(1 + k)}\right|}
+\]
+
+**Final formula:**
+
+\[
+M = \frac{1}{\sqrt{\left(1 + \frac{1}{k} - \frac{1}{k f_n^2}\right)^2 + \left[Q\left(f_n - \frac{1}{f_n}\right)\right]^2}}
+\]
+
+### 6.3 Section 3 — Resonant Frequencies & Characteristic Parameters
+
+**First resonant frequency:**
+
+\[
+f_r = \frac{1}{2\pi\sqrt{L_r C_r}}
+\]
+
+**Second resonant frequency:**
+
+\[
+f_m = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_r}{\sqrt{1 + k}}
+\]
+
+**Characteristic impedance:**
+
+\[
+Z_0 = \sqrt{\frac{L_r}{C_r}} = \omega_r L_r = \frac{1}{\omega_r C_r}
+\]
+
+**Quality factor:**
+
+\[
+Q = \frac{Z_0}{R_{ac}} = \frac{\sqrt{L_r / C_r}}{R_{ac}}
+\]
+
+**Final formulas:**
+
+\[
+f_r = \frac{1}{2\pi\sqrt{L_r C_r}}, \quad f_m = \frac{f_r}{\sqrt{1 + k}}, \quad Z_0 = \sqrt{\frac{L_r}{C_r}}, \quad Q = \frac{Z_0}{R_{ac}}
+\]
+
+### 6.4 Section 4 — Peak Gain & Boundary Conditions
+
+**Squared gain expression:**
+
+\[
+M^2 = \frac{x^2 k^2}{\left[x(k+1) - 1\right]^2 + x k^2 Q^2 (x-1)^2}
+\]
+
+where \(x = f_n^2\).
+
+**Boundary condition:**
+
+\[
+\frac{dM}{df_n} = 0 \quad \text{at} \quad f_n = f_{n,peak}
+\]
+
+### 6.5 Section 5 — Input Impedance & ZVS Conditions
+
+**Input impedance:**
+
+\[
+Z_{in} = j\omega_s L_r + \frac{1}{j\omega_s C_r} + \left(j\omega_s L_m \parallel R_{ac}\right)
+\]
+
+**Real / imaginary parts:**
+
+\[
+\begin{aligned}
+\text{Re}(Z_{in}) &= Z_0 \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2} \\ \text{Im}(Z_{in}) &= Z_0 \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)
+\end{aligned}
+\]
+
+**Inductive/capacitive boundary:**
+
+\[
+\text{Im}(Z_{in}) = 0 \quad \Rightarrow \quad f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} = 0
+\]
+
+**ZVS energy criterion:**
+
+\[
+\frac{1}{2} L_m I_{m,off}^2 \geq \frac{1}{2} C_{oss} V_{in}^2
+\]
+
+**Phase at \(f_n = 1\):**
+
+\[
+\begin{aligned}
+\text{令 } x &= kQ \\
+\frac{\text{Im}(Z_{in})}{Z_0} &= \frac{x}{1 + x^2}, \quad \frac{\text{Re}(Z_{in})}{Z_0} = \frac{x^2}{1 + x^2} \\
+\frac{\text{Im}}{\text{Re}} &= \frac{x}{x^2} = \frac{1}{x} = \frac{1}{kQ} \\
+\varphi &= \arctan\left(\frac{1}{kQ}\right) \cdot \frac{180}{\pi}
+\end{aligned}
+\]
+
+**Final formula:**
+
+\[
+Z_{in} = jZ_0\left(f_n - \frac{1}{f_n}\right) + \frac{j f_n Z_0 k}{1 + j f_n k Q}
+\]
+
+### 6.6 Section 6 — Power-Device Stress Calculations
+
+**MOSFET voltage stress:**
+
+\[
+V_{ds,max} = V_{in}
+\]
+
+**MOSFET peak current:**
+
+\[
+I_{pk} = \frac{2n(V_o + V_f)}{\pi Z_0 Q} + \frac{n(V_o + V_f)}{2 f_s L_m}
+\]
+
+**MOSFET RMS current:**
+
+\[
+I_{rms} = \frac{I_{pk}}{\sqrt{2}}
+\]
+
+**Diode reverse voltage (center-tapped):**
+
+\[
+V_{RRM} = 2V_o
+\]
+
+**Diode reverse voltage (full-bridge / full-wave):**
+
+\[
+V_{RRM} = V_o
+\]
+
+**Diode average current:**
+
+\[
+I_{avg} = \frac{I_o}{2}
+\]
+
+**Resonant-capacitor RMS current:**
+
+\[
+I_{C_r,rms} = I_{r,rms}
+\]
+
+**Transformer primary RMS current:**
+
+\[
+I_{p,rms} = \sqrt{I_{r,rms}^2 + I_{m,rms}^2}
+\]
+
+### 6.7 Section 7 — Power-Device Loss Models
+
+**MOSFET conduction loss:**
+
+\[
+P_{cond} = I_{rms}^2 \cdot R_{ds(on)}
+\]
+
+**Body-diode loss (simplified):**
+
+\[
+P_{diode} = V_f \cdot I_{avg,diode}
+\]
+
+**MOSFET turn-off loss:**
+
+\[
+P_{off} = \frac{1}{2} V_{in} \cdot I_{m,pk} \cdot (t_r + t_f) \cdot f_s
+\]
+
+**Gate-drive loss:**
+
+\[
+P_{drv} = Q_g \cdot V_{drv} \cdot f_s
+\]
+
+**Total MOSFET loss:**
+
+\[
+P_{total,MOS} = P_{cond} + P_{diode} + P_{off} + P_{drv}
+\]
+
+**Rectifier-diode conduction loss:**
+
+\[
+P_{cond,D} = V_f \cdot I_o
+\]
+
+**Reverse-recovery loss:**
+
+\[
+P_{rr} = \frac{1}{2} Q_{rr} \cdot V_{RRM} \cdot f_s
+\]
+
+**Transformer copper loss:**
+
+\[
+P_{Cu} = I_p^2 \cdot R_{ac,pri} + I_s^2 \cdot R_{ac,sec}
+\]
+
+**Core loss (Steinmetz):**
+
+\[
+P_{core} = C_m \cdot f^\alpha \cdot B^\beta \cdot V_e
+\]
+
+**Flux density (square-wave excitation):**
+
+\[
+B = \frac{V_p}{4 N_p A_e f_s}
+\]
+
+### 6.8 Section 8 — Resonant Tank & Transformer Design
+
+**Turns ratio:**
+
+\[
+n = \frac{V_{in,nom}}{2(V_o + V_f)} \quad \text{（半桥）}
+\]
+
+\[
+n = \frac{V_{in,nom}}{V_o + V_f} \quad \text{（全桥）}
+\]
+
+**Equivalent load resistance:**
+
+\[
+R_{ac} = \frac{8n^2}{\pi^2} \cdot \frac{V_o^2}{P_o}
+\]
+
+**Maximum / minimum required gain:**
+
+\[
+\begin{aligned}
+M_{max} &= \frac{V_{in,nom}}{V_{in,min}} \\ M_{min} &= \frac{V_{in,nom}}{V_{in,max}}
+\end{aligned}
+\]
+
+**Maximum allowable \(Q\):**
+
+\[
+Q_{max} = \min(Q_{max1}, Q_{max2})
+\]
+
+**Resonant tank parameters:**
+
+\[
+Z_0 = Q_s \cdot R_{ac}
+\]
+
+\[
+C_r = \frac{1}{2\pi f_r Z_0} = \frac{1}{2\pi f_r Q_s R_{ac}}
+\]
+
+\[
+L_r = \frac{Z_0}{2\pi f_r} = \frac{Q_s R_{ac}}{2\pi f_r}
+\]
+
+\[
+L_m = k \cdot L_r = \frac{k Q_s R_{ac}}{2\pi f_r}
+\]
+
+**Final formulas:**
+
+\[
+L_r = \frac{Q_s R_{ac}}{2\pi f_r}, \quad C_r = \frac{1}{2\pi f_r Q_s R_{ac}}, \quad L_m = k L_r
+\]
+
+---
+
+## 7. `src/pages/Operation.tsx` — LLC Operating Principles (KaTeX Display Math)
+
+### 7.1 Mode boundary resonant frequencies
+
+\[
+f_{r1} = \frac{1}{2\pi\sqrt{L_r C_r}}
+\]
+
+\[
+f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}
+\]
+
+### 7.2 ZVS energy condition (half-bridge)
+
+\[
+\frac{1}{2} L_p I_p^2 \geq \frac{1}{2} C_{oss} V_{in}^2 \cdot 2
+\]
+
+### 7.3 Voltage-gain definitions
+
+\[
+M = \frac{n V_{out}}{V_{in}} \;(\text{全桥}) \quad M = \frac{2n V_{out}}{V_{in}} \;(\text{半桥})
+\]
+
+### 7.4 FHA LLC gain equation
+
+\[
+M(f_n, k, Q) = \frac{f_n^2 \cdot k}{\sqrt{(f_n^2(1+k)-1)^2 + k^2 Q^2 (f_n^2-1)^2}}
+\]
+
+---
+
+## 8. `src/pages/Fundamentals.tsx` — Resonance Fundamentals (KaTeX Display Math)
+
+### 8.1 Series LC resonance
+
+\[
+f_r = \frac{1}{2\pi\sqrt{L_r C_r}}
+\]
+
+\[
+\omega_r = 2\pi f_r = \frac{1}{\sqrt{L_r C_r}}
+\]
+
+### 8.2 Quality factor
+
+\[
+Q = \frac{Z_r}{R_{ac}} = \frac{\sqrt{L_r/C_r}}{R_{ac}}
+\]
+
+### 8.3 Bandwidth
+
+\[
+BW = \frac{f_r}{Q} = f_2 - f_1
+\]
+
+### 8.4 FHA normalized gain
+
+\[
+M = \frac{n \cdot V_{out}}{V_{in}} \quad (全桥)
+\]
+
+\[
+M = \frac{2n \cdot V_{out}}{V_{in}} \quad (半桥)
+\]
+
+### 8.5 Key parameter definitions
+
+\[
+f_{r1} = \frac{1}{2\pi\sqrt{L_r C_r}}
+\]
+
+\[
+f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}
+\]
+
+\[
+Z_r = \sqrt{\frac{L_r}{C_r}}
+\]
+
+\[
+Q = \frac{Z_r}{R_{ac}}
+\]
+
+\[
+k = \frac{L_m}{L_r}
+\]
+
+\[
+f_n = \frac{f_{sw}}{f_{r1}}
+\]
 
 ---
 
 ## Summary
 
-- **Output file:** `docs/code_formulas_export.md`
-- **Files covered:** `src/pages/Designer.tsx`, `src/pages/Curves.tsx`, `src/pages/Report.tsx`, `src/components/CompensationSection.tsx`, `src/components/DesignCompare.tsx`, `src/pages/Derivations.tsx`, `src/pages/Operation.tsx`, `src/pages/Fundamentals.tsx`
-- **Formula count:** 152 extracted expressions/formulas.
+- **File written:** `docs/code_formulas_export.md`
+- **Formula sources:**
+  - `src/pages/Designer.tsx`
+  - `src/pages/Curves.tsx`
+  - `src/pages/Report.tsx`
+  - `src/components/CompensationSection.tsx`
+  - `src/components/DesignCompare.tsx`
+  - `src/pages/Derivations.tsx` (KaTeX `MathBlock`)
+  - `src/pages/Operation.tsx` (KaTeX `MathBlock`)
+  - `src/pages/Fundamentals.tsx` (KaTeX `MathBlock`)
+- **Engineering annotations included:** `Qmax2`/`16`, `Coss` loss `2/3`, body-diode `0.7`.
