@@ -148,17 +148,17 @@ $$
 > 注：系数 16 来源于半桥 LLC 死区时间近似公式 $ t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m $ 的反推。
 > 若拓扑为全桥或死区定义不同，该系数需重新推导。
 
-#### Qmax3 — Coss 能量约束
+#### Qmax3 — ZVS 能量约束（Coss 能量上限）
 
-等效谐振电容 Coss：
-
-$$
-C_{eq} = \max\left(10^{-12},\; 2C_{ossEq} + C_j\right)
-$$
+由励磁电感储能在 $f_{max}$ 处不小于总开关节点电容能量推导：
 
 $$
-Q_{max3} = \sqrt{(k+1)^{2}\left(\frac{f_{max,est}^{2}}{f_r^{2}} - 1\right) R_{ac,min}\,C_{eq}}
+Q_{max3} = \frac{2\pi f_r V_{in,min}^{2}}{c_{oeff}^{2}\,f_{max,est}^{2}\,k\,C_{oss,total}\,V_{in,max}^{2}\,R_{ac,min}}
 $$
+
+其中 $c_{oeff}=8$（半桥）或 $4$（全桥），$C_{oss,total}=2C_{oss,er}+C_j$。
+
+> 注：旧版 `Qmax3` 公式量纲不一致（$\sqrt{R_{ac}C_{oss}}$ 单位为 $\sqrt{s}$），会把 $Q$ 压得过低，导致 $C_r$ 异常偏大。当前已修正为与后续 ZVS 能量校验一致的形式。
 
 #### 选定的 $Q$
 

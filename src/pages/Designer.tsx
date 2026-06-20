@@ -653,11 +653,15 @@ export default function Designer() {
       ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
       : Infinity
 
-    // Qmax3：Coss能量（谐振腔电容）
-    // cossEq 和 cj 已在第575-577行转换为 F 单位，兜底值 1e-12 对应 1 pF
-    const cEq = Math.max(1e-12, 2 * cossEq + cj)
+    // Qmax3：ZVS 能量约束（由励磁电感储能 ≥ Coss 总能量推导出的 Q 上限）
+    // 推导：Lm = k·Lr = k·Q·Rac_min/(2π fr) 必须满足
+    //   0.5·Lm·(Vin_min/(coeff·fmax·Lm))² ≥ 0.5·Coss_total·Vin_max²
+    // 其中 coeff = 8（半桥）/ 4（全桥），与后续 ZVS 能量校验一致。
+    const zvsCoeff = topology === 'half-bridge' ? 8 : 4
     const qmax3 = fmaxFeasible
-      ? Math.sqrt(Math.max(0, (k + 1) * (k + 1) * ((fmaxEst * fmaxEst) / (fr * fr) - 1) * Math.max(1e-6, racMin) * cEq))
+      ? (2 * Math.PI * fr * vinMin * vinMin)
+        / Math.max(1e-15,
+            zvsCoeff * zvsCoeff * fmaxEst * fmaxEst * k * cossTotal * vinMax * vinMax * Math.max(1e-6, racMin))
       : Infinity
 
     // 取Qmax，留95%裕量
