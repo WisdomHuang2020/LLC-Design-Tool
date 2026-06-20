@@ -155,7 +155,7 @@ $$f_{max} = f_r \sqrt{\frac{M_{min}}{M_{min}(k+1) - k}}$$
 
 ### 4.5 最低工作频率 $f_{min}$（Region 2）
 
-$$f_{min} = f_r \sqrt{\frac{M_{max}}{M_{max}(k+1) + k}}$$
+$$f_{min} = f_r \sqrt{\frac{M_{max}}{M_{max}(k+1) - k}}$$
 
 ---
 
@@ -263,13 +263,13 @@ $$t_{ZVS} = \frac{C_{oss,total} \cdot V_{in,max}}{I_{m,off}}$$
 
 $$t_{ZVS} \le T_d$$
 
-### 6.4 感性区相位（$f_n = 1$ 处）
+### 6.4 感性区相位（$f_n = 1$ 处，归一化形式）
 
-令 $x = k Q$，则：
+令 $x = kQ$，则归一化输入阻抗：
 
-$$\text{Re}(Z_{in}) = \frac{x^2}{1 + x^2}, \quad \text{Im}(Z_{in}) = \frac{x}{1 + x^2}$$
+$$\frac{\text{Re}(Z_{in})}{Z_0} = \frac{x^2}{1 + x^2}, \quad \frac{\text{Im}(Z_{in})}{Z_0} = \frac{x}{1 + x^2}$$
 
-$$\varphi = \arctan\left(\frac{\text{Im}}{\text{Re}}\right) \cdot \frac{180}{\pi}$$
+$$\varphi = \arctan\left(\frac{1}{x}\right) \cdot \frac{180}{\pi} = \arctan\left(\frac{1}{kQ}\right) \cdot \frac{180}{\pi}$$
 
 ---
 
@@ -487,11 +487,11 @@ $$\frac{1}{2} L_m I_{m,off}^2 \ge \frac{1}{2} C_{oss} V_{in}^2$$
 
 - 初级 MOSFET 最大耐压：
 
-$$V_{ds,max} = V_{in}$$
+$$V_{ds,max} = V_{in,max}$$
 
 - 次级整流二极管反向耐压：
-
-$$V_{RRM} = 2V_o$$
+  - **中心抽头**整流：$V_{RRM} = 2V_o$
+  - **全桥 / 全波**整流：$V_{RRM} = V_o$
 
 - 次级整流二极管平均电流：
 
