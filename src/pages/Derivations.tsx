@@ -462,6 +462,22 @@ export default function Derivations() {
             label="ZVS 能量准则"
           />
 
+          <p className="text-text-secondary mt-4 mb-2">
+            {'在谐振频率 f_n = 1 处，输入阻抗的相位（感性区角度）：'}
+          </p>
+
+          <MathBlock
+            latex="\\begin{aligned} \\text{令 } x &= kQ \\\\ \\frac{\\text{Im}(Z_{in})}{Z_0} &= \\frac{x}{1 + x^2}, \\quad \\frac{\\text{Re}(Z_{in})}{Z_0} = \\frac{x^2}{1 + x^2} \\\\ \\frac{\\text{Im}}{\\text{Re}} &= \\frac{x}{x^2} = \\frac{1}{x} = \\frac{1}{kQ} \\\\ \\varphi &= \\arctan\\left(\\frac{1}{kQ}\\right) \\cdot \\frac{180}{\\pi} \\end{aligned}"
+            multiline
+            stepNumber={5}
+            label="感性区相位（f_n = 1）"
+          />
+
+          <HighlightBox type="info">
+            <strong>物理意义：</strong>
+            {'在 f_n = 1 处，阻抗相位仅由 kQ 决定，kQ 越大越接近纯阻性（φ → 0°），kQ 越小越接近纯感性（φ → 90°）。'}
+          </HighlightBox>
+
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
