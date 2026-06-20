@@ -543,11 +543,11 @@ export default function Fundamentals() {
               串联 LC 谐振电路的谐振频率与角频率：
             </p>
             <MathBlock
-              latex="f_r = \frac{1}{2\pi\sqrt{L_r C_r}}"
+              latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
               important
             />
             <MathBlock
-              latex="\omega_r = 2\pi f_r = \frac{1}{\sqrt{L_r C_r}}"
+              latex="\\omega_r = 2\\pi f_r = \\frac{1}{\\sqrt{L_r C_r}}"
             />
             <p className="text-text-secondary text-sm mt-3 leading-relaxed">
               在谐振频率处，电感感抗
@@ -615,7 +615,7 @@ export default function Fundamentals() {
                 Q 因子反映谐振电路的储能与耗能之比，决定谐振峰值的尖锐程度与带宽。对于 LLC 谐振变换器，Q 定义为：
               </p>
               <MathBlock
-                latex="Q = \frac{Z_r}{R_{ac}} = \frac{\sqrt{L_r/C_r}}{R_{ac}}"
+                latex="Q = \\frac{Z_r}{R_{ac}} = \\frac{\\sqrt{L_r/C_r}}{R_{ac}}"
                 important
               />
               <p className="text-text-secondary text-sm mt-2">
@@ -634,7 +634,7 @@ export default function Fundamentals() {
                 时的频率范围：
               </p>
               <MathBlock
-                latex="BW = \frac{f_r}{Q} = f_2 - f_1"
+                latex="BW = \\frac{f_r}{Q} = f_2 - f_1"
                 important
               />
               <p className="text-text-secondary text-sm mt-2">
@@ -746,10 +746,10 @@ export default function Fundamentals() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MathBlock
-                latex="M = \frac{n \cdot V_{out}}{V_{in}} \quad (全桥)"
+                latex="M = \\frac{n \\cdot V_{out}}{V_{in}} \\quad (全桥)"
               />
               <MathBlock
-                latex="M = \frac{2n \cdot V_{out}}{V_{in}} \quad (半桥)"
+                latex="M = \\frac{2n \\cdot V_{out}}{V_{in}} \\quad (半桥)"
               />
             </div>
             <p className="text-text-secondary text-sm mt-3 leading-relaxed">
@@ -857,25 +857,25 @@ export default function Fundamentals() {
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             <MathBlock
-              latex="f_{r1} = \frac{1}{2\pi\sqrt{L_r C_r}}"
+              latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
               important
             />
             <MathBlock
-              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}"
+              latex="f_{r2} = \\frac{1}{2\\pi\\sqrt{(L_r + L_m) C_r}} = \\frac{f_{r1}}{\\sqrt{1 + k}}"
               important
             />
             <MathBlock
-              latex="Z_r = \sqrt{\frac{L_r}{C_r}}"
+              latex="Z_r = \\sqrt{\\frac{L_r}{C_r}}"
             />
             <MathBlock
-              latex="Q = \frac{Z_r}{R_{ac}}"
+              latex="Q = \\frac{Z_r}{R_{ac}}"
             />
             <MathBlock
-              latex="k = \frac{L_m}{L_r}"
+              latex="k = \\frac{L_m}{L_r}"
               important
             />
             <MathBlock
-              latex="f_n = \frac{f_{sw}}{f_{r1}}"
+              latex="f_n = \\frac{f_{sw}}{f_{r1}}"
             />
           </div>
         </SectionCard>
