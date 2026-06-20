@@ -37,7 +37,7 @@ function generateData(lambda: number, Q: number) {
   const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
   let maxGain = 0
 
-  for (let fn = 0.0; fn <= 2.0; fn += 0.005) {
+  for (let fn = 0.1; fn <= 2.0; fn += 0.005) {
     const f = parseFloat(fn.toFixed(3))
 
     const gainPoint: Record<string, number> = { fn: f }
@@ -53,7 +53,6 @@ function generateData(lambda: number, Q: number) {
     if (safeG > maxGain) maxGain = safeG
     gainData.push(gainPoint)
 
-    if (f === 0) continue
     const { mag, phase } = calcImpedance(f, lambda, Q)
     if (Number.isFinite(mag) && Number.isFinite(phase)) {
       impedanceData.push({ fn: f, mag, phase })
@@ -75,9 +74,8 @@ export default function Curves() {
     if (results) {
       setLambda(results.lambda)
       setQ(results.q)
-      setCurves({ lambda: results.lambda, q: results.q })
     }
-  }, [results?.lambda, results?.q, setCurves])
+  }, [results?.lambda, results?.q])
 
   // Persist manual slider changes
   useEffect(() => {

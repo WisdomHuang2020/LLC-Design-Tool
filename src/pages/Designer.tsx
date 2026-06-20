@@ -642,7 +642,7 @@ export default function Designer() {
     const fmaxEst = fmaxFeasible
       ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
       : Infinity
-    const cossTotal = Math.max(1, 2 * cossEr + cj)  // 保护：最小1pF
+    const cossTotal = Math.max(1e-12, 2 * cossEr + cj)  // 保护：最小1pF = 1e-12 F
     const qmax2 = fmaxFeasible
       ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
       : Infinity
