@@ -760,7 +760,7 @@ export default function Operation() {
           />
 
           <div className="bg-bg/50 rounded-lg p-4">
-            <img src="https://kimi-web-img.moonshot.cn/img/passive-components.eu/76b9f179a75996d7179d0531595057976b915b8b.jpg" className="w-full rounded-lg" alt="LLC工作模式" />
+            <WaveformsSVG />
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -843,7 +843,7 @@ export default function Operation() {
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
               <h4 className="text-sm font-semibold text-primary-light mb-3">ZVS 过程特写</h4>
-              <img src="https://kimi-web-img.moonshot.cn/img/pic1.zhimg.com/5310b039850ffacfc0d6466461fd90dac6391c1e.jpg" className="w-full rounded-lg" alt="谐振电流波形" />
+              <ZVSZoomAnimatedSVG />
               <p className="text-text-secondary text-xs mt-3 leading-relaxed">
                 死区时间内，体二极管导通将 Vds 钳位至接近 0V。随后 Vgs 上升，MOSFET 在零电压条件下导通，实现 ZVS。这一过程消除了开通损耗（Coss 充放电损耗）。
               </p>
@@ -941,7 +941,7 @@ export default function Operation() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
-              <img src="https://kimi-web-img.moonshot.cn/img/files.resources.altium.com/e824da907b7b04b86957e675ad01a1ed1b48f184.png" className="w-full rounded-lg" alt="LLC（Altium）" />
+              <GainCurveSVG />
             </div>
             <div className="space-y-4">
               <p className="text-text-primary leading-relaxed">

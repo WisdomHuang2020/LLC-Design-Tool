@@ -153,7 +153,7 @@ export default function Derivations() {
           <h1 className="text-4xl font-bold text-gradient">公式推导</h1>
         </div>
         <p className="text-text-secondary text-lg max-w-3xl">
-          LLC 谐振变换器核心公式的完整数学推导。从一阶谐波近似（FHA）出发，逐步推导等效电路、电压增益、谐振频率、输入阻抗、峰值增益、电流应力及元件选型，为工程设计和理论学习提供严谨的数学基础。
+          LLC 谐振变换器核心公式的完整数学推导。从谐振腔分析到功率器件损耗，涵盖稳态增益、FHA 等效电路、应力计算、损耗模型及设计公式，为工程设计和理论学习提供严谨的数学基础。
         </p>
       </motion.div>
 
@@ -163,367 +163,263 @@ export default function Derivations() {
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
       >
-        {/* 1. FHA */}
+        {/* Section 1: 基本拓扑与工作原理 */}
         <DerivationSection
-          id="fha"
+          id="topology"
           number={1}
-          title="一阶谐波近似 (FHA)"
+          title="基本拓扑与工作原理"
           icon={<BookOpen className="w-5 h-5" />}
           defaultOpen={true}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            LLC 谐振变换器分析的核心工具是 FHA（First Harmonic Approximation）。开关管产生的方波电压包含丰富的谐波分量，但谐振腔对高次谐波有强烈抑制作用，因此仅基波分量对功率传输起主导作用。
+            LLC 谐振变换器由三部分构成：方波产生电路（开关网络）、谐振网络（L_r、C_r、L_m）以及整流及输出滤波电路。
           </p>
 
           <p className="text-text-secondary mt-4 mb-2">
-            全桥逆变器输出方波电压可展开为傅里叶级数（半桥幅值为其一半）：
+            谐振腔包含三个核心元件：谐振电感 L_r、谐振电容 C_r 和励磁电感 L_m。由于引入 L_m，网络具有两个固有的特征谐振频率：
           </p>
+
           <MathBlock
-            latex="v_{AB}^{\\text{FB}}(t) = \\frac{4V_{in}}{\\pi} \\sum_{\\substack{n=1 \\\\ n\\text{ odd}}}^{\\infty} \\frac{1}{n} \\sin(n\\omega_s t)"
+            latex="\\omega_r = \\frac{1}{\\sqrt{L_r C_r}} \\quad \\Rightarrow \\quad f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
             stepNumber={1}
-            label="全桥逆变器输出"
-          />
-          <MathBlock
-            latex="v_{AB}^{\\text{HB}}(t) = \\frac{2V_{in}}{\\pi} \\sum_{\\substack{n=1 \\\\ n\\text{ odd}}}^{\\infty} \\frac{1}{n} \\sin(n\\omega_s t)"
-            stepNumber={2}
-            label="半桥逆变器输出"
+            label="第一谐振频率（串联谐振）"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            FHA 假设仅保留基波（n = 1）分量：
+          <p className="text-text-secondary mt-2 mb-2">
+            当副边整流管导通时，L_m 被输出电压钳位，仅 L_r 和 C_r 参与谐振。
           </p>
+
           <MathBlock
-            latex="\\begin{aligned} v_{AB,1}^{\\text{FB}}(t) &= \\frac{4V_{in}}{\\pi} \\sin(\\omega_s t) \\\\ v_{AB,1}^{\\text{HB}}(t) &= \\frac{2V_{in}}{\\pi} \\sin(\\omega_s t) \\end{aligned}"
+            latex="\\omega_m = \\frac{1}{\\sqrt{(L_r + L_m) C_r}} \\quad \\Rightarrow \\quad f_m = \\frac{1}{2\\pi\\sqrt{(L_r + L_m) C_r}}"
+            stepNumber={2}
+            label="第二谐振频率（串并联谐振）"
+          />
+
+          <p className="text-text-secondary mt-2 mb-2">
+            当副边整流管关断，L_m 解除钳位，与 L_r、C_r 共同谐振。
+          </p>
+
+          <MathBlock
+            latex="\\begin{aligned} f_m &= \\frac{1}{2\\pi\\sqrt{(L_r + L_m) C_r}} \\\\ &= \\frac{1}{2\\pi\\sqrt{L_r C_r \\cdot \\left(1 + \\frac{L_m}{L_r}\\right)}} \\\\ &= \\frac{f_r}{\\sqrt{1 + k}} \\end{aligned}"
             multiline
             stepNumber={3}
-            label="基波分量"
+            label="两个谐振频率的关系"
           />
 
           <HighlightBox type="info">
-            <strong>关键假设：</strong>
-            仅当谐振腔对高次谐波有足够衰减时（高 Q 值），FHA 才具有良好精度。工程上通常要求 Q &gt; 0.3 以保证误差小于 2%。
+            <strong>电感比 k：</strong>
+            k = L_m / L_r 决定了两个谐振频率的间距。典型取值范围为 3 ~ 10，其中 5 ~ 7 较为常见。
           </HighlightBox>
 
           <p className="text-text-secondary mt-4 mb-2">
-            基波分量的峰值与有效值：
+            LLC 采用脉冲频率调制（PFM）进行控制。通过固定占空比（约 50%），调节开关频率 f_s 来改变谐振网络的阻抗，从而调节分压比，稳定输出电压。
           </p>
-          <MathBlock
-            latex="\\begin{aligned} V_{AB,1,\\text{peak}}^{\\text{FB}} &= \\frac{4V_{in}}{\\pi} \\quad & V_{AB,1,\\text{rms}}^{\\text{FB}} &= \\frac{2\\sqrt{2}V_{in}}{\\pi} \\\\ V_{AB,1,\\text{peak}}^{\\text{HB}} &= \\frac{2V_{in}}{\\pi} \\quad & V_{AB,1,\\text{rms}}^{\\text{HB}} &= \\frac{\\sqrt{2}V_{in}}{\\pi} \\end{aligned}"
-            multiline
-            stepNumber={4}
-            label="峰值与有效值"
-          />
 
           <div className="mt-6">
-            <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
+            <p className="text-text-muted text-sm mb-2 font-medium">核心参数</p>
             <MathBlock
-              latex="V_{FHA}^{\\text{FB}} = \\frac{2\\sqrt{2}V_{in}}{\\pi}, \\quad V_{FHA}^{\\text{HB}} = \\frac{\\sqrt{2}V_{in}}{\\pi}"
+              latex="k = \\frac{L_m}{L_r}, \\quad f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_m = \\frac{f_r}{\\sqrt{1 + k}}"
               important
             />
           </div>
         </DerivationSection>
 
-        {/* 2. Equivalent AC Resistance */}
+        {/* Section 2: 稳态增益与FHA推导 */}
         <DerivationSection
-          id="rac"
+          id="fha-gain"
           number={2}
-          title="等效 AC 负载电阻 R_{ac}"
-          icon={<Zap className="w-5 h-5" />}
-        >
-          <p className="text-text-secondary mt-4 mb-2">
-            为使用 AC 分析方法，需将整流器与负载转换为等效 AC 电阻 R_ac。利用功率守恒：等效 AC 电阻消耗的功率等于实际负载功率。
-          </p>
-
-          <MathBlock
-            latex="P_{ac} = P_{out} = \\frac{V_{out}^2}{R_{load}}"
-            stepNumber={1}
-            label="功率守恒"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            次级侧基波电压（全桥整流，中心抽头为 nV_out 等效）：
-          </p>
-          <MathBlock
-            latex="V_{sec,1,\\text{peak}} = \\frac{4nV_{out}}{\\pi}"
-            stepNumber={2}
-            label="次级基波电压峰值"
-          />
-          <MathBlock
-            latex="V_{sec,1,\\text{rms}} = \\frac{V_{sec,1,\\text{peak}}}{\\sqrt{2}} = \\frac{2\\sqrt{2}nV_{out}}{\\pi}"
-            stepNumber={3}
-            label="次级基波电压有效值"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            次级侧基波电流（近似正弦，全桥整流）：
-          </p>
-          <MathBlock
-            latex="I_{sec,1,\\text{peak}} = \\frac{\\pi I_{out}}{2n}"
-            stepNumber={4}
-            label="次级基波电流峰值"
-          />
-          <MathBlock
-            latex="I_{sec,1,\\text{rms}} = \\frac{I_{sec,1,\\text{peak}}}{\\sqrt{2}} = \\frac{\\pi I_{out}}{2\\sqrt{2}n}"
-            stepNumber={5}
-            label="次级基波电流有效值"
-          />
-
-          <HighlightBox type="info">
-            <strong>推导关键：</strong>
-            对于全桥整流，R_ac = V_sec1,rms / I_sec1,rms = 8n²R_load/π²；对于中心抽头整流，R_ac = 2n²R_load/π²。
-          </HighlightBox>
-
-          <p className="text-text-secondary mt-4 mb-2">
-            因此等效 AC 电阻（全桥整流）：
-          </p>
-          <MathBlock
-            latex="\\begin{aligned} R_{ac} &= \\frac{V_{sec,1,\\text{rms}}}{I_{sec,1,\\text{rms}}} \\\\ &= \\frac{2\\sqrt{2}nV_{out}/\\pi}{\\pi I_{out}/(2\\sqrt{2}n)} \\\\ &= \\frac{8n^2 R_{load}}{\\pi^2} \\end{aligned}"
-            multiline
-            stepNumber={6}
-            label="等效负载电阻推导"
-          />
-
-          <div className="mt-6">
-            <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
-            <MathBlock
-              latex="R_{ac} = \\frac{8n^2 R_{load}}{\\pi^2} \\quad \\text{(全桥整流)}"
-              important
-            />
-            <MathBlock
-              latex="R_{ac} = \\frac{2n^2 R_{load}}{\\pi^2} \\quad \\text{(中心抽头整流)}"
-              important
-            />
-          </div>
-        </DerivationSection>
-
-        {/* 3. Voltage Gain Derivation */}
-        <DerivationSection
-          id="gain"
-          number={3}
-          title="电压增益 M 推导（核心公式）"
+          title="稳态增益与 FHA 推导"
           icon={<TrendingUp className="w-5 h-5" />}
           defaultOpen={true}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            这是 LLC 设计中最核心的推导。定义归一化参数：
+            基波近似法（FHA）假设只有基波分量参与能量传递，将系统简化为线性正弦交流电路。首先对开关网络输出的方波电压进行傅里叶展开，仅取基波分量：
           </p>
+
           <MathBlock
-            latex="f_n = \\frac{f_s}{f_{r1}}, \\quad k = \\frac{L_m}{L_r}, \\quad Q = \\frac{Z_0}{R_{ac}} = \\frac{\\sqrt{L_r/C_r}}{R_{ac}}"
+            latex="V_{ab,1} = \\frac{2\\sqrt{2}}{\\pi} V_{in} \\quad \\text{(半桥有效值)}"
             stepNumber={1}
-            label="归一化参数定义"
+            label="半桥基波电压有效值"
           />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            串联谐振支路的阻抗：
-          </p>
           <MathBlock
-            latex="\\begin{aligned} Z_s &= j\\omega_s L_r + \\frac{1}{j\\omega_s C_r} \\\\ &= jZ_0 \\left( f_n - \\frac{1}{f_n} \\right) \\end{aligned}"
-            multiline
+            latex="V_{ab,1} = \\frac{4\\sqrt{2}}{\\pi} V_{in} \\quad \\text{(全桥有效值)}"
             stepNumber={2}
-            label="串联谐振阻抗"
+            label="全桥基波电压有效值"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            其中 Z_0 = √(L_r/C_r) 为特征阻抗。磁化电感与等效负载的并联阻抗：
+            {'将直流负载通过整流网络和变压器折算到原边，成为与励磁电感 L_m 并联的等效交流电阻 R_{ac}：'}
           </p>
+
           <MathBlock
-            latex="\\begin{aligned} Z_p &= j\\omega_s L_m \\parallel R_{ac} \\\\ &= \\frac{j\\omega_s L_m \\cdot R_{ac}}{R_{ac} + j\\omega_s L_m} \\end{aligned}"
+            latex="\\begin{aligned} R_{ac} &= \\frac{8n^2}{\\pi^2} \\cdot R_L \\\\ &= \\frac{8n^2}{\\pi^2} \\cdot \\frac{V_o^2}{P_o} \\end{aligned}"
             multiline
             stepNumber={3}
-            label="并联阻抗"
+            label="等效交流负载电阻"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            代入归一化参数 ω_s L_m = f_n Z_0 k 和 R_ac = Z_0 / Q：
+            其中 n 为变压器原边对副边的匝比，R_L = V_o^2 / P_o 为直流负载电阻。
           </p>
-          <MathBlock
-            latex="\\begin{aligned} Z_p &= \\frac{j f_n Z_0 k \\cdot (Z_0/Q)}{Z_0/Q + j f_n Z_0 k} \\\\ &= \\frac{j f_n Z_0 k}{1 + j f_n k Q} \\end{aligned}"
-            multiline
-            stepNumber={4}
-            label="归一化并联阻抗"
-          />
 
           <HighlightBox type="warning">
-            <strong>推导要点：</strong>
-            通过代入归一化参数，将实际电路参数转换为无量纲表达式，这是增益分析的关键步骤。
+            <strong>推导关键：</strong>
+            {'副边基波电压有效值 V_{sec,1} = (2√2/π) · nV_o，基波电流有效值 I_{sec,1} = (π/2√2) · (I_o/n)。折算到原边后得到 R_{ac} = V_{sec,1} / (I_{sec,1}/n^2) = 8n^2 R_L / π^2。'}
           </HighlightBox>
 
           <p className="text-text-secondary mt-4 mb-2">
-            输入总阻抗：
+            {'完整的 FHA 等效电路由正弦电压源、线性电抗元件及电阻构成。串联支路阻抗 Z_1 = jωL_r + 1/(jωC_r)，并联支路 Z_2 = (jωL_m) // R_{ac}。应用分压定律得到电压增益：'}
           </p>
-          <MathBlock
-            latex="\\begin{aligned} Z_{in} &= Z_s + Z_p \\\\ &= jZ_0 \\left( f_n - \\frac{1}{f_n} \\right) + \\frac{j f_n Z_0 k}{1 + j f_n k Q} \\end{aligned}"
-            multiline
-            stepNumber={5}
-            label="输入总阻抗"
-          />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            电压增益定义为输出电压基波与输入电压基波之比：
-          </p>
           <MathBlock
-            latex="M = \\left| \\frac{V_{out,1}}{V_{in,1}} \\right| = \\left| \\frac{Z_p}{Z_{in}} \\right| = \\left| \\frac{Z_p}{Z_s + Z_p} \\right|"
-            stepNumber={6}
+            latex="M = \\left| \\frac{Z_2}{Z_1 + Z_2} \\right|"
+            stepNumber={4}
             label="电压增益定义"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            将 Z_s 和 Z_p 代入，经过复数运算和化简：
+            {'定义三个无量纲参数：归一化频率 f_n = f_s / f_r，电感比 k = L_m / L_r，品质因数 Q = √(L_r/C_r) / R_{ac}。代入化简后得到标准增益公式：'}
           </p>
+
           <MathBlock
-            latex="\\begin{aligned} M &= \\left| \\frac{j f_n Z_0 k}{jZ_0\\left(f_n - \\frac{1}{f_n}\\right)(1 + j f_n k Q) + j f_n Z_0 k} \\right| \\\\ &= \\left| \\frac{f_n k}{f_n k + \\left(f_n - \\frac{1}{f_n}\\right)(1 + j f_n k Q)} \\right| \\end{aligned}"
+            latex="\\begin{aligned} M(f_n, k, Q) &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + \\left[Q\\left(f_n - \\frac{1}{f_n}\\right)\\right]^2}} \\\\ &= \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + \\left[f_n k Q(f_n^2 - 1)\\right]^2}} \\end{aligned}"
             multiline
+            stepNumber={5}
+            label="标准 LLC 增益方程"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2">
+            负载独立点：当 f_n = 1 时，电压增益恒为 1，与负载大小无关。这是 LLC 拓扑最突出的优点之一。
+          </p>
+
+          <MathBlock
+            latex="M(1, k, Q) = 1 \\quad \\text{（与 } Q \\text{ 无关）}"
+            stepNumber={6}
+            label="负载独立点"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2">
+            {'空载增益：当 Q = 0（R_{ac} → ∞）时，增益公式简化为：'}
+          </p>
+
+          <MathBlock
+            latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 - \\frac{1}{f_n^2(1 + k)}\\right|}"
             stepNumber={7}
-            label="代入化简"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            进一步化简分母：
-          </p>
-          <MathBlock
-            latex="\\begin{aligned} &f_n k + \\left(f_n - \\frac{1}{f_n}\\right)(1 + j f_n k Q) \\\\ &= f_n k + f_n - \\frac{1}{f_n} + j f_n^2 k Q - j k Q \\\\ &= f_n(k + 1) - \\frac{1}{f_n} + j k Q (f_n^2 - 1) \\end{aligned}"
-            multiline
-            stepNumber={8}
-            label="分母展开"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            最终得到标准的 LLC 增益方程：
-          </p>
-          <MathBlock
-            latex="M = \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + \\left[f_n k Q(f_n^2 - 1)\\right]^2}}"
-            stepNumber={9}
-            label="标准增益方程"
+            label="空载增益"
           />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="\\begin{aligned} M(f_n, k, Q) &= \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + \\left[f_n k Q(f_n^2 - 1)\\right]^2}} \\\\ &= \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + \\left[Q\\left(f_n - \\frac{1}{f_n}\\right)\\right]^2}} \\end{aligned}"
+              latex="M = \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + \\left[Q\\left(f_n - \\frac{1}{f_n}\\right)\\right]^2}}"
               important
-              multiline
             />
           </div>
         </DerivationSection>
 
-        {/* 4. Resonant Frequencies */}
+        {/* Section 3: 谐振频率与特征参数 */}
         <DerivationSection
           id="frequencies"
-          number={4}
-          title="谐振频率"
+          number={3}
+          title="谐振频率与特征参数"
           icon={<Activity className="w-5 h-5" />}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            LLC 谐振腔存在两个特征谐振频率：
+            LLC 谐振腔存在两个特征谐振频率，由不同的元件组合决定：
           </p>
 
-          <p className="text-text-secondary mt-4 mb-2">
-            第一谐振频率 f_r1：由串联谐振电感 L_r 与谐振电容 C_r 决定
-          </p>
           <MathBlock
-            latex="\\omega_{r1} = \\frac{1}{\\sqrt{L_r C_r}} \\quad \\Rightarrow \\quad f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
+            latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
             stepNumber={1}
-            label="串联谐振频率"
+            label="第一谐振频率（串联）"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            第二谐振频率 f_r2：由总电感 (L_r + L_m) 与 C_r 决定
-          </p>
           <MathBlock
-            latex="\\omega_{r2} = \\frac{1}{\\sqrt{(L_r + L_m)C_r}} \\quad \\Rightarrow \\quad f_{r2} = \\frac{1}{2\\pi\\sqrt{(L_r + L_m)C_r}}"
+            latex="f_m = \\frac{1}{2\\pi\\sqrt{(L_r + L_m) C_r}} = \\frac{f_r}{\\sqrt{1 + k}}"
             stepNumber={2}
-            label="并联谐振频率"
+            label="第二谐振频率（串并联）"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            当 f_s = f_r1 时，串联支路谐振，L_r 与 C_r 的阻抗相互抵消，增益为 1。当 f_s = f_r2 时，总电感与 C_r 谐振，对应空载（Q = 0）时的增益极限。
+            特征阻抗 Z_0 与品质因数 Q 是联系谐振腔参数与负载的关键变量：
           </p>
 
-          <p className="text-text-secondary mt-4 mb-2">
-            两个谐振频率的关系：
-          </p>
           <MathBlock
-            latex="\\begin{aligned} f_{r2} &= \\frac{1}{2\\pi\\sqrt{(L_r + L_m)C_r}} \\\\ &= \\frac{1}{2\\pi\\sqrt{L_r C_r \\cdot (1 + k)}} \\\\ &= \\frac{f_{r1}}{\\sqrt{1 + k}} \\end{aligned}"
-            multiline
+            latex="Z_0 = \\sqrt{\\frac{L_r}{C_r}} = \\omega_r L_r = \\frac{1}{\\omega_r C_r}"
             stepNumber={3}
-            label="谐振频率关系"
+            label="特征阻抗"
           />
+
+          <MathBlock
+            latex="Q = \\frac{Z_0}{R_{ac}} = \\frac{\\sqrt{L_r / C_r}}{R_{ac}}"
+            stepNumber={4}
+            label="品质因数"
+          />
+
+          <HighlightBox type="info">
+            <strong>物理意义：</strong>
+            {'Q 值反映负载情况，负载越重（R_{ac} 越小），Q 值越大。高 Q 时增益曲线陡峭，低 Q 时曲线平坦。'}
+          </HighlightBox>
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_{r2} = \\frac{1}{2\\pi\\sqrt{(L_r + L_m)C_r}} = \\frac{f_{r1}}{\\sqrt{1 + k}}"
+              latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_m = \\frac{f_r}{\\sqrt{1 + k}}, \\quad Z_0 = \\sqrt{\\frac{L_r}{C_r}}, \\quad Q = \\frac{Z_0}{R_{ac}}"
               important
             />
           </div>
         </DerivationSection>
 
-        {/* 5. Peak Gain */}
+        {/* Section 4: 峰值增益与边界条件 */}
         <DerivationSection
           id="peak-gain"
-          number={5}
-          title="峰值增益 M_{peak}"
+          number={4}
+          title="峰值增益与边界条件"
           icon={<TrendingUp className="w-5 h-5" />}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            峰值增益是设计中最关键的参数，决定了变换器能否在最低输入电压下维持输出电压。峰值增益发生在 dM/df_n = 0 处。
+            峰值增益决定了变换器能否在最低输入电压下维持输出电压。令 x = f_n^2，对增益平方求导：
           </p>
 
-          <MathBlock
-            latex="\\frac{dM}{df_n} = 0"
-            stepNumber={1}
-            label="极值条件"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            令 x = f_n²，对增益平方求导：
-          </p>
           <MathBlock
             latex="M^2 = \\frac{x^2 k^2}{\\left[x(k+1) - 1\\right]^2 + x k^2 Q^2 (x-1)^2}"
-            stepNumber={2}
+            stepNumber={1}
             label="增益平方表达式"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            对 x 求导并令 d(M²)/dx = 0，等价于求解：
-          </p>
-          <MathBlock
-            latex="2D(x) - x \\cdot D'(x) = 0"
-            stepNumber={3}
-            label="求导方程"
-          />
-          <p className="text-text-secondary mt-2 mb-2">
-            其中 D(x) = [x(k+1) - 1]² + x k² Q² (x-1)² 为增益表达式的分母。该方程是关于 x 的三次方程，通常采用数值方法求解。
+            对 x 求导并令 d(M²)/dx = 0，等价于求解 2D(x) - x · D'(x) = 0，其中 D(x) = [x(k+1) - 1]² + x k² Q² (x-1)²。该方程通常采用数值方法求解。
           </p>
 
           <HighlightBox type="warning">
             <strong>工程简化：</strong>
-            上述解析条件较为繁琐。实际工程中通常通过数值方法求解 dM/df_n = 0，或者使用曲线工具直接读取峰值增益。空载（Q = 0）时，峰值增益趋向无穷大，出现在 f_n = 1/√(1+k) 处。
+            {'空载（Q = 0）时，峰值增益趋向无穷大，出现在 f_n = 1/√(1+k) 处。实际设计中，峰值增益必须大于最大增益需求 M_max = V_{in,nom} / V_{in,min}。'}
           </HighlightBox>
 
           <p className="text-text-secondary mt-4 mb-2">
-            在峰值增益频率处，系统的增益达到最大值。对于给定的 k 和 Q，将数值求得的 f_n,peak 代入增益公式即可得到 M_peak。
+            变频调压原理：通过调节开关频率改变增益，输入电压升高时提高频率（f_n &gt; 1）以降低增益；输入电压降低时降低频率（f_n &lt; 1）以提高增益。
           </p>
 
           <div className="mt-6">
-            <p className="text-text-muted text-sm mb-2 font-medium">最终条件</p>
+            <p className="text-text-muted text-sm mb-2 font-medium">边界条件</p>
             <MathBlock
-              latex="\\frac{dM}{df_n} = 0 \\quad \\text{at} \\quad f_n = f_{n,\\text{peak}}"
+              latex="\\frac{dM}{df_n} = 0 \\quad \\text{at} \\quad f_n = f_{n,peak}"
               important
             />
           </div>
         </DerivationSection>
 
-        {/* 6. Input Impedance */}
+        {/* Section 5: 输入阻抗与ZVS条件 */}
         <DerivationSection
           id="impedance"
-          number={6}
-          title="输入阻抗分析"
+          number={5}
+          title="输入阻抗与 ZVS 条件"
           icon={<Gauge className="w-5 h-5" />}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            输入阻抗决定了变换器从电源侧看进去的等效负载特性，对于 ZVS（零电压开通）条件至关重要。
+            输入阻抗决定了变换器从电源侧看进去的等效负载特性：
           </p>
+
           <MathBlock
             latex="Z_{in} = j\\omega_s L_r + \\frac{1}{j\\omega_s C_r} + \\left(j\\omega_s L_m \\parallel R_{ac}\\right)"
             stepNumber={1}
@@ -531,42 +427,40 @@ export default function Derivations() {
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            代入归一化参数化简：
+            代入归一化参数化简，将实部和虚部分离：
           </p>
-          <MathBlock
-            latex="\\begin{aligned} Z_{in} &= jZ_0\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_0 k}{1 + j f_n k Q} \\\\ &= Z_0 \\left[ \\frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2} + j\\left(f_n - \\frac{1}{f_n} + \\frac{f_n k Q^2}{Q^2 + f_n^2 k^2}\\right) \\right] \\end{aligned}"
-            multiline
-            stepNumber={2}
-            label="归一化输入阻抗"
-          />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            将实部和虚部分离：
-          </p>
           <MathBlock
             latex="\\begin{aligned} \\text{Re}(Z_{in}) &= Z_0 \\cdot \\frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2} \\\\ \\text{Im}(Z_{in}) &= Z_0 \\left( f_n - \\frac{1}{f_n} + \\frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \\right) \\end{aligned}"
             multiline
-            stepNumber={3}
+            stepNumber={2}
             label="实部与虚部"
           />
 
           <HighlightBox type="info">
             <strong>ZVS 条件：</strong>
-            为实现主开关管的零电压开通，谐振槽必须在开关频率处呈现感性（Im(Z_in) &gt; 0）。这意味着开关频率必须位于感性区域内。
+            {'为实现主开关管的零电压开通，谐振槽必须在开关频率处呈现感性（Im(Z_{in}) > 0）。这意味着开关频率必须高于感性边界频率。'}
           </HighlightBox>
 
           <p className="text-text-secondary mt-4 mb-2">
             感性/容性边界条件：
           </p>
+
           <MathBlock
             latex="\\text{Im}(Z_{in}) = 0 \\quad \\Rightarrow \\quad f_n - \\frac{1}{f_n} + \\frac{f_n k Q^2}{Q^2 + f_n^2 k^2} = 0"
-            stepNumber={4}
+            stepNumber={3}
             label="边界条件"
           />
 
           <p className="text-text-secondary mt-4 mb-2">
-            解此方程可得边界频率。对于 LLC 变换器，当 f_s &gt; f_r1 时，Z_in 呈感性；在 f_r2 与 f_r1 之间，阻抗性质取决于负载条件。
+            ZVS 能量准则：在参数初步确定后，应复核关断时刻谐振腔存储的磁能是否大于寄生电容充放电所需的电能。
           </p>
+
+          <MathBlock
+            latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss} V_{in}^2"
+            stepNumber={4}
+            label="ZVS 能量准则"
+          />
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
@@ -577,133 +471,268 @@ export default function Derivations() {
           </div>
         </DerivationSection>
 
-        {/* 7. Current Stress */}
+        {/* Section 6: 功率器件应力计算 */}
         <DerivationSection
-          id="current-stress"
-          number={7}
-          title="电流应力"
-          icon={<Activity className="w-5 h-5" />}
+          id="stress"
+          number={6}
+          title="功率器件应力计算"
+          icon={<Zap className="w-5 h-5" />}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            电流应力计算是器件选型和热设计的基础。基于 FHA 的初级谐振电流有效值：
+            准确的功率器件应力计算是确保变换器可靠性的关键。
           </p>
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            1. 原边 MOSFET 应力
+          </p>
+
           <MathBlock
-            latex="I_{r,\\text{rms}} = \\frac{V_{FHA,\\text{rms}}}{|Z_{in}|} = \\frac{2\\sqrt{2}V_{in}}{\\pi |Z_{in}|}"
+            latex="V_{ds,max} = V_{in}"
             stepNumber={1}
-            label="初级谐振电流（全桥）"
+            label="MOSFET 电压应力（半桥/全桥）"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            在谐振频率 f_r1 处，|Z_in| = R_ac（纯阻性），此时电流达到近似最小值：
+          <p className="text-text-secondary mt-2 mb-2">
+            MOSFET 峰值电流（以半桥为例，f_s &lt; f_r 时）：
           </p>
+
           <MathBlock
-            latex="I_{r,\\text{rms}}(f_{r1}) = \\frac{2\\sqrt{2}V_{in}}{\\pi R_{ac}} = \\frac{2\\sqrt{2}V_{in} Q}{\\pi Z_0}"
+            latex="I_{pk} = \\frac{2n(V_o + V_f)}{\\pi Z_0 Q} + \\frac{n(V_o + V_f)}{2 f_s L_m}"
             stepNumber={2}
-            label="谐振频率处电流"
+            label="MOSFET 峰值电流"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            磁化电流有效值（仅在 L_m 上）。磁化电感并联在变压器初级，其电压为初级基波电压：
-          </p>
           <MathBlock
-            latex="I_{m,\\text{rms}} = \\frac{V_{FHA,\\text{rms}}}{\\omega_s L_m} = \\frac{2\\sqrt{2}V_{in}}{\\pi \\omega_s L_m}"
+            latex="I_{rms} = \\frac{I_{pk}}{\\sqrt{2}}"
             stepNumber={3}
-            label="磁化电流（全桥）"
+            label="MOSFET 有效值电流"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            2. 副边整流二极管应力
+          </p>
+
+          <MathBlock
+            latex="V_{RRM} = 2V_o"
+            stepNumber={4}
+            label="二极管反向电压应力"
+          />
+
+          <MathBlock
+            latex="I_{avg} = \\frac{I_o}{2}"
+            stepNumber={5}
+            label="二极管平均电流"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            3. 谐振电容与磁性元件电流应力
+          </p>
+
+          <MathBlock
+            latex="I_{C_r,rms} = I_{r,rms}"
+            stepNumber={6}
+            label="谐振电容电流"
+          />
+
+          <MathBlock
+            latex="I_{p,rms} = \\sqrt{I_{r,rms}^2 + I_{m,rms}^2}"
+            stepNumber={7}
+            label="变压器原边电流有效值"
           />
 
           <HighlightBox type="warning">
-            <strong>峰值电流：</strong>
-            峰值谐振电流出现在启动和负载瞬态期间。设计时应确保 MOSFET 的电流额定值至少为峰值谐振电流的 1.5 倍。
+            <strong>选型裕量：</strong>
+            MOSFET 电压额定值需留 1.5~2 倍裕量；电流定额需在计算峰值/有效值基础上预留约 40% 裕量，以应对瞬态冲击与温升。
           </HighlightBox>
-
-          <p className="text-text-secondary mt-4 mb-2">
-            次级电流有效值（整流后）：
-          </p>
-          <MathBlock
-            latex="I_{sec,\\text{rms}}^{\\text{full}} = \\frac{\\pi}{2\\sqrt{2}} I_{out} \\approx 1.11 \\, I_{out} \\quad \\text{(全波/全桥整流)}"
-            stepNumber={4}
-            label="次级电流（全桥）"
-          />
-          <MathBlock
-            latex="I_{sec,\\text{rms}}^{\\text{CT}} = \\frac{\\pi}{4} I_{out} \\approx 0.785 \\, I_{out} \\quad \\text{(中心抽头：每绕组半波)}"
-            stepNumber={5}
-            label="次级电流（中心抽头）"
-          />
-
-          <div className="mt-6">
-            <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
-            <MathBlock
-              latex="I_{r,\\text{rms}}^{\\text{FB}} = \\frac{2\\sqrt{2}V_{in}}{\\pi |Z_{in}|}, \\quad I_{m,\\text{rms}}^{\\text{FB}} = \\frac{2\\sqrt{2}V_{in}}{\\pi \\omega_s L_m}"
-              important
-            />
-          </div>
         </DerivationSection>
 
-        {/* 8. Component Selection */}
+        {/* Section 7: 功率器件损耗模型 */}
         <DerivationSection
-          id="component-selection"
+          id="loss"
+          number={7}
+          title="功率器件损耗模型"
+          icon={<Activity className="w-5 h-5" />}
+        >
+          <p className="text-text-secondary mt-4 mb-2">
+            LLC 的高效率源于软开关工作，但功率器件损耗仍是影响整体效率的关键。
+          </p>
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            1. MOSFET 损耗
+          </p>
+
+          <MathBlock
+            latex="P_{cond} = I_{rms}^2 \\cdot R_{ds(on)}"
+            stepNumber={1}
+            label="导通损耗"
+          />
+
+          <MathBlock
+            latex="P_{diode} = V_f \\cdot I_{avg,diode}"
+            stepNumber={2}
+            label="体二极管损耗（简化）"
+          />
+
+          <MathBlock
+            latex="P_{off} = \\frac{1}{2} V_{in} \\cdot I_{m,pk} \\cdot (t_r + t_f) \\cdot f_s"
+            stepNumber={3}
+            label="关断损耗"
+          />
+
+          <MathBlock
+            latex="P_{drv} = Q_g \\cdot V_{drv} \\cdot f_s"
+            stepNumber={4}
+            label="驱动损耗"
+          />
+
+          <MathBlock
+            latex="P_{total,MOS} = P_{cond} + P_{diode} + P_{off} + P_{drv}"
+            stepNumber={5}
+            label="MOSFET 总损耗"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            2. 整流二极管损耗
+          </p>
+
+          <MathBlock
+            latex="P_{cond,D} = V_f \\cdot I_o"
+            stepNumber={6}
+            label="二极管导通损耗（简化）"
+          />
+
+          <MathBlock
+            latex="P_{rr} = \\frac{1}{2} Q_{rr} \\cdot V_{RRM} \\cdot f_s"
+            stepNumber={7}
+            label="反向恢复损耗（仅 f_s &lt; f_r 时）"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            3. 磁性元件损耗
+          </p>
+
+          <MathBlock
+            latex="P_{Cu} = I_p^2 \\cdot R_{ac,pri} + I_s^2 \\cdot R_{ac,sec}"
+            stepNumber={8}
+            label="变压器铜损"
+          />
+
+          <MathBlock
+            latex="P_{core} = C_m \\cdot f^\\alpha \\cdot B^\\beta \\cdot V_e"
+            stepNumber={9}
+            label="磁芯损耗（Steinmetz 公式）"
+          />
+
+          <MathBlock
+            latex="B = \\frac{V_p}{4 N_p A_e f_s}"
+            stepNumber={10}
+            label="工作磁密（方波激励）"
+          />
+        </DerivationSection>
+
+        {/* Section 8: 谐振腔与变压器设计 */}
+        <DerivationSection
+          id="design"
           number={8}
-          title="元件选择"
+          title="谐振腔与变压器设计"
           icon={<Layers className="w-5 h-5" />}
         >
           <p className="text-text-secondary mt-4 mb-2">
-            基于设计参数（Q, k, f_r1）确定 L_r, C_r, L_m 的值。首先确定特征阻抗 Z_0 与等效负载电阻 R_ac 的关系：
+            基于 FHA 模型的系统化设计流程，核心目标是在满足电压增益范围与全负载范围 ZVS 的前提下，解算谐振参数。
+          </p>
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            1. 变压器匝比 n
           </p>
 
           <MathBlock
-            latex="Z_0 = Q \\cdot R_{ac} = Q \\cdot \\frac{8n^2 R_{load}}{\\pi^2}"
+            latex="n = \\frac{V_{in,nom}}{2(V_o + V_f)} \\quad \\text{（半桥）}"
             stepNumber={1}
+            label="匝比（半桥）"
+          />
+
+          <MathBlock
+            latex="n = \\frac{V_{in,nom}}{V_o + V_f} \\quad \\text{（全桥）}"
+            stepNumber={2}
+            label="匝比（全桥）"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            2. 等效交流负载电阻
+          </p>
+
+          <MathBlock
+            latex="R_{ac} = \\frac{8n^2}{\\pi^2} \\cdot \\frac{V_o^2}{P_o}"
+            stepNumber={3}
+            label="等效负载电阻"
+          />
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            3. 增益需求与电感比 k
+          </p>
+
+          <MathBlock
+            latex="\\begin{aligned} M_{max} &= \\frac{V_{in,nom}}{V_{in,min}} \\\\ M_{min} &= \\frac{V_{in,nom}}{V_{in,max}} \\end{aligned}"
+            multiline
+            stepNumber={4}
+            label="最大/最小增益需求"
+          />
+
+          <p className="text-text-secondary mt-2 mb-2">
+            电感比 k 典型取值 3 ~ 10，其中 5 ~ 7 较为常见。较小的 k 提供更高峰值增益，但会增大励磁电流和导通损耗。
+          </p>
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            4. 品质因数 Q 的确定与 ZVS 验证
+          </p>
+
+          <MathBlock
+            latex="Q_{max} = \\min(Q_{max1}, Q_{max2})"
+            stepNumber={5}
+            label="最大允许品质因数"
+          />
+
+          <p className="text-text-secondary mt-2 mb-2">
+            {'Q_{max1} 对应满载感性边界条件，Q_{max2} 对应轻载 ZVS 能量条件。设计品质因数取 Q_s = (0.9 ~ 0.95) · Q_{max}。'}
+          </p>
+
+          <p className="text-text-secondary mt-4 mb-2 font-medium">
+            5. 谐振腔参数计算
+          </p>
+
+          <MathBlock
+            latex="Z_0 = Q_s \\cdot R_{ac}"
+            stepNumber={6}
             label="特征阻抗"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            由谐振频率与特征阻抗：
-          </p>
           <MathBlock
-            latex="Z_0 = \\sqrt{\\frac{L_r}{C_r}} = \\omega_{r1} L_r = \\frac{1}{\\omega_{r1} C_r}"
-            stepNumber={2}
-            label="谐振频率关系"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            谐振电感：
-          </p>
-          <MathBlock
-            latex="\\begin{aligned} L_r &= \\frac{Z_0}{\\omega_{r1}} = \\frac{Z_0}{2\\pi f_{r1}} \\\\ &= \\frac{Q R_{ac}}{2\\pi f_{r1}} \\end{aligned}"
-            multiline
-            stepNumber={3}
-            label="谐振电感"
-          />
-
-          <p className="text-text-secondary mt-4 mb-2">
-            谐振电容：
-          </p>
-          <MathBlock
-            latex="\\begin{aligned} C_r &= \\frac{1}{\\omega_{r1} Z_0} = \\frac{1}{2\\pi f_{r1} Z_0} \\\\ &= \\frac{1}{2\\pi f_{r1} Q R_{ac}} \\end{aligned}"
-            multiline
-            stepNumber={4}
+            latex="C_r = \\frac{1}{2\\pi f_r Z_0} = \\frac{1}{2\\pi f_r Q_s R_{ac}}"
+            stepNumber={7}
             label="谐振电容"
           />
 
-          <p className="text-text-secondary mt-4 mb-2">
-            磁化电感：
-          </p>
           <MathBlock
-            latex="\\begin{aligned} L_m &= k \\cdot L_r \\\\ &= \\frac{k Q R_{ac}}{2\\pi f_{r1}} \\end{aligned}"
-            multiline
-            stepNumber={5}
-            label="磁化电感"
+            latex="L_r = \\frac{Z_0}{2\\pi f_r} = \\frac{Q_s R_{ac}}{2\\pi f_r}"
+            stepNumber={8}
+            label="谐振电感"
+          />
+
+          <MathBlock
+            latex="L_m = k \\cdot L_r = \\frac{k Q_s R_{ac}}{2\\pi f_r}"
+            stepNumber={9}
+            label="励磁电感"
           />
 
           <HighlightBox type="success">
             <strong>设计流程：</strong>
-            1. 根据电压增益范围确定 k；2. 根据负载范围和 ZVS 要求确定 Q；3. 根据效率和体积选择 f_r1；4. 按上述公式计算 L_r, C_r, L_m。
+            {'定义规格 → 计算匝比 n → 计算等效电阻 R_{ac} → 计算增益需求 → 选取电感比 k → 确定品质因数 Q_s → 解算 L_r, C_r, L_m → 全面验证与迭代。'}
           </HighlightBox>
 
           <div className="mt-6">
             <p className="text-text-muted text-sm mb-2 font-medium">最终公式</p>
             <MathBlock
-              latex="L_r = \\frac{Q R_{ac}}{2\\pi f_{r1}}, \\quad C_r = \\frac{1}{2\\pi f_{r1} Q R_{ac}}, \\quad L_m = k L_r"
+              latex="L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}, \\quad C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}, \\quad L_m = k L_r"
               important
             />
           </div>
@@ -722,7 +751,7 @@ export default function Derivations() {
           <div>
             <h3 className="font-semibold text-text-primary mb-2">推导说明</h3>
             <p className="text-text-secondary text-sm leading-relaxed">
-              以上推导基于 FHA（一阶谐波近似）假设，适用于高 Q 值（Q &gt; 0.3）工作条件。对于低 Q 值或极端负载条件，建议使用时域仿真（如 PSIM、LTspice）进行验证。实际设计中，元件的寄生参数（ESR、漏感等）也会影响变换器性能，需要在 PCB 布局和元件选型中予以考虑。
+              以上推导基于 FHA（一阶谐波近似）假设，适用于开关频率接近谐振频率的高 Q 值工作条件。当开关频率远离谐振频率时，实际波形畸变加剧，高次谐波的影响不可忽略，此时需采用时域分析法或引入谐波校正的扩展模型。尽管如此，FHA 法建立的模型和公式仍然是理解 LLC 工作原理和进行初步设计的基石。
             </p>
           </div>
         </div>
