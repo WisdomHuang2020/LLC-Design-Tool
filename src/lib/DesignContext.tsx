@@ -87,7 +87,7 @@ const defaultParams: DesignParameters = {
   k: 5,
 }
 
-const defaultCurves: CurvesState = { k: 5.0, q: 0.5 }
+const defaultCurves: CurvesState = { k: 5.0, q: 0.8 }
 
 const STORAGE_KEY = 'llc-design-tool-params'
 const RESULTS_KEY = 'llc-design-tool-results'
