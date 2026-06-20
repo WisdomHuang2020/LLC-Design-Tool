@@ -180,16 +180,17 @@ const fmaxEst = fmaxFeasible
   ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
   : Infinity
 
-const cossTotal = Math.max(1e-12, 2 * cossEr + cj)
+// Coss_eq：等效输出电容（用于死区时间/ZVS 时间约束）
+const cossZvs = Math.max(1e-12, 2 * cossEq + cj)
 
 const qmax2 = fmaxFeasible
   ? ((k + 1) * vinMin * vinMin
-      / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossTotal * vinMax * vinMax))
+      / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossZvs * vinMax * vinMax))
     * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
   : Infinity
 ```
 
-> 注：系数 16 来源于半桥 LLC 死区时间近似公式 \( t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m \) 的反推。
+> 注：系数 16 来源于半桥 LLC 死区时间近似公式 \( t_{dead} = 16 \cdot C_{eq} \cdot f_r \cdot L_m \) 的反推，其中 \( C_{eq} \) 应取 **等效输出电容 Coss_eq**（与能量相关电容 Coss_er 区分）。
 > 若拓扑为全桥或死区定义不同，该系数需重新推导。
 
 ### 5.3 Qmax3：ZVS 能量约束（Coss 能量上限）
