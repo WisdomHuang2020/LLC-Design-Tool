@@ -140,84 +140,82 @@ function LCResonantTankSVG() {
 function LLCResonantTankSVG() {
   return (
     <svg
-      viewBox="0 0 520 200"
+      viewBox="0 0 520 220"
       className="w-full max-w-lg mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Input source */}
-      <circle cx="40" cy="100" r="20" stroke="#a3a3a3" strokeWidth="2" fill="none" />
-      <text x="40" y="105" fill="#a3a3a3" fontSize="12" textAnchor="middle">
+      <circle cx="40" cy="80" r="20" stroke="#a3a3a3" strokeWidth="2" fill="none" />
+      <text x="40" y="85" fill="#a3a3a3" fontSize="12" textAnchor="middle">
         Vin
       </text>
-      <line x1="60" y1="100" x2="100" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="60" y1="80" x2="100" y2="80" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Lr */}
-      <line x1="100" y1="100" x2="120" y2="100" stroke="#14b8a6" strokeWidth="2" />
+      <line x1="100" y1="80" x2="120" y2="80" stroke="#14b8a6" strokeWidth="2" />
       <path
-        d="M 120 100 Q 125 85 130 100 Q 135 115 140 100 Q 145 85 150 100 Q 155 115 160 100"
+        d="M 120 80 Q 125 65 130 80 Q 135 95 140 80 Q 145 65 150 80 Q 155 95 160 80"
         fill="none"
         stroke="#14b8a6"
         strokeWidth="2"
       />
-      <line x1="160" y1="100" x2="180" y2="100" stroke="#14b8a6" strokeWidth="2" />
-      <text x="140" y="80" fill="#14b8a6" fontSize="12" textAnchor="middle">
+      <line x1="160" y1="80" x2="180" y2="80" stroke="#14b8a6" strokeWidth="2" />
+      <text x="140" y="60" fill="#14b8a6" fontSize="12" textAnchor="middle">
         Lr
       </text>
 
       {/* Cr */}
-      <line x1="180" y1="100" x2="200" y2="100" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="200" y1="85" x2="200" y2="115" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="85" x2="208" y2="115" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="100" x2="228" y2="100" stroke="#f59e0b" strokeWidth="2" />
-      <text x="204" y="80" fill="#f59e0b" fontSize="12" textAnchor="middle">
+      <line x1="180" y1="80" x2="200" y2="80" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="200" y1="65" x2="200" y2="95" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="208" y1="65" x2="208" y2="95" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="208" y1="80" x2="228" y2="80" stroke="#f59e0b" strokeWidth="2" />
+      <text x="204" y="60" fill="#f59e0b" fontSize="12" textAnchor="middle">
         Cr
       </text>
 
-      {/* Branch point for Lm */}
-      <circle cx="228" cy="100" r="2" fill="#a3a3a3" />
-      <line x1="228" y1="100" x2="228" y2="50" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Node X after Cr */}
+      <circle cx="228" cy="80" r="3" fill="#a3a3a3" />
 
-      {/* Lm */}
-      <line x1="228" y1="50" x2="248" y2="50" stroke="#22c55e" strokeWidth="2" />
+      {/* Main line to transformer */}
+      <line x1="228" y1="80" x2="320" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+
+      {/* Transformer primary */}
+      <g stroke="#a3a3a3" strokeWidth="2" fill="none">
+        <line x1="320" y1="60" x2="320" y2="100" />
+        <line x1="324" y1="55" x2="324" y2="105" />
+        <line x1="328" y1="50" x2="328" y2="110" />
+        <line x1="332" y1="55" x2="332" y2="105" />
+        <line x1="336" y1="60" x2="336" y2="100" />
+        <line x1="348" y1="60" x2="348" y2="100" />
+        <line x1="352" y1="55" x2="352" y2="105" />
+        <line x1="356" y1="50" x2="356" y2="110" />
+        <line x1="360" y1="55" x2="360" y2="105" />
+        <line x1="364" y1="60" x2="364" y2="100" />
+        <line x1="336" y1="70" x2="348" y2="70" strokeDasharray="3 3" />
+        <line x1="336" y1="90" x2="348" y2="90" strokeDasharray="3 3" />
+      </g>
+      <text x="342" y="45" fill="#a3a3a3" fontSize="12" textAnchor="middle">
+        n:1
+      </text>
+
+      {/* Lm branch — parallel to transformer primary */}
+      <line x1="228" y1="80" x2="228" y2="130" stroke="#22c55e" strokeWidth="2" />
       <path
-        d="M 248 50 Q 253 35 258 50 Q 263 65 268 50 Q 273 35 278 50 Q 283 65 288 50"
+        d="M 228 130 Q 233 115 238 130 Q 243 145 248 130 Q 253 115 258 130 Q 263 145 268 130"
         fill="none"
         stroke="#22c55e"
         strokeWidth="2"
       />
-      <line x1="288" y1="50" x2="308" y2="50" stroke="#22c55e" strokeWidth="2" />
-      <text x="278" y="30" fill="#22c55e" fontSize="12" textAnchor="middle">
+      <line x1="268" y1="130" x2="320" y2="130" stroke="#22c55e" strokeWidth="2" />
+      <text x="270" y="150" fill="#22c55e" fontSize="12" textAnchor="middle">
         Lm
-      </text>
-      <line x1="308" y1="50" x2="308" y2="100" stroke="#22c55e" strokeWidth="2" />
-
-      {/* Continue to transformer */}
-      <line x1="228" y1="100" x2="320" y2="100" stroke="#a3a3a3" strokeWidth="2" />
-
-      {/* Transformer */}
-      <g stroke="#a3a3a3" strokeWidth="2" fill="none">
-        <line x1="320" y1="80" x2="320" y2="120" />
-        <line x1="324" y1="75" x2="324" y2="125" />
-        <line x1="328" y1="70" x2="328" y2="130" />
-        <line x1="332" y1="75" x2="332" y2="125" />
-        <line x1="336" y1="80" x2="336" y2="120" />
-        <line x1="348" y1="80" x2="348" y2="120" />
-        <line x1="352" y1="75" x2="352" y2="125" />
-        <line x1="356" y1="70" x2="356" y2="130" />
-        <line x1="360" y1="75" x2="360" y2="125" />
-        <line x1="364" y1="80" x2="364" y2="120" />
-        <line x1="336" y1="90" x2="348" y2="90" strokeDasharray="3 3" />
-        <line x1="336" y1="110" x2="348" y2="110" strokeDasharray="3 3" />
-      </g>
-      <text x="342" y="65" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        n:1
       </text>
 
       {/* Output rectifier + load */}
-      <line x1="364" y1="100" x2="400" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="364" y1="80" x2="400" y2="80" stroke="#a3a3a3" strokeWidth="2" />
       <rect
         x="400"
-        y="85"
+        y="65"
         width="40"
         height="30"
         rx="4"
@@ -225,18 +223,19 @@ function LLCResonantTankSVG() {
         strokeWidth="2"
         fill="none"
       />
-      <text x="420" y="105" fill="#a3a3a3" fontSize="12" textAnchor="middle">
+      <text x="420" y="85" fill="#a3a3a3" fontSize="12" textAnchor="middle">
         R
       </text>
-      <line x1="440" y1="100" x2="480" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="440" y1="80" x2="480" y2="80" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Return */}
-      <line x1="480" y1="100" x2="480" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="100" x2="40" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="150" x2="480" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Return line */}
+      <line x1="320" y1="130" x2="480" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="480" y1="80" x2="480" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="40" y1="80" x2="40" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="40" y1="130" x2="228" y2="130" stroke="#a3a3a3" strokeWidth="2" />
 
-      <text x="260" y="180" fill="#737373" fontSize="10" textAnchor="middle">
-        LLC 谐振腔等效电路（FHA 模型）
+      <text x="260" y="200" fill="#737373" fontSize="10" textAnchor="middle">
+        LLC 谐振腔等效电路（FHA 模型）— Lm 并联于变压器初级
       </text>
     </svg>
   )
@@ -245,7 +244,7 @@ function LLCResonantTankSVG() {
 function HalfBridgeSVG() {
   return (
     <svg
-      viewBox="0 0 400 260"
+      viewBox="0 0 400 280"
       className="w-full max-w-md mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -254,8 +253,8 @@ function HalfBridgeSVG() {
       <text x="50" y="45" fill="#a3a3a3" fontSize="11" textAnchor="end">
         Vin
       </text>
-      <line x1="60" y1="220" x2="340" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="50" y="225" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      <line x1="60" y1="240" x2="340" y2="240" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="50" y="245" fill="#a3a3a3" fontSize="11" textAnchor="end">
         GND
       </text>
 
@@ -276,7 +275,7 @@ function HalfBridgeSVG() {
       <line x1="110" y1="160" x2="130" y2="170" stroke="#a3a3a3" strokeWidth="2" />
       <line x1="130" y1="160" x2="110" y2="170" stroke="#a3a3a3" strokeWidth="2" />
       <line x1="105" y1="170" x2="135" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="170" x2="120" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="120" y1="170" x2="120" y2="240" stroke="#a3a3a3" strokeWidth="2" />
       <text x="95" y="165" fill="#a3a3a3" fontSize="11" textAnchor="end">
         Q2
       </text>
@@ -306,24 +305,13 @@ function HalfBridgeSVG() {
         Cr
       </text>
 
-      {/* Lm branch */}
-      <circle cx="308" cy="130" r="2" fill="#a3a3a3" />
-      <line x1="308" y1="130" x2="308" y2="80" stroke="#22c55e" strokeWidth="2" />
-      <path
-        d="M 308 80 Q 313 65 318 80 Q 323 95 328 80 Q 333 65 338 80 Q 343 95 348 80"
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="2"
-      />
-      <line x1="348" y1="80" x2="348" y2="130" stroke="#22c55e" strokeWidth="2" />
-      <text x="356" y="105" fill="#22c55e" fontSize="11" textAnchor="start">
-        Lm
-      </text>
-      <line x1="348" y1="130" x2="348" y2="180" stroke="#22c55e" strokeWidth="2" />
-      <circle cx="348" cy="185" r="3" fill="#a3a3a3" />
+      {/* Node X after Cr */}
+      <circle cx="308" cy="130" r="3" fill="#a3a3a3" />
 
-      {/* Transformer to right */}
+      {/* Main line to transformer */}
       <line x1="308" y1="130" x2="340" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+
+      {/* Transformer */}
       <g stroke="#a3a3a3" strokeWidth="2" fill="none">
         <line x1="340" y1="110" x2="340" y2="150" />
         <line x1="344" y1="105" x2="344" y2="155" />
@@ -340,8 +328,24 @@ function HalfBridgeSVG() {
         T
       </text>
 
-      <text x="200" y="250" fill="#737373" fontSize="10" textAnchor="middle">
-        半桥 LLC 拓扑
+      {/* Lm — parallel to transformer primary */}
+      <line x1="308" y1="130" x2="308" y2="200" stroke="#22c55e" strokeWidth="2" />
+      <path
+        d="M 308 200 Q 313 185 318 200 Q 323 215 328 200 Q 333 185 338 200 Q 343 215 348 200"
+        fill="none"
+        stroke="#22c55e"
+        strokeWidth="2"
+      />
+      <line x1="348" y1="200" x2="348" y2="240" stroke="#22c55e" strokeWidth="2" />
+      <text x="356" y="220" fill="#22c55e" fontSize="11" textAnchor="start">
+        Lm
+      </text>
+
+      {/* Transformer secondary to GND */}
+      <line x1="384" y1="150" x2="384" y2="240" stroke="#a3a3a3" strokeWidth="2" />
+
+      <text x="200" y="270" fill="#737373" fontSize="10" textAnchor="middle">
+        半桥 LLC 拓扑 — Lm 并联于变压器初级
       </text>
     </svg>
   )
@@ -432,21 +436,19 @@ function FullBridgeSVG() {
         Cr
       </text>
 
-      {/* Lm */}
-      <circle cx="300" cy="130" r="2" fill="#a3a3a3" />
-      <line x1="300" y1="130" x2="300" y2="80" stroke="#22c55e" strokeWidth="2" />
+      {/* Lm — parallel to transformer primary */}
+      <circle cx="300" cy="130" r="3" fill="#a3a3a3" />
+      <line x1="300" y1="130" x2="300" y2="200" stroke="#22c55e" strokeWidth="2" />
       <path
-        d="M 300 80 Q 305 65 310 80 Q 315 95 320 80 Q 325 65 330 80 Q 335 95 340 80"
+        d="M 300 200 Q 305 185 310 200 Q 315 215 320 200 Q 325 185 330 200 Q 335 215 340 200"
         fill="none"
         stroke="#22c55e"
         strokeWidth="2"
       />
-      <line x1="340" y1="80" x2="340" y2="130" stroke="#22c55e" strokeWidth="2" />
-      <text x="348" y="105" fill="#22c55e" fontSize="11" textAnchor="start">
+      <line x1="340" y1="200" x2="340" y2="240" stroke="#22c55e" strokeWidth="2" />
+      <text x="348" y="220" fill="#22c55e" fontSize="11" textAnchor="start">
         Lm
       </text>
-      <line x1="340" y1="130" x2="340" y2="180" stroke="#22c55e" strokeWidth="2" />
-      <circle cx="340" cy="185" r="3" fill="#a3a3a3" />
 
       {/* Transformer */}
       <line x1="300" y1="130" x2="340" y2="130" stroke="#a3a3a3" strokeWidth="2" />
@@ -469,7 +471,7 @@ function FullBridgeSVG() {
       </text>
 
       <text x="220" y="250" fill="#737373" fontSize="10" textAnchor="middle">
-        全桥 LLC 拓扑
+        全桥 LLC 拓扑 — Lm 并联于变压器初级
       </text>
     </svg>
   )

@@ -482,9 +482,11 @@ function CurrentFlowCircuitSVG() {
       </defs>
 
       {/* Input rail */}
-      <line x1="40" y1="40" x2="280" y2="40" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="40" y1="40" x2="100" y2="40" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="40" x2="280" y2="40" stroke="#a3a3a3" strokeWidth="2" />
       <text x="20" y="45" fill="#a3a3a3" fontSize="10">Vin+</text>
-      <line x1="40" y1="280" x2="280" y2="280" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="40" y1="280" x2="100" y2="280" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="280" x2="280" y2="280" stroke="#a3a3a3" strokeWidth="2" />
       <text x="20" y="285" fill="#a3a3a3" fontSize="10">GND</text>
 
       {/* Q1 */}
