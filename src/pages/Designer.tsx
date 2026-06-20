@@ -669,7 +669,7 @@ export default function Designer() {
     const fmax = fmaxFeasible
       ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
       : Infinity
-    // fmin 对应 Region 2（fn<1），分母为 +k
+    // fmin 对应 Region 2（fn<1），分母为 -k
     const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
     // 整体设计可行性
