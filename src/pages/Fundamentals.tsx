@@ -534,7 +534,7 @@ export default function Fundamentals() {
               </div>
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
-              <LCResonantTankSVG />
+              <img src="https://kimi-web-img.moonshot.cn/img/www.electronics-tutorials.ws/c61029782fd4137bf9e21a8c22b2a4d78ce75acd.gif" className="w-full rounded-lg" alt="基础串联RLC电路" />
             </div>
           </div>
 
@@ -654,7 +654,7 @@ export default function Fundamentals() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
-              <LLCResonantTankSVG />
+              <img src="https://kimi-web-img.moonshot.cn/img/passive-components.eu/528b4e4367fa32c74cdaa94f757ef50821150565.jpg" className="w-full rounded-lg" alt="LLC谐振变换器" />
             </div>
             <div className="space-y-5">
               <div className="flex items-start gap-3">
@@ -890,10 +890,10 @@ export default function Fundamentals() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-bg/50 rounded-lg p-4">
-              <HalfBridgeSVG />
+              <img src="https://kimi-web-img.moonshot.cn/img/media.geeksforgeeks.org/627f1e6500219583cc81918af5fc4cea7d167ded.png" className="w-full rounded-lg" alt="串联LC谐振电路" />
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
-              <FullBridgeSVG />
+              <img src="https://kimi-web-img.moonshot.cn/img/pica.zhimg.com/065c34054e805bad4536ca72d1b09fdd7a27284a.jpg" className="w-full rounded-lg" alt="全桥LC串联谐振" />
             </div>
           </div>
 

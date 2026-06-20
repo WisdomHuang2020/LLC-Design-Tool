@@ -219,9 +219,8 @@ export default function Curves() {
               max={10.0}
               step={0.1}
               value={k}
-              onChange={(e) => setK(parseFloat(e.target.value))}
-              className="w-full h-2 bg-surface-elevated rounded-lg appearance-none cursor-pointer"
-              style={{ accentColor: '#14b8a6' }}
+              onInput={(e) => setK(parseFloat((e.target as HTMLInputElement).value))}
+              className="w-full h-2 bg-surface-elevated rounded-lg cursor-pointer accent-teal-500"
             />
             <div className="flex justify-between text-xs text-text-muted mt-1 font-mono">
               <span>2.0</span>
@@ -243,9 +242,8 @@ export default function Curves() {
               max={5.0}
               step={0.1}
               value={Q}
-              onChange={(e) => setQ(parseFloat(e.target.value))}
-              className="w-full h-2 bg-surface-elevated rounded-lg appearance-none cursor-pointer"
-              style={{ accentColor: '#14b8a6' }}
+              onInput={(e) => setQ(parseFloat((e.target as HTMLInputElement).value))}
+              className="w-full h-2 bg-surface-elevated rounded-lg cursor-pointer accent-teal-500"
             />
             <div className="flex justify-between text-xs text-text-muted mt-1 font-mono">
               <span>0.1</span>
