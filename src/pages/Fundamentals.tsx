@@ -861,7 +861,7 @@ export default function Fundamentals() {
               important
             />
             <MathBlock
-              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \k}}"
+              latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}"
               important
             />
             <MathBlock
@@ -871,7 +871,7 @@ export default function Fundamentals() {
               latex="Q = \frac{Z_r}{R_{ac}}"
             />
             <MathBlock
-              latex="\k = \frac{L_m}{L_r}"
+              latex="k = \frac{L_m}{L_r}"
               important
             />
             <MathBlock

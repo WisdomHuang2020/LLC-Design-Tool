@@ -39,7 +39,7 @@ export default function Report() {
     return `# LLC谐振变换器设计报告
 
 **生成日期**: ${dateStr}  
-**设计工具**: LLC Design Tool v2.2（专业修正版）
+**设计工具**: LLC Design Tool v{__APP_VERSION__}
 
 ---
 
@@ -124,7 +124,7 @@ ${suggestions.map((s) => `- ${s}`).join('\n')}
 ${notes ? `## 备注\n\n${notes}\n` : ''}
 
 ---
-*本报告由 LLC Design Tool v2.2（专业修正版）自动生成，仅供工程参考。基于 FHA 等效方法，电流与应力值为近似估算。*
+*本报告由 LLC Design Tool v{__APP_VERSION__} 自动生成，仅供工程参考。基于 FHA 等效方法，电流与应力值为近似估算。*
 `
   }
 
@@ -436,7 +436,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                 <span className="mx-2">|</span>
                 <span className="inline-flex items-center gap-1">
                   <Hash className="w-3.5 h-3.5" />
-                  LLC Design Tool v2.2
+                  LLC Design Tool v{__APP_VERSION__}
                 </span>
               </p>
             </div>
@@ -827,7 +827,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
 
                 {/* Footer */}
                 <div className="text-center text-xs text-text-muted print:text-gray-500 border-t border-border pt-4 mt-8">
-                  <p>本报告由 LLC Design Tool v2.2（专业修正版）自动生成，仅供工程参考。</p>
+                  <p>本报告由 LLC Design Tool v{__APP_VERSION__} 自动生成，仅供工程参考。</p>
                   <p>基于 FHA 等效方法，电流与应力值为近似估算。</p>
                   <p className="mt-1">{dateStr}</p>
                 </div>

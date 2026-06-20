@@ -741,7 +741,7 @@ export default function Operation() {
                 important
               />
               <MathBlock
-                latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + \k}}"
+                latex="f_{r2} = \frac{1}{2\pi\sqrt{(L_r + L_m) C_r}} = \frac{f_{r1}}{\sqrt{1 + k}}"
                 important
               />
             </div>
@@ -955,7 +955,7 @@ export default function Operation() {
                 基于 FHA（First Harmonic Approximation）方法，完整的 LLC 电压增益方程为：
               </p>
               <MathBlock
-                latex="M(f_n, \k, Q) = \frac{f_n^2 \cdot \k}{\sqrt{(f_n^2(1+\k)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot \k^2}}"
+                latex="M(f_n, k, Q) = \frac{f_n^2 \cdot k}{\sqrt{(f_n^2(1+k)-1)^2 + (f_n Q (f_n^2-1))^2 \cdot k^2}}"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">
@@ -1093,23 +1093,23 @@ export default function Operation() {
                 <tbody className="text-text-secondary">
                   <tr className="border-b border-border/50">
                     <td className="py-2 px-3 font-medium text-text-primary">高 k（&gt;8）</td>
-                    <td className="py-2 px-3">变压器体积小，环流小</td>
-                    <td className="py-2 px-3">ZVS 范围窄，峰值增益低</td>
+                    <td className="py-2 px-3">环流小，导通损耗低</td>
+                    <td className="py-2 px-3">ZVS 范围窄，峰值增益低，变压器匝数可能增多</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2 px-3 font-medium text-text-primary">低 k（&lt;5）</td>
                     <td className="py-2 px-3">ZVS 范围宽，峰值增益高</td>
-                    <td className="py-2 px-3">变压器体积大，励磁损耗高</td>
+                    <td className="py-2 px-3">环流大，励磁损耗高，变压器体积往往偏大</td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-2 px-3 font-medium text-text-primary">高 Q（&gt;1）</td>
-                    <td className="py-2 px-3">增益曲线陡峭，峰值增益高</td>
-                    <td className="py-2 px-3">重载电流应力大，频带宽</td>
+                    <td className="py-2 px-3 font-medium text-text-primary">高 Q（&gt;1，重载）</td>
+                    <td className="py-2 px-3">增益曲线陡峭，调节范围窄</td>
+                    <td className="py-2 px-3">峰值增益低，重载电流应力大</td>
                   </tr>
                   <tr className="border-b border-border/50">
-                    <td className="py-2 px-3 font-medium text-text-primary">低 Q（&lt;0.5）</td>
-                    <td className="py-2 px-3">电流应力小，效率高</td>
-                    <td className="py-2 px-3">增益曲线平坦，调节范围大</td>
+                    <td className="py-2 px-3 font-medium text-text-primary">低 Q（&lt;0.5，轻载）</td>
+                    <td className="py-2 px-3">峰值增益高，电流应力小</td>
+                    <td className="py-2 px-3">增益曲线平坦，调节范围宽，轻载效率下降</td>
                   </tr>
                   <tr>
                     <td className="py-2 px-3 font-medium text-text-primary">高频率（&gt;300kHz）</td>
