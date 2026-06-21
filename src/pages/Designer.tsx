@@ -482,6 +482,11 @@ function calculateLosses(
   const diodeLoss = lp.mosfetVsd * idiode * (lp.deadTime / 1e9) * fsw * nSwitches
 
   // 5. Transformer core loss (Steinmetz)
+  // 公式: P_core = C_m * f_sw^α * B_peak^β * V_e
+  // 注意: C_m 的单位通常基于 kHz 和 mT，因此:
+  //   - fsw 需要 /1000 转换为 kHz
+  //   - B_peak 需要 *1000 转换为 mT
+  //   - V_e 单位与 C_m 匹配（通常为 cm³）
   const aeM2 = lp.coreAe * 1e-6
   const bPeak = (vin / (calc.topology === 'half-bridge' ? 2 : 1)) / (4 * fsw * lp.primaryTurns * aeM2)
   const coreLoss = lp.coreK * Math.pow(fsw / 1e3, lp.coreAlpha) * Math.pow(bPeak * 1000, lp.coreBeta) * lp.coreVe
@@ -1702,7 +1707,7 @@ function LossAnalysisPanel({
               <input type="number" className={inputClass} value={params.coreAe} onChange={(e) => update('coreAe', Number(e.target.value))} />
             </div>
             <div>
-              <label className={labelClass}>Steinmetz k</label>
+              <label className={labelClass}>Steinmetz C_m</label>
               <input type="number" step="0.1" className={inputClass} value={params.coreK} onChange={(e) => update('coreK', Number(e.target.value))} />
             </div>
             <div>
