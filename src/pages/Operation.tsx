@@ -77,7 +77,7 @@ function SectionTitle({
 function WaveformsSVG() {
   return (
     <svg
-      viewBox="0 0 560 380"
+      viewBox="0 0 560 400"
       className="w-full max-w-2xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -196,7 +196,7 @@ function WaveformsSVG() {
 
       {/* Time axis */}
       <line x1="40" y1="370" x2="520" y2="370" stroke="#525252" strokeWidth="2" />
-      <text x="280" y="395" fill="#737373" fontSize="10" textAnchor="middle">
+      <text x="280" y="390" fill="#737373" fontSize="10" textAnchor="middle">
         时间 t →
       </text>
     </svg>
@@ -416,6 +416,10 @@ function SwitchingAnimationSVG() {
         <path d="M 40 20 L 40 5 L 120 5 L 120 20 L 160 20 L 160 5 L 240 5 L 240 20 L 280 20 L 280 5 L 360 5 L 360 20 L 400 20 L 400 5 L 480 5 L 480 20 L 520 20 L 520 5 L 560 5 L 560 20" fill="none" stroke="#14b8a6" strokeWidth="2">
           <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
         </path>
+        {/* Dead-time labels */}
+        <text x="140" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
+        <text x="260" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
+        <text x="440" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
       </g>
 
       {/* Vgs Q2 */}
@@ -435,10 +439,10 @@ function SwitchingAnimationSVG() {
           <animate attributeName="stroke" values="#ef4444;#22c55e;#ef4444" dur="2s" repeatCount="indefinite" />
         </path>
         {/* ZVS highlight: Vds drops to zero before Vgs rises */}
-        <rect x="95" y="2" width="25" height="30" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2">
+        <rect x="95" y="2" width="25" height="24" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2">
           <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
         </rect>
-        <text x="108" y="45" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
+        <text x="108" y="-5" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
       </g>
 
       {/* Ir */}
@@ -468,9 +472,15 @@ function SwitchingAnimationSVG() {
 
 function CurrentFlowCircuitSVG() {
   return (
-    <svg viewBox="0 0 480 320" className="w-full max-w-2xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
-      {/* Half-bridge circuit diagram with animated current flow */}
+    <svg viewBox="0 0 540 360" className="w-full max-w-2xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
+        {/* Arrow markers for current direction */}
+        <marker id="arrowTealCircuit" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#14b8a6" />
+        </marker>
+        <marker id="arrowAmberCircuit" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#f59e0b" />
+        </marker>
         <linearGradient id="gradTeal" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#0f766e" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.8" />
@@ -481,97 +491,137 @@ function CurrentFlowCircuitSVG() {
         </linearGradient>
       </defs>
 
-      {/* Input rail */}
-      <line x1="40" y1="40" x2="100" y2="40" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="140" y1="40" x2="280" y2="40" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="20" y="45" fill="#a3a3a3" fontSize="10">Vin+</text>
-      <line x1="40" y1="280" x2="100" y2="280" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="140" y1="280" x2="280" y2="280" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="20" y="285" fill="#a3a3a3" fontSize="10">GND</text>
+      {/* DC input rails */}
+      <line x1="40" y1="50" x2="120" y2="50" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="40" y1="310" x2="120" y2="310" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="20" y="54" fill="#a3a3a3" fontSize="11">Vin+</text>
+      <text x="20" y="314" fill="#a3a3a3" fontSize="11">GND</text>
 
-      {/* Q1 */}
-      <rect x="100" y="40" width="40" height="40" fill="none" stroke="#14b8a6" strokeWidth="2" rx="2" />
-      <text x="120" y="65" fill="#14b8a6" fontSize="10" textAnchor="middle">Q1</text>
-      <line x1="120" y1="80" x2="120" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Q1 (high-side) */}
+      <rect x="120" y="30" width="44" height="44" fill="none" stroke="#14b8a6" strokeWidth="2" rx="2" />
+      <text x="142" y="57" fill="#14b8a6" fontSize="11" textAnchor="middle">Q1</text>
+      <line x1="142" y1="74" x2="142" y2="110" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Q2 */}
-      <rect x="100" y="200" width="40" height="40" fill="none" stroke="#f59e0b" strokeWidth="2" rx="2" />
-      <text x="120" y="225" fill="#f59e0b" fontSize="10" textAnchor="middle">Q2</text>
-      <line x1="120" y1="200" x2="120" y2="160" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Q2 (low-side) */}
+      <rect x="120" y="286" width="44" height="44" fill="none" stroke="#f59e0b" strokeWidth="2" rx="2" />
+      <text x="142" y="313" fill="#f59e0b" fontSize="11" textAnchor="middle">Q2</text>
+      <line x1="142" y1="286" x2="142" y2="250" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Switch node to resonant tank */}
-      <line x1="120" y1="120" x2="120" y2="160" stroke="#a3a3a3" strokeWidth="2" />
-      <circle cx="120" cy="140" r="3" fill="#f5f5f5" />
+      {/* Switch node */}
+      <line x1="142" y1="110" x2="142" y2="250" stroke="#a3a3a3" strokeWidth="2" />
+      <circle cx="142" cy="180" r="4" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
+      <text x="120" y="184" fill="#f5f5f5" fontSize="9" textAnchor="end">SW</text>
 
-      {/* Lr */}
-      <path d="M 120 160 L 140 160 L 140 150 L 150 170 L 160 150 L 170 170 L 180 150 L 190 170 L 200 160 L 220 160" fill="none" stroke="#14b8a6" strokeWidth="2" />
-      <text x="170" y="155" fill="#14b8a6" fontSize="10" textAnchor="middle">Lr</text>
+      {/* Resonant inductor Lr */}
+      <path d="M 142 180 L 170 180 L 170 170 L 180 190 L 190 170 L 200 190 L 210 170 L 220 190 L 230 180 L 260 180" fill="none" stroke="#14b8a6" strokeWidth="2" />
+      <text x="200" y="165" fill="#14b8a6" fontSize="11" textAnchor="middle">Lr</text>
 
-      {/* Cr */}
-      <line x1="220" y1="145" x2="220" y2="175" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="230" y1="145" x2="230" y2="175" stroke="#f59e0b" strokeWidth="2" />
-      <text x="240" y="165" fill="#f59e0b" fontSize="10">Cr</text>
+      {/* Resonant capacitor Cr */}
+      <line x1="260" y1="165" x2="260" y2="195" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="270" y1="165" x2="270" y2="195" stroke="#f59e0b" strokeWidth="2" />
+      <text x="285" y="184" fill="#f59e0b" fontSize="11">Cr</text>
 
-      {/* To transformer */}
-      <line x1="230" y1="160" x2="280" y2="160" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Transformer primary connection */}
+      <line x1="270" y1="180" x2="310" y2="180" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Transformer primary */}
-      <path d="M 280 140 Q 290 150 280 160 Q 290 170 280 180 Q 290 190 280 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 300 140 Q 310 150 300 160 Q 310 170 300 180 Q 310 190 300 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="290" y="130" fill="#a3a3a3" fontSize="10" textAnchor="middle">T</text>
+      {/* Transformer (center-tapped primary shown as two coupled inductors) */}
+      <path d="M 310 160 Q 322 170 310 180 Q 322 190 310 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 330 160 Q 342 170 330 180 Q 342 190 330 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Coupling arc */}
+      <path d="M 316 158 Q 322 150 328 158" fill="none" stroke="#a3a3a3" strokeWidth="1" />
+      <path d="M 316 202 Q 322 210 328 202" fill="none" stroke="#a3a3a3" strokeWidth="1" />
+      <text x="320" y="150" fill="#a3a3a3" fontSize="11" textAnchor="middle">T</text>
 
-      {/* Transformer secondary (center tapped) */}
-      <line x1="310" y1="160" x2="340" y2="160" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="340" y1="140" x2="340" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 340 140 Q 350 150 340 160 Q 350 170 340 180" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 350 140 Q 360 150 350 160 Q 360 170 350 180" fill="none" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Center tap / secondary */}
+      <line x1="330" y1="180" x2="360" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="360" y1="150" x2="360" y2="210" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 360 150 Q 372 160 360 170 Q 372 180 360 190" fill="none" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 375 150 Q 387 160 375 170 Q 387 180 375 190" fill="none" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Diodes */}
-      <polygon points="360,130 370,140 350,140" fill="none" stroke="#22c55e" strokeWidth="2" />
-      <line x1="360" y1="140" x2="360" y2="150" stroke="#22c55e" strokeWidth="2" />
-      <text x="370" y="135" fill="#22c55e" fontSize="9">D1</text>
+      {/* Rectifier diodes */}
+      <polygon points="390,140 400,150 380,150" fill="none" stroke="#22c55e" strokeWidth="2" />
+      <line x1="390" y1="150" x2="390" y2="160" stroke="#22c55e" strokeWidth="2" />
+      <text x="402" y="147" fill="#22c55e" fontSize="10">D1</text>
 
-      <polygon points="360,190 370,180 350,180" fill="none" stroke="#22c55e" strokeWidth="2" />
-      <line x1="360" y1="180" x2="360" y2="170" stroke="#22c55e" strokeWidth="2" />
-      <text x="370" y="195" fill="#22c55e" fontSize="9">D2</text>
+      <polygon points="390,220 400,210 380,210" fill="none" stroke="#22c55e" strokeWidth="2" />
+      <line x1="390" y1="210" x2="390" y2="200" stroke="#22c55e" strokeWidth="2" />
+      <text x="402" y="223" fill="#22c55e" fontSize="10">D2</text>
 
-      {/* Output */}
-      <line x1="360" y1="140" x2="420" y2="140" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="360" y1="180" x2="420" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="420" y1="140" x2="420" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="430" y="165" fill="#a3a3a3" fontSize="10">Vo+</text>
-      <text x="430" y="185" fill="#a3a3a3" fontSize="10">Vo-</text>
+      {/* Output capacitor / load */}
+      <line x1="390" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="390" y1="210" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="460" y1="150" x2="460" y2="165" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="455" y1="165" x2="465" y2="165" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="455" y1="175" x2="465" y2="175" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="460" y1="175" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="470" y="174" fill="#a3a3a3" fontSize="11">Co/Ro</text>
+      <text x="470" y="155" fill="#a3a3a3" fontSize="10">Vo+</text>
+      <text x="470" y="208" fill="#a3a3a3" fontSize="10">Vo-</text>
 
-      {/* Current flow paths - positive half cycle */}
-      <path id="pathPos" d="M 120 40 L 120 80 L 120 120 L 140 160 L 220 160 L 230 160 L 280 160 L 310 160 L 340 160 L 360 140 L 420 140" fill="none" stroke="url(#gradTeal)" strokeWidth="2" strokeDasharray="6 6" opacity="0.6">
-        <animate attributeName="stroke-dashoffset" values="24;0" dur="1s" repeatCount="indefinite" />
+      {/* Positive half-cycle current loop: Vin+ -> Q1 -> Lr -> Cr -> T -> D1 -> Co -> GND -> Vin- */}
+      <path
+        id="pathPos"
+        d="M 60 50 L 120 50 L 142 50 L 142 110 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 150 L 390 150 L 460 150 L 460 210 L 390 210 L 360 210 L 360 250 L 142 250 L 142 310 L 120 310 L 60 310 L 60 50"
+        fill="none"
+        stroke="url(#gradTeal)"
+        strokeWidth="3"
+        strokeDasharray="8 6"
+        strokeLinecap="round"
+        markerEnd="url(#arrowTealCircuit)"
+        opacity="0.75"
+      >
+        <animate attributeName="stroke-dashoffset" values="28;0" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0.75;0.75;0;0;0.75" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
       </path>
-      <circle r="3" fill="#14b8a6">
-        <animateMotion dur="1s" repeatCount="indefinite" path="M 120 40 L 120 80 L 120 120 L 140 160 L 220 160 L 230 160 L 280 160 L 310 160 L 340 160 L 360 140 L 420 140" />
+      <circle r="4" fill="#14b8a6" opacity="0.75">
+        <animate attributeName="opacity" values="0.75;0.75;0;0;0.75" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
+        <animateMotion dur="2s" repeatCount="indefinite" path="M 60 50 L 120 50 L 142 50 L 142 110 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 150 L 390 150 L 460 150 L 460 210 L 390 210 L 360 210 L 360 250 L 142 250 L 142 310 L 120 310 L 60 310 L 60 50" />
       </circle>
+      <text x="85" y="100" fill="#14b8a6" fontSize="11" fontWeight="600">+Ir</text>
 
-      {/* Current flow paths - negative half cycle */}
-      <path id="pathNeg" d="M 420 180 L 360 180 L 340 160 L 310 160 L 280 160 L 230 160 L 220 160 L 140 160 L 120 120 L 120 160 L 120 200 L 120 280" fill="none" stroke="url(#gradAmber)" strokeWidth="2" strokeDasharray="6 6" opacity="0.6">
-        <animate attributeName="stroke-dashoffset" values="24;0" dur="1s" repeatCount="indefinite" begin="0.5s" />
+      {/* Negative half-cycle current loop: GND -> Q2 -> Lr -> Cr -> T -> D2 -> Co -> Vin+ -> GND (mirror) */}
+      <path
+        id="pathNeg"
+        d="M 60 310 L 120 310 L 142 310 L 142 250 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 210 L 390 210 L 460 210 L 460 150 L 390 150 L 360 150 L 360 110 L 142 110 L 142 50 L 120 50 L 60 50 L 60 310"
+        fill="none"
+        stroke="url(#gradAmber)"
+        strokeWidth="3"
+        strokeDasharray="8 6"
+        strokeLinecap="round"
+        markerEnd="url(#arrowAmberCircuit)"
+        opacity="0"
+      >
+        <animate attributeName="stroke-dashoffset" values="28;0" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0;0;0.75;0.75;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.95;1" />
       </path>
-      <circle r="3" fill="#f59e0b">
-        <animateMotion dur="1s" repeatCount="indefinite" begin="0.5s" path="M 420 180 L 360 180 L 340 160 L 310 160 L 280 160 L 230 160 L 220 160 L 140 160 L 120 120 L 120 160 L 120 200 L 120 280" />
+      <circle r="4" fill="#f59e0b" opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.95;1" />
+        <animateMotion dur="2s" repeatCount="indefinite" path="M 60 310 L 120 310 L 142 310 L 142 250 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 210 L 390 210 L 460 210 L 460 150 L 390 150 L 360 150 L 360 110 L 142 110 L 142 50 L 120 50 L 60 50 L 60 310" />
       </circle>
+      <text x="85" y="270" fill="#f59e0b" fontSize="11" fontWeight="600">-Ir</text>
 
       {/* Legend */}
-      <g transform="translate(40, 300)">
-        <circle cx="0" cy="0" r="3" fill="#14b8a6" />
-        <text x="8" y="4" fill="#14b8a6" fontSize="10">正半周电流</text>
-        <circle cx="90" cy="0" r="3" fill="#f59e0b" />
-        <text x="98" y="4" fill="#f59e0b" fontSize="10">负半周电流</text>
+      <g transform="translate(40, 340)">
+        <line x1="0" y1="0" x2="20" y2="0" stroke="#14b8a6" strokeWidth="3" strokeDasharray="4 3" />
+        <text x="26" y="4" fill="#14b8a6" fontSize="10">正半周电流路径</text>
+        <line x1="150" y1="0" x2="170" y2="0" stroke="#f59e0b" strokeWidth="3" strokeDasharray="4 3" />
+        <text x="176" y="4" fill="#f59e0b" fontSize="10">负半周电流路径</text>
       </g>
     </svg>
   )
 }
 
-function ZVSZoomAnimatedSVG() {
+function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
   return (
-    <svg viewBox="0 0 420 200" className="w-full max-w-lg mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 420 210" className="w-full max-w-lg mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id={`arrowTealZvs${idSuffix}`} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#14b8a6" />
+        </marker>
+        <marker id={`arrowGreenZvs${idSuffix}`} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#22c55e" />
+        </marker>
+      </defs>
       {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.2">
         {[40, 80, 120, 160, 200, 240, 280, 320, 360, 400].map((x) => (
@@ -592,6 +642,7 @@ function ZVSZoomAnimatedSVG() {
       <path d="M 100 5 L 105 15 L 95 15 Z" fill="#14b8a6">
         <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.3s" />
       </path>
+      <text x="145" y="12" fill="#14b8a6" fontSize="9">Vgs 上升</text>
 
       {/* Vds */}
       <text x="30" y="55" fill="#a3a3a3" fontSize="10" textAnchor="end">Vds</text>
@@ -603,6 +654,7 @@ function ZVSZoomAnimatedSVG() {
       <path d="M 75 50 L 80 40 L 85 50 Z" fill="#22c55e">
         <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" />
       </path>
+      <text x="140" y="52" fill="#22c55e" fontSize="9">Vds 降至 0</text>
 
       {/* Id / Ir */}
       <text x="30" y="95" fill="#a3a3a3" fontSize="10" textAnchor="end">Ir</text>
@@ -613,8 +665,7 @@ function ZVSZoomAnimatedSVG() {
       <rect x="70" y="25" width="30" height="80" fill="rgba(239,68,68,0.1)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2">
         <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" repeatCount="indefinite" />
       </rect>
-      <text x="85" y="120" fill="#ef4444" fontSize="9" textAnchor="middle">体二极管</text>
-      <text x="85" y="132" fill="#ef4444" fontSize="9" textAnchor="middle">导通钳位</text>
+      <text x="25" y="70" fill="#ef4444" fontSize="9" textAnchor="end">体二极管导通钳位</text>
 
       {/* Dead time zone */}
       <rect x="80" y="2" width="20" height="140" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2">
@@ -623,18 +674,15 @@ function ZVSZoomAnimatedSVG() {
       <text x="90" y="155" fill="#f59e0b" fontSize="9" textAnchor="middle">死区时间</text>
 
       {/* Annotation arrows */}
-      <line x1="70" y1="140" x2="70" y2="65" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd="url(#arrowTeal)" />
-      <text x="55" y="105" fill="#22c55e" fontSize="9" textAnchor="end">Vds=0</text>
+      <line x1="70" y1="140" x2="70" y2="108" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
+      <text x="55" y="125" fill="#22c55e" fontSize="9" textAnchor="end">Vds=0</text>
 
-      <line x1="100" y1="140" x2="100" y2="20" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd="url(#arrowTeal)" />
-      <text x="115" y="85" fill="#14b8a6" fontSize="9">Vgs上升</text>
+      <line x1="100" y1="140" x2="100" y2="25" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowTealZvs${idSuffix})`} />
+      <text x="115" y="85" fill="#14b8a6" fontSize="9">Vgs 上升</text>
 
       {/* Explanation text */}
-      <text x="220" y="165" fill="#a3a3a3" fontSize="10" textAnchor="middle">
-        在死区时间内，谐振电流通过体二极管续流，
-      </text>
-      <text x="220" y="178" fill="#a3a3a3" fontSize="10" textAnchor="middle">
-        将Vds钳位到0V，实现零电压开通（ZVS）。
+      <text x="220" y="190" fill="#a3a3a3" fontSize="10" textAnchor="middle">
+        死区时间内，谐振电流经体二极管续流，将 Vds 钳位到 0V，实现 ZVS。
       </text>
     </svg>
   )
@@ -838,12 +886,12 @@ export default function Operation() {
               <h4 className="text-sm font-semibold text-primary-light mb-3">谐振电流流动路径</h4>
               <CurrentFlowCircuitSVG />
               <p className="text-text-secondary text-xs mt-3 leading-relaxed">
-                青色小圆点表示正半周电流路径（Vin → Q1 → Lr → Cr → T → 负载），琥珀色表示负半周电流路径（地 → Q2 → Lr → Cr → T → 负载）。动画直观展示了谐振电流在不同开关状态下的流向。
+                青色虚线表示正半周电流回路（Vin+ → Q1 → Lr → Cr → T → D1 → 负载 → GND），琥珀色虚线表示负半周回路（GND → Q2 → Lr → Cr → T → D2 → 负载 → Vin+）。小圆点沿闭合回路流动，清晰展示谐振电流方向随开关状态交替变化。
               </p>
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
               <h4 className="text-sm font-semibold text-primary-light mb-3">ZVS 过程特写</h4>
-              <ZVSZoomAnimatedSVG />
+              <ZVSZoomAnimatedSVG idSuffix="-top" />
               <p className="text-text-secondary text-xs mt-3 leading-relaxed">
                 死区时间内，体二极管导通将 Vds 钳位至接近 0V。随后 Vgs 上升，MOSFET 在零电压条件下导通，实现 ZVS。这一过程消除了开通损耗（Coss 充放电损耗）。
               </p>
@@ -912,7 +960,7 @@ export default function Operation() {
             </div>
 
             <div className="bg-bg/50 rounded-lg p-4">
-              <ZVSZoomAnimatedSVG />
+              <ZVSZoomAnimatedSVG idSuffix="-side" />
             </div>
           </div>
 
