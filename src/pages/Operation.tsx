@@ -123,16 +123,16 @@ function WaveformsSVG() {
 
   return (
     <svg
-      viewBox={`0 0 ${W} 460`}
+      viewBox={`0 0 ${W} 540`}
       className="w-full max-w-3xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.25">
         {Array.from({ length: 14 }, (_, i) => left + i * 40).map((x) => (
-          <line key={`v${x}`} x1={x} y1="20" x2={x} y2="410" />
+          <line key={`v${x}`} x1={x} y1="20" x2={x} y2="490" />
         ))}
-        {Array.from({ length: 9 }, (_, i) => 20 + i * 48).map((y) => (
+        {Array.from({ length: 11 }, (_, i) => 20 + i * 48).map((y) => (
           <line key={`h${y}`} x1={left} y1={y} x2={right} y2={y} />
         ))}
       </g>
@@ -191,7 +191,7 @@ function WaveformsSVG() {
         </text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d={`M ${left} 40 Q 90 8 140 40 Q 190 72 240 40 Q 290 8 340 40 Q 390 72 440 40 Q 490 8 ${right} 40`}
+          d={`M ${left} 40 Q 90 8 125 20 L 130 20 L 150 20 L 160 30 Q 190 72 240 40 Q 290 8 325 20 L 330 20 L 350 20 L 360 30 Q 390 72 440 40 Q 490 8 525 20 L 530 20 L 550 20 L ${right} 40`}
           fill="none"
           stroke={colors.ir}
           strokeWidth="2"
@@ -214,8 +214,31 @@ function WaveformsSVG() {
         <text x={right + 12} y="28" fill={colors.im} fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
-      {/* Io */}
+      {/* Id — 整流二极管电流 */}
       <g transform="translate(0, 330)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
+          Id
+        </text>
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
+        {/* D1 电流 — 正半周导通 */}
+        <path
+          d={`M ${left} 40 L 110 40 L 110 18 L 180 18 L 180 40 M 390 40 L 390 18 L 460 18 L 460 40`}
+          fill="none"
+          stroke="#14b8a6"
+          strokeWidth="2"
+        />
+        {/* D2 电流 — 负半周导通 */}
+        <path
+          d={`M 250 40 L 250 62 L 320 62 L 320 40 M 460 40 L 460 62 L 530 62 L 530 40`}
+          fill="none"
+          stroke="#f59e0b"
+          strokeWidth="2"
+        />
+        <text x={right + 12} y="28" fill="#a3a3a3" fontSize="11" dominantBaseline="middle">整流二极管电流</text>
+      </g>
+
+      {/* Io */}
+      <g transform="translate(0, 410)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Io
         </text>
@@ -230,8 +253,8 @@ function WaveformsSVG() {
       </g>
 
       {/* Time axis */}
-      <line x1={left} y1="410" x2={right} y2="410" stroke="#525252" strokeWidth="2" markerEnd="url(#arrTeal)" />
-      <text x={(left + right) / 2} y="435" fill="#737373" fontSize="11" textAnchor="middle">
+      <line x1={left} y1="490" x2={right} y2="490" stroke="#525252" strokeWidth="2" markerEnd="url(#arrTeal)" />
+      <text x={(left + right) / 2} y="515" fill="#737373" fontSize="11" textAnchor="middle">
         时间 t →
       </text>
     </svg>
