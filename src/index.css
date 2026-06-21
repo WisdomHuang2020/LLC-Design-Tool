@@ -45,6 +45,7 @@
     border-radius: 8px;
     padding: 1.5rem;
     overflow-x: auto;
+    overflow-y: hidden;
     font-family: var(--font-mono);
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     scrollbar-width: none; /* Firefox */
