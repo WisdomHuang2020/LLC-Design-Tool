@@ -692,7 +692,7 @@ function CurrentFlowCircuitSVG() {
         <line x1="495" y1="135" x2="505" y2="135" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="495" y1="145" x2="505" y2="145" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="500" y1="145" x2="500" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="510" y="108" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
+        <text x="510" y="95" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
 
         {/* Io 输出电流 */}
         <line x1="520" y1="110" x2="550" y2="110" stroke="#a3a3a3" strokeWidth="2" />
