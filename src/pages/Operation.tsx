@@ -637,15 +637,15 @@ function CurrentFlowCircuitSVG() {
         {/* Rectifier diodes */}
         <line x1="400" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="460" y1="150" x2="460" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <path d="M 460 130 L 452 116 L 468 116 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="116" x2="468" y2="116" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <path d="M 460 116 L 452 130 L 468 130 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="452" y1="130" x2="468" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <line x1="460" y1="116" x2="460" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <text x="475" y="126" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
         <line x1="400" y1="220" x2="460" y2="220" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="460" y1="220" x2="460" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <path d="M 460 230 L 452 244 L 468 244 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="244" x2="468" y2="244" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <path d="M 460 244 L 452 230 L 468 230 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="452" y1="230" x2="468" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <line x1="460" y1="244" x2="460" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <text x="475" y="240" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
