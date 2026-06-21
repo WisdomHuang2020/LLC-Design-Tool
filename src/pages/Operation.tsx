@@ -174,11 +174,11 @@ function WaveformsSVG() {
         <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* Im — 励磁电流（近似三角波，死区斜率变化） */}
+      {/* Im — 励磁电流（三角波：次级导通期间线性变化，死区斜率变化） */}
       <g transform="translate(0, 210)">
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d="M 60 60 L 170 20 L 230 15 L 310 30 L 420 60 L 480 65 L 520 60 L 580 35" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="6 4" />
-        <text x={right + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
+        <path d="M 60 45 L 170 12 L 230 18 L 310 25 L 420 55 L 480 48 L 520 42 L 580 12" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="6 4" />
+        <text x={right + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流（三角波）</text>
       </g>
 
       {/* Vds_Q1 — 死区斜坡过渡（ZVS实现，Coss充放电） */}
@@ -368,7 +368,7 @@ function SwitchingAnimationSVG() {
 
   const irPath = 'M 60 30.0 L 75 26.3 L 90 22.7 L 105 19.4 L 120 16.6 L 135 14.4 L 150 12.9 L 165 12.1 L 180 12.1 L 195 12.9 L 210 14.4 L 225 16.6 L 240 19.4 L 255 22.7 L 270 26.3 L 285 30.0 L 300 33.7 L 315 37.3 L 330 40.6 L 345 43.4 L 360 45.6 L 375 47.1 L 390 47.9 L 405 47.9 L 420 47.1 L 435 45.6 L 450 43.4 L 465 40.6 L 480 37.3 L 495 33.7 L 510 30.0 L 525 26.3 L 540 22.7 L 555 19.4 L 570 16.6 L 585 14.4 L 600 12.9 L 615 12.1 L 630 12.1'
 
-  const imPath = 'M 60 48 L 180 30 L 285 12 L 400 30 L 510 48 L 630 30'
+  const imPath = 'M 60 45 L 170 12 L 230 18 L 310 25 L 420 55 L 480 48 L 520 42 L 580 12'
 
   return (
     <svg viewBox="0 0 700 460" className="w-full max-w-3xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
@@ -451,7 +451,7 @@ function SwitchingAnimationSVG() {
         <text x="45" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Im</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={imPath} fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
-        <text x={t8 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
+        <text x={t8 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流（三角波）</text>
       </g>
 
       {/* Time axis */}
