@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   Activity,
   Waves,
@@ -11,6 +12,7 @@ import {
   Gauge,
   Zap,
   Layers,
+  ChevronDown,
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
 import GainChart from '../components/GainChart'
@@ -26,13 +28,19 @@ const fadeUp = {
 
 function SectionCard({
   children,
+  header,
   className = '',
   index = 0,
+  defaultOpen = true,
 }: {
   children: React.ReactNode
+  header: React.ReactNode
   className?: string
   index?: number
+  defaultOpen?: boolean
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
   return (
     <motion.div
       initial="hidden"
@@ -40,9 +48,34 @@ function SectionCard({
       viewport={{ once: true, margin: '-50px' }}
       variants={fadeUp}
       custom={index}
-      className={`card-surface p-6 md:p-8 ${className}`}
+      className={`card-surface overflow-hidden ${className}`}
     >
-      {children}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-6 md:px-8 md:pt-8 text-left hover:bg-surface-elevated/50 transition-colors"
+      >
+        <div>{header}</div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="w-6 h-6 text-text-secondary" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' as const }}
+          >
+            <div className="px-6 md:px-8 pb-6 md:pb-8 pt-2">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -717,12 +750,11 @@ export default function Operation() {
 
       <div className="space-y-6 md:space-y-8">
         {/* Section 1: Switching Modes */}
-        <SectionCard index={1}>
-          <SectionTitle
+        <SectionCard index={1} header={<SectionTitle
             icon={ToggleLeft}
             title="开关工作模式"
             subtitle="根据开关频率与谐振频率的相对关系划分三种模式"
-          />
+          />}>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-bg/50 rounded-lg p-5 border border-border/50">
@@ -801,12 +833,11 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 2: Key Waveforms */}
-        <SectionCard index={2}>
-          <SectionTitle
+        <SectionCard index={2} header={<SectionTitle
             icon={Waves}
             title="关键波形"
             subtitle="稳态运行时的电压与电流波形特征"
-          />
+          />}>
 
           <div className="bg-bg/50 rounded-lg p-4">
             <WaveformsSVG />
@@ -871,12 +902,11 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 2.5: Animated Switching Process */}
-        <SectionCard index={2}>
-          <SectionTitle
+        <SectionCard index={2} header={<SectionTitle
             icon={Zap}
             title="开关过程动画"
             subtitle="半桥LLC的实时开关波形与电流流动示意"
-          />
+          />}>
 
           <div className="bg-bg/50 rounded-lg p-4 mb-6">
             <SwitchingAnimationSVG />
@@ -901,12 +931,11 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 3: ZVS Conditions */}
-        <SectionCard index={3}>
-          <SectionTitle
+        <SectionCard index={3} header={<SectionTitle
             icon={CheckCircle2}
             title="ZVS 条件"
             subtitle="为什么 LLC 能实现零电压开关（ZVS）及其必要条件"
-          />
+          />}>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
@@ -981,12 +1010,11 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 4: Gain Characteristics */}
-        <SectionCard index={4}>
-          <SectionTitle
+        <SectionCard index={4} header={<SectionTitle
             icon={TrendingUp}
             title="增益特性"
             subtitle="电压增益 M 与频率、负载的关系"
-          />
+          />}>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
@@ -1045,12 +1073,11 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 5: Design Trade-offs */}
-        <SectionCard index={5}>
-          <SectionTitle
+        <SectionCard index={5} header={<SectionTitle
             icon={Scale}
             title="设计权衡"
             subtitle="效率、频率、损耗与体积之间的工程折中"
-          />
+          />}>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="p-5 bg-bg/50 rounded-lg border border-border/50">
