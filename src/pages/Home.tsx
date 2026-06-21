@@ -122,7 +122,7 @@ function GainCurvePreview() {
               <h3 className="text-lg font-semibold text-text-primary">增益特性预览</h3>
             </div>
             <p className="text-text-secondary text-sm leading-relaxed mb-4">
-              LLC 谐振变换器的电压增益随归一化频率变化。不同负载（Q值）下曲线形态各异，轻载时峰值增益更高，重载时曲线更平坦。
+              LLC 谐振变换器的电压增益随归一化频率变化。不同负载（Q值）下曲线形态各异，轻载（Q 小）时峰值增益更高、曲线更平缓；重载（Q 大）时峰值增益更低、曲线更陡峭（尖锐）。
             </p>
             <div className="flex items-center gap-2 text-primary-light text-sm font-medium group-hover:gap-3 transition-all">
               <span>查看交互式曲线</span>
