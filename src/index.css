@@ -44,15 +44,22 @@
     border: 1px solid var(--color-border);
     border-radius: 8px;
     padding: 1.5rem;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: auto;
     font-family: var(--font-mono);
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE 10+ */
   }
   .math-block::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  .math-block::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .math-block::-webkit-scrollbar-thumb {
+    background: transparent;
   }
   .math-block:hover {
     border-color: var(--color-primary-light);
