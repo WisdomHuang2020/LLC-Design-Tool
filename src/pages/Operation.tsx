@@ -147,15 +147,15 @@ function WaveformsSVG() {
         <text x={right + 12} y="40" fill="#f59e0b" fontSize="11" dominantBaseline="middle">Q2</text>
       </g>
 
-      {/* Ir — 纯正弦波（从负电流开始） */}
+      {/* Ir — 纯正弦波（从负峰值开始，过零线性斜率） */}
       <g transform="translate(0, 90)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Ir</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 70 Q 115 40 170 10 Q 255 40 340 70 Q 425 40 510 10 Q 545 40 580 55`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <path d={`M ${left} 70 Q 115 40 170 10 Q 225 40 280 70 Q 335 40 390 10 Q 445 40 500 70 Q 540 40 580 55`} fill="none" stroke="#14b8a6" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* Im — 三角波（从负电流开始） */}
+      {/* Im — 三角波（从负开始，线性斜率） */}
       <g transform="translate(0, 170)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Im</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
@@ -167,19 +167,19 @@ function WaveformsSVG() {
       <g transform="translate(0, 250)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vds</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* Q1 ON=0V, Q1 OFF=Vin */}
         <path d={`M ${left} 40 L 170 40 L 170 10 L 340 10 L 340 40 L 510 40 L 510 10 L 580 10`} fill="none" stroke="#ef4444" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#ef4444" fontSize="11" dominantBaseline="middle">漏极电压</text>
       </g>
 
-      {/* Isec — 副边电流（D1/D2 半波正弦） */}
+      {/* Isec — 副边电流（斜的正弦波：起始/结束有斜率，中间圆弧顶） */}
       <g transform="translate(0, 330)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Isec</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* D1 在 Q1 ON 期间导通: 60-170, 340-510 */}
-        <path d={`M ${left} 40 Q 115 18 170 40 M 340 40 Q 425 18 510 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
-        {/* D2 在 Q2 ON 期间导通: 230-340 */}
-        <path d={`M 170 40 Q 255 62 340 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
+        {/* D1 驼峰 — 起始斜率上升，圆弧顶，斜率下降 */}
+        <path d={`M 90 40 Q 130 20 170 10 Q 210 20 250 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
+        <path d={`M 410 40 Q 450 20 490 10 Q 530 20 570 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
+        {/* D2 驼峰 — 负半周导通 */}
+        <path d={`M 250 40 Q 295 20 340 10 Q 385 20 430 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
         <text x={right + 12} y="28" fill="#8b5cf6" fontSize="11" dominantBaseline="middle">副边电流</text>
       </g>
 
