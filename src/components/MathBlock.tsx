@@ -69,7 +69,7 @@ export default function MathBlock({
         throwOnError: false,
         displayMode: display,
         macros: {
-          '\vec': '\mathbf',
+          '\\vec': '\\mathbf',
         },
       })
     }

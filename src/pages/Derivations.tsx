@@ -14,6 +14,7 @@ import {
   Calculator,
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
+import InlineMath from '../components/InlineMath'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -508,7 +509,7 @@ export default function Derivations() {
             <ParamRow symbol="R_{ds(on)}" name="MOSFET 导通电阻" unit="Ω" description="结温下的导通电阻" typical="mΩ 级" />
             <ParamRow symbol="Q_g" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
             <ParamRow symbol="V_f" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
-            <ParamRow symbol="C_m, α, β" name="Steinmetz 系数" unit="-" description="磁芯材料损耗拟合系数" typical="查磁芯 datasheet" />
+            <ParamRow symbol="C_m, α, β" name="Steinmetz 系数" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="磁芯材料损耗拟合系数，C_m 典型值约 10⁻⁶ 量级" typical="查磁芯 datasheet" />
             <ParamRow symbol="B_{peak}" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，B_{peak} = V_p / (4 N_p A_e f_s)" typical="0.1 ~ 0.3 T" />
             <ParamRow symbol="N_p" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 A_e 与 B 设计" />
             <ParamRow symbol="A_e" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
@@ -543,62 +544,62 @@ export default function Derivations() {
               <tbody className="divide-y divide-border text-text-secondary">
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振频率</td>
-                  <td className="px-4 py-3 font-mono text-xs">f_r = 1 / (2π√(L_r C_r))</td>
+                  <td className="px-4 py-3"><InlineMath latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}" /></td>
                   <td className="px-4 py-3">串联谐振频率</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">第二谐振</td>
-                  <td className="px-4 py-3 font-mono text-xs">f_m = f_r / √(1 + k)</td>
+                  <td className="px-4 py-3"><InlineMath latex="f_m = \\frac{f_r}{\\sqrt{1 + k}}" /></td>
                   <td className="px-4 py-3">含励磁电感的谐振频率</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">电感比</td>
-                  <td className="px-4 py-3 font-mono text-xs">k = L_m / L_r</td>
+                  <td className="px-4 py-3"><InlineMath latex="k = \\frac{L_m}{L_r}" /></td>
                   <td className="px-4 py-3">典型 5 ~ 7</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">特征阻抗</td>
-                  <td className="px-4 py-3 font-mono text-xs">Z_0 = √(L_r / C_r)</td>
+                  <td className="px-4 py-3"><InlineMath latex="Z_0 = \\sqrt{\\frac{L_r}{C_r}}" /></td>
                   <td className="px-4 py-3">谐振腔阻抗尺度</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">品质因数</td>
-                  <td className="px-4 py-3 font-mono text-xs">Q = Z_0 / R_ac</td>
+                  <td className="px-4 py-3"><InlineMath latex="Q = \\frac{Z_0}{R_{ac}}" /></td>
                   <td className="px-4 py-3">负载越重 Q 越大</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">FHA 增益</td>
-                  <td className="px-4 py-3 font-mono text-xs">M = 1 / √[(1+1/k-1/(k f_n²))² + (Q(f_n-1/f_n))²]</td>
+                  <td className="px-4 py-3"><InlineMath latex="M = \\frac{1}{\\sqrt{\\left(1+\\frac{1}{k}-\\frac{1}{k f_n^2}\\right)^2 + \\left(Q\\left(f_n-\\frac{1}{f_n}\\right)\\right)^2}}" /></td>
                   <td className="px-4 py-3">标准电压增益</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">匝比（半桥）</td>
-                  <td className="px-4 py-3 font-mono text-xs">n = V_in,nom / [2(V_o + V_f)]</td>
+                  <td className="px-4 py-3"><InlineMath latex="n = \\frac{V_{in,nom}}{2(V_o + V_f)}" /></td>
                   <td className="px-4 py-3">考虑整流压降</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">等效电阻</td>
-                  <td className="px-4 py-3 font-mono text-xs">R_ac = 8n²V_o² / (π²P_o)</td>
+                  <td className="px-4 py-3"><InlineMath latex="R_{ac} = \\frac{8n^2 V_o^2}{\\pi^2 P_o}" /></td>
                   <td className="px-4 py-3">全波整流折算</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振电感</td>
-                  <td className="px-4 py-3 font-mono text-xs">L_r = Q_s R_ac / (2π f_r)</td>
+                  <td className="px-4 py-3"><InlineMath latex="L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}" /></td>
                   <td className="px-4 py-3">由 Q 反推</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振电容</td>
-                  <td className="px-4 py-3 font-mono text-xs">C_r = 1 / (2π f_r Q_s R_ac)</td>
+                  <td className="px-4 py-3"><InlineMath latex="C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}" /></td>
                   <td className="px-4 py-3">由 Q 反推</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">励磁电感</td>
-                  <td className="px-4 py-3 font-mono text-xs">L_m = k L_r</td>
+                  <td className="px-4 py-3"><InlineMath latex="L_m = k L_r" /></td>
                   <td className="px-4 py-3">决定 ZVS 能量</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">ZVS 能量</td>
-                  <td className="px-4 py-3 font-mono text-xs">½ L_m I_m,off² ≥ ½ C_oss,total V_in,max²</td>
+                  <td className="px-4 py-3"><InlineMath latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss,total} V_{in,max}^2" /></td>
                   <td className="px-4 py-3">确保零电压开通</td>
                 </tr>
               </tbody>
