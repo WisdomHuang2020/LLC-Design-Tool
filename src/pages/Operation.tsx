@@ -1175,17 +1175,17 @@ export default function Operation() {
                   <tr className="border-b border-border/50">
                     <td className="py-2 px-3 font-medium text-text-primary">低 k（&lt;5）</td>
                     <td className="py-2 px-3">ZVS 范围宽，峰值增益高</td>
-                    <td className="py-2 px-3">环流大，励磁损耗高，变压器体积往往偏大</td>
+                    <td className="py-2 px-3">励磁电流大，励磁损耗高，变压器体积可能偏大</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2 px-3 font-medium text-text-primary">高 Q（&gt;1，重载）</td>
                     <td className="py-2 px-3">增益曲线陡峭，调节范围窄</td>
-                    <td className="py-2 px-3">峰值增益低，重载电流应力大</td>
+                    <td className="py-2 px-3">峰值增益低，重载电流应力大，对元件容差敏感</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-2 px-3 font-medium text-text-primary">低 Q（&lt;0.5，轻载）</td>
                     <td className="py-2 px-3">峰值增益高，电流应力小</td>
-                    <td className="py-2 px-3">增益曲线平坦，调节范围宽，轻载效率下降</td>
+                    <td className="py-2 px-3">增益曲线平坦，轻载频率可能较高，驱动/磁芯损耗增加</td>
                   </tr>
                   <tr>
                     <td className="py-2 px-3 font-medium text-text-primary">高频率（&gt;300kHz）</td>
@@ -1195,6 +1195,9 @@ export default function Operation() {
                 </tbody>
               </table>
             </div>
+            <p className="mt-3 text-xs text-text-muted leading-relaxed">
+              注：“调节范围窄/宽”指为覆盖相同输入电压范围所需的频率变化量。窄调节范围意味着对频率控制精度要求高，但系统响应快；宽调节范围意味着对元件容差容忍度高，但轻载时频率可能跑高。
+            </p>
           </div>
         </SectionCard>
       </div>
