@@ -512,18 +512,25 @@ function CurrentFlowCircuitSVG() {
   const q1BodyDiode = phase === 5
   const q2BodyDiode = phase === 2
 
-  const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
-  const negPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 185 L 390 220 L 450 220 L 450 264 L 450 185 L 390 185'
-  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
-  const deadNegPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 185 L 390 220 L 450 220 L 450 264 L 450 185 L 390 185'
+  /* Lm 励磁电流路径 — 只走 Lm，不经过变压器次级 */
+  const lmPos = 'M 300 150 L 280 150 L 280 220 L 300 220 L 300 325'
+  const lmNeg = 'M 300 325 L 300 220 L 280 220 L 280 150 L 300 150'
+
+  /* T 原边→次级传递电流路径 — 经过变压器传递到输出 */
+  const tPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
+  const tNegPath = 'M 70 325 L 130 325 L 150 325 L 150 270 L 150 200 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 70 325 M 390 185 L 390 220 L 450 220 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
+  const tDeadPos = 'M 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325'
+  const tDeadNeg = 'M 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180'
+  const tBodyQ2 = 'M 70 325 L 130 325 L 150 325 L 150 200 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 70 325 M 390 185 L 390 220 L 450 220 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
+  const tBodyQ1 = 'M 70 325 L 130 325 L 150 325 L 150 200 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 70 325 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
 
   const currentPaths = [
-    { d: posPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '正半周能量传输' },
-    { d: deadPosPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)', label: 'Coss充放电' },
-    { d: negPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)', label: 'Q2体二极管续流' },
-    { d: negPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '负半周能量传输' },
-    { d: deadNegPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)', label: 'Coss充放电' },
-    { d: posPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)', label: 'Q1体二极管续流' },
+    { lm: lmPos, t: tPosPath, colorLm: '#22c55e', colorT: '#14b8a6', label: '正半周: Lm电流+T传递电流' },
+    { lm: lmPos, t: tDeadPos, colorLm: '#22c55e', colorT: '#f59e0b', label: '死区: Lm电流+T环流' },
+    { lm: lmNeg, t: tBodyQ2, colorLm: '#22c55e', colorT: '#22c55e', label: 'Q2体二极管: Lm电流+T传递电流' },
+    { lm: lmNeg, t: tNegPath, colorLm: '#22c55e', colorT: '#14b8a6', label: '负半周: Lm电流+T传递电流' },
+    { lm: lmNeg, t: tDeadNeg, colorLm: '#22c55e', colorT: '#f59e0b', label: '死区: Lm电流+T环流' },
+    { lm: lmPos, t: tBodyQ1, colorLm: '#22c55e', colorT: '#22c55e', label: 'Q1体二极管: Lm电流+T传递电流' },
   ]
 
   const currentPath = currentPaths[phase]
@@ -677,11 +684,12 @@ function CurrentFlowCircuitSVG() {
         <line x1="450" y1="116" x2="450" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <text x="465" y="126" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
+        {/* D2 整流二极管 — 阴极接Vo+，阳极接下次级 */}
         <line x1="390" y1="220" x2="450" y2="220" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="450" y1="220" x2="450" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <path d="M 450 244 L 442 230 L 458 230 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
+        <path d="M 450 216 L 442 230 L 458 230 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
         <line x1="442" y1="230" x2="458" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <line x1="450" y1="244" x2="450" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <line x1="450" y1="216" x2="450" y2="96" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <text x="465" y="240" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
         {/* Output capacitor / load */}
@@ -695,15 +703,26 @@ function CurrentFlowCircuitSVG() {
         <text x="552" y="108" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">Vo+</text>
         <text x="552" y="258" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">Vo-</text>
 
-        {/* Current path */}
+        {/* Lm 励磁电流路径 — 只走 Lm，不经过变压器次级 */}
         <path
-          d={currentPath.d}
+          d={currentPath.lm}
           fill="none"
-          stroke={currentPath.color}
+          stroke={currentPath.colorLm}
+          strokeWidth="2.5"
+          strokeDasharray="6 4"
+          strokeLinecap="round"
+          opacity="0.75"
+          className="dash-flow"
+        />
+
+        {/* T 原边→次级传递电流路径 */}
+        <path
+          d={currentPath.t}
+          fill="none"
+          stroke={currentPath.colorT}
           strokeWidth="3"
           strokeDasharray="8 6"
           strokeLinecap="round"
-          markerEnd={currentPath.marker}
           opacity="0.85"
           className="dash-flow"
         />
