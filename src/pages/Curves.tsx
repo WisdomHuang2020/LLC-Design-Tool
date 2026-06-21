@@ -13,15 +13,7 @@ import {
 } from 'recharts'
 import { Download, Link2, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router-dom'
-
-const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
-const Q_COLORS = ['#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ef4444']
-
-function calcGain(fn: number, k: number, Q: number): number {
-  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
-  const b = Q * (fn - 1 / fn)
-  return 1 / Math.sqrt(a * a + b * b)
-}
+import GainChart from '../components/GainChart'
 
 function calcImpedance(fn: number, k: number, Q: number) {
   const denom = Q * Q + fn * fn * k * k
@@ -30,36 +22,6 @@ function calcImpedance(fn: number, k: number, Q: number) {
   const mag = Math.sqrt(re * re + im * im)
   const phase = Math.atan2(im, re) * (180 / Math.PI)
   return { mag, phase }
-}
-
-function generateData(k: number, Q: number) {
-  const gainData: Array<Record<string, number>> = []
-  const impedanceData: Array<{ fn: number; mag: number; phase: number }> = []
-  let maxGain = 0
-
-  for (let fn = 0.1; fn <= 2.0; fn += 0.005) {
-    const f = parseFloat(fn.toFixed(3))
-
-    const gainPoint: Record<string, number> = { fn: f }
-    Q_PRESETS.forEach((q) => {
-      const g = calcGain(f, k, q)
-      const safeG = Number.isFinite(g) ? g : 0
-      gainPoint[`Q_${q}`] = safeG
-      if (safeG > maxGain) maxGain = safeG
-    })
-    const g = calcGain(f, k, Q)
-    const safeG = Number.isFinite(g) ? g : 0
-    gainPoint.currentQ = safeG
-    if (safeG > maxGain) maxGain = safeG
-    gainData.push(gainPoint)
-
-    const { mag, phase } = calcImpedance(f, k, Q)
-    if (Number.isFinite(mag) && Number.isFinite(phase)) {
-      impedanceData.push({ fn: f, mag, phase })
-    }
-  }
-
-  return { gainData, impedanceData, maxGain }
 }
 
 export default function Curves() {
@@ -82,15 +44,21 @@ export default function Curves() {
     setCurves({ k, q: Q })
   }, [k, Q, setCurves])
 
-  const { gainData, impedanceData, maxGain } = useMemo(
-    () => generateData(k, Q),
-    [k, Q]
-  )
-
   const fr1 = 1.0
   const fr2 = 1 / Math.sqrt(1 + k)
 
-  const gainChartRef = useRef<HTMLDivElement>(null)
+  const impedanceData = useMemo(() => {
+    const data: Array<{ fn: number; mag: number; phase: number }> = []
+    for (let fn = 0.1; fn <= 2.0; fn += 0.005) {
+      const f = parseFloat(fn.toFixed(3))
+      const { mag, phase } = calcImpedance(f, k, Q)
+      if (Number.isFinite(mag) && Number.isFinite(phase)) {
+        data.push({ fn: f, mag, phase })
+      }
+    }
+    return data
+  }, [k, Q])
+
   const impedanceChartRef = useRef<HTMLDivElement>(null)
 
   const exportChart = useCallback(
@@ -270,123 +238,16 @@ export default function Curves() {
         </div>
       </div>
 
-      {/* Gain Curve */}
+      {/* Gain Curve — using GainChart component */}
       <div className="card-surface p-6 mb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
-          <h2 className="text-xl font-semibold text-text-primary">
-            增益-频率曲线
-          </h2>
-          <button
-            onClick={() =>
-              exportChart(
-                gainChartRef,
-                `gain_curve_k${k.toFixed(2)}_Q${Q.toFixed(1)}.png`
-              )
-            }
-            className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"
-          >
-            <Download size={16} />
-            导出 PNG
-          </button>
-        </div>
-        <div ref={gainChartRef} className="w-full h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={gainData}
-              margin={{ top: 5, right: 20, bottom: 40, left: 10 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
-              <XAxis
-                dataKey="fn"
-                type="number"
-                domain={[0, 2.0]}
-                stroke="#a3a3a3"
-                tick={{
-                  fill: '#a3a3a3',
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 12,
-                }}
-                tickCount={9}
-                label={{
-                  value: '归一化频率 fn',
-                  position: 'insideBottom',
-                  offset: -10,
-                  fill: '#a3a3a3',
-                  fontSize: 13,
-                }}
-              />
-              <YAxis
-                domain={[0, Math.max(2, Math.ceil(maxGain * 1.1))]}
-                stroke="#a3a3a3"
-                tick={{
-                  fill: '#a3a3a3',
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 12,
-                }}
-                label={{
-                  value: '电压增益 M',
-                  angle: -90,
-                  position: 'insideLeft',
-                  fill: '#a3a3a3',
-                  fontSize: 13,
-                }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                wrapperStyle={{
-                  color: '#f5f5f5',
-                  fontFamily: 'JetBrains Mono',
-                  fontSize: 13,
-                  paddingTop: 20,
-                }}
-              />
-              <ReferenceLine
-                x={fr1}
-                stroke="#f59e0b"
-                strokeDasharray="5 5"
-                label={{
-                  value: 'fr₁',
-                  fill: '#f59e0b',
-                  position: 'insideTopLeft',
-                  fontSize: 12,
-                }}
-              />
-              <ReferenceLine
-                x={fr2}
-                stroke="#f59e0b"
-                strokeDasharray="5 5"
-                label={{
-                  value: 'fr₂',
-                  fill: '#f59e0b',
-                  position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
-                  fontSize: 12,
-                }}
-              />
-              {Q_PRESETS.map((q, i) => (
-                <Line
-                  key={q}
-                  type="linear"
-                  isAnimationActive={false}
-                  dataKey={`Q_${q}`}
-                  stroke={Q_COLORS[i]}
-                  strokeWidth={2}
-                  dot={false}
-                  name={`Q=${q}`}
-                />
-              ))}
-              <Line
-                type="linear"
-                isAnimationActive={false}
-                dataKey="currentQ"
-                stroke="#f5f5f5"
-                strokeWidth={2.5}
-                strokeDasharray="8 4"
-                dot={false}
-                name={`当前 Q=${Q.toFixed(1)}`}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <GainChart
+          k={k}
+          Q={Q}
+          showTitle
+          title="增益-频率曲线"
+          showExportButton
+          className="w-full h-96"
+        />
       </div>
 
       {/* Impedance Charts */}
