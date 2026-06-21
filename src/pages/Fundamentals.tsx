@@ -109,54 +109,56 @@ function SectionTitle({
 function LCResonantTankSVG() {
   return (
     <svg
-      viewBox="0 0 480 160"
-      className="w-full max-w-lg mx-auto h-auto"
+      viewBox="0 0 600 260"
+      className="w-full max-w-xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* AC Source: circle + sine wave */}
-      <circle cx="60" cy="80" r="18" stroke="#a3a3a3" strokeWidth="2" fill="none" />
-      <path d="M 50 80 Q 55 70 60 80 Q 65 90 70 80" fill="none" stroke="#a3a3a3" strokeWidth="1.5" />
-      <text x="28" y="85" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
-      <line x1="78" y1="80" x2="100" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      {/* 主回路线 y=100，底回路线 y=180 */}
 
-      {/* Inductor Lr — standard 4-arc */}
-      <line x1="100" y1="80" x2="115" y2="80" stroke="#14b8a6" strokeWidth="2" />
+      {/* AC Source */}
+      <circle cx="90" cy="100" r="22" stroke="#a3a3a3" strokeWidth="2" fill="none" />
+      <path d="M 78 100 C 82 90, 84 90, 88 100 C 92 110, 94 110, 98 100 C 102 90, 104 90, 108 100" fill="none" stroke="#a3a3a3" strokeWidth="1.5" />
+      <text x="55" y="105" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
+      <line x1="112" y1="100" x2="130" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+
+      {/* Inductor Lr */}
+      <line x1="130" y1="100" x2="145" y2="100" stroke="#14b8a6" strokeWidth="2" />
       <path
-        d="M 115 80 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0"
+        d="M 145 100 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0"
         fill="none"
         stroke="#14b8a6"
         strokeWidth="2"
         strokeLinecap="round"
       />
-      <line x1="151" y1="80" x2="170" y2="80" stroke="#14b8a6" strokeWidth="2" />
-      <text x="133" y="55" fill="#14b8a6" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
+      <line x1="181" y1="100" x2="200" y2="100" stroke="#14b8a6" strokeWidth="2" />
+      <text x="163" y="72" fill="#14b8a6" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-      {/* Capacitor Cr — standard parallel plates */}
-      <line x1="170" y1="80" x2="190" y2="80" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="190" y1="62" x2="190" y2="98" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="200" y1="62" x2="200" y2="98" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="200" y1="80" x2="220" y2="80" stroke="#f59e0b" strokeWidth="2" />
-      <text x="195" y="55" fill="#f59e0b" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
+      {/* Capacitor Cr */}
+      <line x1="200" y1="100" x2="220" y2="100" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="220" y1="80" x2="220" y2="120" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="232" y1="80" x2="232" y2="120" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="232" y1="100" x2="252" y2="100" stroke="#f59e0b" strokeWidth="2" />
+      <text x="226" y="72" fill="#f59e0b" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-      {/* Resistor Rac — standard zigzag (IEEE) */}
-      <line x1="220" y1="80" x2="235" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Resistor Rac */}
+      <line x1="252" y1="100" x2="270" y2="100" stroke="#a3a3a3" strokeWidth="2" />
       <path
-        d="M 235 80 l 6 0 l 6 -10 l 6 20 l 6 -20 l 6 20 l 6 -10 l 6 0"
+        d="M 270 100 l 7 0 l 7 -12 l 7 24 l 7 -24 l 7 24 l 7 -12 l 7 0"
         fill="none"
         stroke="#a3a3a3"
         strokeWidth="2"
         strokeLinejoin="round"
       />
-      <line x1="277" y1="80" x2="300" y2="80" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="256" y="55" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Rac</text>
+      <line x1="319" y1="100" x2="340" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="295" y="72" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Rac</text>
 
-      {/* Return path */}
-      <line x1="300" y1="80" x2="400" y2="80" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="42" y1="80" x2="42" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="42" y1="130" x2="400" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="400" y1="80" x2="400" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Return path — left, bottom, right */}
+      <line x1="340" y1="100" x2="420" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="68" y1="100" x2="68" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="68" y1="180" x2="420" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="420" y1="100" x2="420" y2="180" stroke="#a3a3a3" strokeWidth="2" />
 
-      <text x="220" y="150" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
+      <text x="300" y="210" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
         串联 LC 谐振电路
       </text>
     </svg>
