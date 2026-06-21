@@ -1,7 +1,7 @@
 {
   "name": "llc-design-tool",
   "private": true,
-  "version": "2.10.17",
+  "version": "2.10.35",
   "type": "module",
   "scripts": {
     "dev": "vite",
