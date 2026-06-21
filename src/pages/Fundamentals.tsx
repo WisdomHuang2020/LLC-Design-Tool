@@ -76,62 +76,54 @@ function SectionTitle({
 function LCResonantTankSVG() {
   return (
     <svg
-      viewBox="0 0 440 140"
-      className="w-full max-w-md mx-auto h-auto"
+      viewBox="0 0 480 160"
+      className="w-full max-w-lg mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Input source */}
-      <circle cx="40" cy="70" r="20" stroke="#a3a3a3" strokeWidth="2" fill="none" />
-      <text x="40" y="75" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        Vin
-      </text>
-      <line x1="60" y1="70" x2="100" y2="70" stroke="#a3a3a3" strokeWidth="2" />
+      {/* AC Source: circle + sine wave */}
+      <circle cx="60" cy="80" r="18" stroke="#a3a3a3" strokeWidth="2" fill="none" />
+      <path d="M 50 80 Q 55 70 60 80 Q 65 90 70 80" fill="none" stroke="#a3a3a3" strokeWidth="1.5" />
+      <text x="28" y="85" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
+      <line x1="78" y1="80" x2="100" y2="80" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Inductor Lr */}
-      <line x1="100" y1="70" x2="120" y2="70" stroke="#14b8a6" strokeWidth="2" />
+      {/* Inductor Lr — standard 4-arc */}
+      <line x1="100" y1="80" x2="115" y2="80" stroke="#14b8a6" strokeWidth="2" />
       <path
-        d="M 120 70 Q 125 55 130 70 Q 135 85 140 70 Q 145 55 150 70 Q 155 85 160 70"
+        d="M 115 80 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0"
         fill="none"
         stroke="#14b8a6"
         strokeWidth="2"
+        strokeLinecap="round"
       />
-      <line x1="160" y1="70" x2="180" y2="70" stroke="#14b8a6" strokeWidth="2" />
-      <text x="140" y="50" fill="#14b8a6" fontSize="12" textAnchor="middle">
-        Lr
-      </text>
+      <line x1="151" y1="80" x2="170" y2="80" stroke="#14b8a6" strokeWidth="2" />
+      <text x="133" y="55" fill="#14b8a6" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-      {/* Capacitor Cr */}
-      <line x1="180" y1="70" x2="200" y2="70" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="200" y1="55" x2="200" y2="85" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="55" x2="208" y2="85" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="70" x2="228" y2="70" stroke="#f59e0b" strokeWidth="2" />
-      <text x="204" y="50" fill="#f59e0b" fontSize="12" textAnchor="middle">
-        Cr
-      </text>
+      {/* Capacitor Cr — standard parallel plates */}
+      <line x1="170" y1="80" x2="190" y2="80" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="190" y1="62" x2="190" y2="98" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="200" y1="62" x2="200" y2="98" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="200" y1="80" x2="220" y2="80" stroke="#f59e0b" strokeWidth="2" />
+      <text x="195" y="55" fill="#f59e0b" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-      {/* Resistor / Load */}
-      <line x1="228" y1="70" x2="248" y2="70" stroke="#a3a3a3" strokeWidth="2" />
-      <rect
-        x="248"
-        y="55"
-        width="40"
-        height="30"
-        rx="4"
+      {/* Resistor Rac — standard zigzag (IEEE) */}
+      <line x1="220" y1="80" x2="235" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      <path
+        d="M 235 80 l 6 0 l 6 -10 l 6 20 l 6 -20 l 6 20 l 6 -10 l 6 0"
+        fill="none"
         stroke="#a3a3a3"
         strokeWidth="2"
-        fill="none"
+        strokeLinejoin="round"
       />
-      <line x1="288" y1="70" x2="308" y2="70" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="268" y="50" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        Rac
-      </text>
+      <line x1="277" y1="80" x2="300" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="256" y="55" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Rac</text>
 
       {/* Return path */}
-      <line x1="308" y1="70" x2="360" y2="70" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="360" y1="70" x2="360" y2="110" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="70" x2="40" y2="110" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="110" x2="360" y2="110" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="200" y="130" fill="#737373" fontSize="10" textAnchor="middle">
+      <line x1="300" y1="80" x2="400" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="42" y1="80" x2="42" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="42" y1="130" x2="400" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="400" y1="80" x2="400" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+
+      <text x="220" y="150" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
         串联 LC 谐振电路
       </text>
     </svg>
@@ -141,101 +133,88 @@ function LCResonantTankSVG() {
 function LLCResonantTankSVG() {
   return (
     <svg
-      viewBox="0 0 520 220"
-      className="w-full max-w-lg mx-auto h-auto"
+      viewBox="0 0 580 260"
+      className="w-full max-w-xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Input source */}
-      <circle cx="40" cy="80" r="20" stroke="#a3a3a3" strokeWidth="2" fill="none" />
-      <text x="40" y="85" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        Vin
-      </text>
-      <line x1="60" y1="80" x2="100" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      {/* AC Source */}
+      <circle cx="60" cy="100" r="18" stroke="#a3a3a3" strokeWidth="2" fill="none" />
+      <path d="M 50 100 Q 55 90 60 100 Q 65 110 70 100" fill="none" stroke="#a3a3a3" strokeWidth="1.5" />
+      <text x="28" y="105" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
+      <line x1="78" y1="100" x2="100" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Lr */}
-      <line x1="100" y1="80" x2="120" y2="80" stroke="#14b8a6" strokeWidth="2" />
-      <path
-        d="M 120 80 Q 125 65 130 80 Q 135 95 140 80 Q 145 65 150 80 Q 155 95 160 80"
-        fill="none"
-        stroke="#14b8a6"
-        strokeWidth="2"
-      />
-      <line x1="160" y1="80" x2="180" y2="80" stroke="#14b8a6" strokeWidth="2" />
-      <text x="140" y="60" fill="#14b8a6" fontSize="12" textAnchor="middle">
-        Lr
-      </text>
+      <line x1="100" y1="100" x2="115" y2="100" stroke="#14b8a6" strokeWidth="2" />
+      <path d="M 115 100 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="151" y1="100" x2="170" y2="100" stroke="#14b8a6" strokeWidth="2" />
+      <text x="133" y="75" fill="#14b8a6" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
       {/* Cr */}
-      <line x1="180" y1="80" x2="200" y2="80" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="200" y1="65" x2="200" y2="95" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="65" x2="208" y2="95" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="208" y1="80" x2="228" y2="80" stroke="#f59e0b" strokeWidth="2" />
-      <text x="204" y="60" fill="#f59e0b" fontSize="12" textAnchor="middle">
-        Cr
-      </text>
+      <line x1="170" y1="100" x2="190" y2="100" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="190" y1="82" x2="190" y2="118" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="200" y1="82" x2="200" y2="118" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="200" y1="100" x2="220" y2="100" stroke="#f59e0b" strokeWidth="2" />
+      <text x="195" y="75" fill="#f59e0b" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
       {/* Node X after Cr */}
-      <circle cx="228" cy="80" r="3" fill="#a3a3a3" />
+      <circle cx="220" cy="100" r="3" fill="#a3a3a3" />
+      <text x="220" y="92" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="middle">X</text>
 
       {/* Main line to transformer */}
-      <line x1="228" y1="80" x2="320" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="220" y1="100" x2="340" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Transformer primary */}
+      {/* Transformer — standard IEEE: two coils + core + dot markers */}
       <g stroke="#a3a3a3" strokeWidth="2" fill="none">
-        <line x1="320" y1="60" x2="320" y2="100" />
-        <line x1="324" y1="55" x2="324" y2="105" />
-        <line x1="328" y1="50" x2="328" y2="110" />
-        <line x1="332" y1="55" x2="332" y2="105" />
-        <line x1="336" y1="60" x2="336" y2="100" />
-        <line x1="348" y1="60" x2="348" y2="100" />
-        <line x1="352" y1="55" x2="352" y2="105" />
-        <line x1="356" y1="50" x2="356" y2="110" />
-        <line x1="360" y1="55" x2="360" y2="105" />
-        <line x1="364" y1="60" x2="364" y2="100" />
-        <line x1="336" y1="70" x2="348" y2="70" strokeDasharray="3 3" />
-        <line x1="336" y1="90" x2="348" y2="90" strokeDasharray="3 3" />
+        {/* Primary coil: 4 arcs */}
+        <path d="M 340 70 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        {/* Secondary coil: 4 arcs */}
+        <path d="M 388 70 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        {/* Core lines (dashed) */}
+        <line x1="376" y1="72" x2="376" y2="128" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="384" y1="72" x2="384" y2="128" strokeDasharray="4 3" strokeWidth="1.5" />
       </g>
-      <text x="342" y="45" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        n:1
-      </text>
+      {/* Dot markers */}
+      <circle cx="342" cy="76" r="2.5" fill="#a3a3a3" />
+      <circle cx="390" cy="76" r="2.5" fill="#a3a3a3" />
+      <text x="412" y="85" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">n : 1</text>
+      {/* Transformer leads */}
+      <line x1="340" y1="70" x2="340" y2="55" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="340" y1="130" x2="340" y2="145" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="412" y1="70" x2="412" y2="55" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="412" y1="130" x2="412" y2="145" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Lm branch — parallel to transformer primary */}
-      <line x1="228" y1="80" x2="228" y2="130" stroke="#22c55e" strokeWidth="2" />
-      <path
-        d="M 228 130 Q 233 115 238 130 Q 243 145 248 130 Q 253 115 258 130 Q 263 145 268 130"
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="2"
-      />
-      <line x1="268" y1="130" x2="320" y2="130" stroke="#22c55e" strokeWidth="2" />
-      <text x="270" y="150" fill="#22c55e" fontSize="12" textAnchor="middle">
-        Lm
-      </text>
+      <line x1="220" y1="100" x2="220" y2="170" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 220 170 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+      <line x1="256" y1="170" x2="340" y2="170" stroke="#22c55e" strokeWidth="2" />
+      <text x="280" y="195" fill="#22c55e" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
 
-      {/* Output rectifier + load */}
-      <line x1="364" y1="80" x2="400" y2="80" stroke="#a3a3a3" strokeWidth="2" />
-      <rect
-        x="400"
-        y="65"
-        width="40"
-        height="30"
-        rx="4"
-        stroke="#a3a3a3"
-        strokeWidth="2"
-        fill="none"
-      />
-      <text x="420" y="85" fill="#a3a3a3" fontSize="12" textAnchor="middle">
-        R
-      </text>
-      <line x1="440" y1="80" x2="480" y2="80" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Output rectifier + load (right side of transformer) */}
+      <line x1="412" y1="55" x2="460" y2="55" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Diode D1 (downward) */}
+      <line x1="460" y1="55" x2="460" y2="68" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 460 68 L 450 82 L 470 82 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="460" y1="82" x2="460" y2="85" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="475" y="78" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D1</text>
+      <line x1="460" y1="85" x2="460" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Diode D2 (upward) */}
+      <line x1="460" y1="115" x2="460" y2="118" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 460 118 L 450 132 L 470 132 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="460" y1="132" x2="460" y2="145" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="475" y="128" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D2</text>
+      {/* Load resistor */}
+      <line x1="460" y1="100" x2="495" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 495 100 l 6 0 l 6 -10 l 6 20 l 6 -20 l 6 20 l 6 -10 l 6 0" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="537" y1="100" x2="550" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="516" y="85" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Rload</text>
 
       {/* Return line */}
-      <line x1="320" y1="130" x2="480" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="480" y1="80" x2="480" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="80" x2="40" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="130" x2="228" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="340" y1="145" x2="550" y2="145" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="550" y1="55" x2="550" y2="145" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="42" y1="100" x2="42" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="42" y1="170" x2="220" y2="170" stroke="#a3a3a3" strokeWidth="2" />
 
-      <text x="260" y="200" fill="#737373" fontSize="10" textAnchor="middle">
+      <text x="290" y="240" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
         LLC 谐振腔等效电路（FHA 模型）— Lm 并联于变压器初级
       </text>
     </svg>
@@ -245,108 +224,112 @@ function LLCResonantTankSVG() {
 function HalfBridgeSVG() {
   return (
     <svg
-      viewBox="0 0 400 280"
-      className="w-full max-w-md mx-auto h-auto"
+      viewBox="0 0 520 360"
+      className="w-full max-w-lg mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* DC bus */}
-      <line x1="60" y1="40" x2="340" y2="40" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="50" y="45" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Vin
-      </text>
-      <line x1="60" y1="240" x2="340" y2="240" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="50" y="245" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        GND
-      </text>
+      <line x1="80" y1="50" x2="420" y2="50" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="70" y="55" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
+      <line x1="80" y1="310" x2="420" y2="310" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="70" y="315" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">GND</text>
 
-      {/* Q1 */}
-      <line x1="120" y1="40" x2="120" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="90" x2="135" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="110" y1="95" x2="130" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="130" y1="95" x2="110" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="105" x2="135" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="105" x2="120" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="95" y="100" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q1
-      </text>
+      {/* Q1 — High-side N-MOSFET (standard IEEE) */}
+      <line x1="160" y1="50" x2="160" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+      {/* MOSFET body: vertical channel line */}
+      <line x1="160" y1="75" x2="160" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Gate: left stub, not touching channel */}
+      <line x1="140" y1="115" x2="152" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+      {/* N-channel arrow: at source, pointing into channel (upward) */}
+      <path d="M 160 145 L 168 145 L 164 138 Z" fill="#a3a3a3" />
+      {/* Body diode: anode at S, cathode at D (arrow S→D) */}
+      <line x1="168" y1="95" x2="168" y2="135" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 168 135 L 164 128 L 172 128 Z" fill="#a3a3a3" />
+      {/* Q1 label */}
+      <text x="125" y="120" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
+      <line x1="160" y1="155" x2="160" y2="170" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Q2 */}
-      <line x1="120" y1="130" x2="120" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="155" x2="135" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="110" y1="160" x2="130" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="130" y1="160" x2="110" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="170" x2="135" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="170" x2="120" y2="240" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="95" y="165" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q2
-      </text>
+      {/* Q2 — Low-side N-MOSFET */}
+      <line x1="160" y1="170" x2="160" y2="190" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="160" y1="190" x2="160" y2="270" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="230" x2="152" y2="230" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 160 260 L 168 260 L 164 253 Z" fill="#a3a3a3" />
+      <line x1="168" y1="210" x2="168" y2="250" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 168 250 L 164 243 L 172 243 Z" fill="#a3a3a3" />
+      <text x="125" y="235" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
+      <line x1="160" y1="270" x2="160" y2="310" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Midpoint to resonant tank */}
-      <line x1="120" y1="130" x2="180" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="160" y1="170" x2="220" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="190" y="165" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">A</text>
 
       {/* Lr */}
-      <line x1="180" y1="130" x2="200" y2="130" stroke="#14b8a6" strokeWidth="2" />
-      <path
-        d="M 200 130 Q 205 115 210 130 Q 215 145 220 130 Q 225 115 230 130 Q 235 145 240 130"
-        fill="none"
-        stroke="#14b8a6"
-        strokeWidth="2"
-      />
-      <line x1="240" y1="130" x2="260" y2="130" stroke="#14b8a6" strokeWidth="2" />
-      <text x="220" y="110" fill="#14b8a6" fontSize="11" textAnchor="middle">
-        Lr
-      </text>
+      <line x1="220" y1="170" x2="235" y2="170" stroke="#14b8a6" strokeWidth="2" />
+      <path d="M 235 170 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="271" y1="170" x2="290" y2="170" stroke="#14b8a6" strokeWidth="2" />
+      <text x="253" y="145" fill="#14b8a6" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
       {/* Cr */}
-      <line x1="260" y1="130" x2="280" y2="130" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="280" y1="115" x2="280" y2="145" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="288" y1="115" x2="288" y2="145" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="288" y1="130" x2="308" y2="130" stroke="#f59e0b" strokeWidth="2" />
-      <text x="284" y="110" fill="#f59e0b" fontSize="11" textAnchor="middle">
-        Cr
-      </text>
+      <line x1="290" y1="170" x2="310" y2="170" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="310" y1="152" x2="310" y2="188" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="320" y1="152" x2="320" y2="188" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="320" y1="170" x2="340" y2="170" stroke="#f59e0b" strokeWidth="2" />
+      <text x="315" y="145" fill="#f59e0b" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-      {/* Node X after Cr */}
-      <circle cx="308" cy="130" r="3" fill="#a3a3a3" />
+      {/* Node X */}
+      <circle cx="340" cy="170" r="3" fill="#a3a3a3" />
+      <text x="340" y="162" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="middle">X</text>
 
       {/* Main line to transformer */}
-      <line x1="308" y1="130" x2="340" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="340" y1="170" x2="380" y2="170" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Transformer */}
       <g stroke="#a3a3a3" strokeWidth="2" fill="none">
-        <line x1="340" y1="110" x2="340" y2="150" />
-        <line x1="344" y1="105" x2="344" y2="155" />
-        <line x1="348" y1="100" x2="348" y2="160" />
-        <line x1="352" y1="105" x2="352" y2="155" />
-        <line x1="356" y1="110" x2="356" y2="150" />
-        <line x1="368" y1="110" x2="368" y2="150" />
-        <line x1="372" y1="105" x2="372" y2="155" />
-        <line x1="376" y1="100" x2="376" y2="160" />
-        <line x1="380" y1="105" x2="380" y2="155" />
-        <line x1="384" y1="110" x2="384" y2="150" />
+        <path d="M 380 140 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        <path d="M 428 140 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        <line x1="416" y1="142" x2="416" y2="198" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="424" y1="142" x2="424" y2="198" strokeDasharray="4 3" strokeWidth="1.5" />
       </g>
-      <text x="362" y="95" fill="#a3a3a3" fontSize="11" textAnchor="middle">
-        T
-      </text>
+      <circle cx="382" cy="146" r="2.5" fill="#a3a3a3" />
+      <circle cx="430" cy="146" r="2.5" fill="#a3a3a3" />
+      <text x="452" y="155" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">T</text>
+      {/* Transformer leads */}
+      <line x1="380" y1="140" x2="380" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="380" y1="200" x2="380" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="452" y1="140" x2="452" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="452" y1="200" x2="452" y2="215" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Lm — parallel to transformer primary */}
-      <line x1="308" y1="130" x2="308" y2="200" stroke="#22c55e" strokeWidth="2" />
-      <path
-        d="M 308 200 Q 313 185 318 200 Q 323 215 328 200 Q 333 185 338 200 Q 343 215 348 200"
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="2"
-      />
-      <line x1="348" y1="200" x2="348" y2="240" stroke="#22c55e" strokeWidth="2" />
-      <text x="356" y="220" fill="#22c55e" fontSize="11" textAnchor="start">
-        Lm
-      </text>
+      <line x1="340" y1="170" x2="340" y2="250" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 340 250 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+      <line x1="376" y1="250" x2="380" y2="250" stroke="#22c55e" strokeWidth="2" />
+      <text x="390" y="270" fill="#22c55e" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="start">Lm</text>
 
-      {/* Transformer secondary to GND */}
-      <line x1="384" y1="150" x2="384" y2="240" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Secondary side: rectifier diodes + load */}
+      <line x1="452" y1="125" x2="480" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      {/* D1 (downward) */}
+      <line x1="480" y1="125" x2="480" y2="138" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 480 138 L 470 152 L 490 152 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="480" y1="152" x2="480" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="495" y="148" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D1</text>
+      <line x1="480" y1="155" x2="480" y2="185" stroke="#a3a3a3" strokeWidth="2" />
+      {/* D2 (upward) */}
+      <line x1="480" y1="185" x2="480" y2="188" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 480 188 L 470 202 L 490 202 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="480" y1="202" x2="480" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="495" y="198" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D2</text>
+      {/* Load resistor */}
+      <line x1="480" y1="170" x2="510" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 510 170 l 6 0 l 6 -10 l 6 20 l 6 -20 l 6 20 l 6 -10 l 6 0" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="552" y1="170" x2="565" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="531" y="155" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">R</text>
 
-      <text x="200" y="270" fill="#737373" fontSize="10" textAnchor="middle">
-        半桥 LLC 拓扑 — Lm 并联于变压器初级
+      {/* Return */}
+      <line x1="380" y1="215" x2="565" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="565" y1="125" x2="565" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+
+      <text x="280" y="350" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
+        半桥 LLC 拓扑 — 2只 MOSFET + 全波整流
       </text>
     </svg>
   )
@@ -355,124 +338,126 @@ function HalfBridgeSVG() {
 function FullBridgeSVG() {
   return (
     <svg
-      viewBox="0 0 440 260"
-      className="w-full max-w-lg mx-auto h-auto"
+      viewBox="0 0 560 360"
+      className="w-full max-w-xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* DC bus */}
-      <line x1="60" y1="40" x2="380" y2="40" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="50" y="45" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Vin
-      </text>
-      <line x1="60" y1="220" x2="380" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="50" y="225" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        GND
-      </text>
+      <line x1="80" y1="50" x2="480" y2="50" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="70" y="55" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Vin</text>
+      <line x1="80" y1="310" x2="480" y2="310" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="70" y="315" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">GND</text>
 
-      {/* Q1/Q2 leg */}
-      <line x1="120" y1="40" x2="120" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="90" x2="135" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="110" y1="95" x2="130" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="130" y1="95" x2="110" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="105" x2="135" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="105" x2="120" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="95" y="100" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q1
-      </text>
+      {/* Q1 — High-side left */}
+      <line x1="140" y1="50" x2="140" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="75" x2="140" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="120" y1="115" x2="132" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 140 145 L 148 145 L 144 138 Z" fill="#a3a3a3" />
+      <line x1="148" y1="95" x2="148" y2="135" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 148 135 L 144 128 L 152 128 Z" fill="#a3a3a3" />
+      <text x="105" y="120" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
+      <line x1="140" y1="155" x2="140" y2="170" stroke="#a3a3a3" strokeWidth="2" />
 
-      <line x1="120" y1="130" x2="120" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="155" x2="135" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="110" y1="160" x2="130" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="130" y1="160" x2="110" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="105" y1="170" x2="135" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="170" x2="120" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="95" y="165" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q2
-      </text>
+      {/* Q2 — Low-side left */}
+      <line x1="140" y1="170" x2="140" y2="190" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="190" x2="140" y2="270" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="120" y1="230" x2="132" y2="230" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 140 260 L 148 260 L 144 253 Z" fill="#a3a3a3" />
+      <line x1="148" y1="210" x2="148" y2="250" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 148 250 L 144 243 L 152 243 Z" fill="#a3a3a3" />
+      <text x="105" y="235" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
+      <line x1="140" y1="270" x2="140" y2="310" stroke="#a3a3a3" strokeWidth="2" />
 
-      {/* Q3/Q4 leg */}
-      <line x1="240" y1="40" x2="240" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="225" y1="90" x2="255" y2="90" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="230" y1="95" x2="250" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="250" y1="95" x2="230" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="225" y1="105" x2="255" y2="105" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="240" y1="105" x2="240" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="215" y="100" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q3
-      </text>
+      {/* Q3 — High-side right */}
+      <line x1="280" y1="50" x2="280" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="280" y1="75" x2="280" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="260" y1="115" x2="272" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 280 145 L 288 145 L 284 138 Z" fill="#a3a3a3" />
+      <line x1="288" y1="95" x2="288" y2="135" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 288 135 L 284 128 L 292 128 Z" fill="#a3a3a3" />
+      <text x="245" y="120" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q3</text>
+      <line x1="280" y1="155" x2="280" y2="170" stroke="#a3a3a3" strokeWidth="2" />
 
-      <line x1="240" y1="130" x2="240" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="225" y1="155" x2="255" y2="155" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="230" y1="160" x2="250" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="250" y1="160" x2="230" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="225" y1="170" x2="255" y2="170" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="240" y1="170" x2="240" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="215" y="165" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Q4
-      </text>
+      {/* Q4 — Low-side right */}
+      <line x1="280" y1="170" x2="280" y2="190" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="280" y1="190" x2="280" y2="270" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="260" y1="230" x2="272" y2="230" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 280 260 L 288 260 L 284 253 Z" fill="#a3a3a3" />
+      <line x1="288" y1="210" x2="288" y2="250" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 288 250 L 284 243 L 292 243 Z" fill="#a3a3a3" />
+      <text x="245" y="235" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q4</text>
+      <line x1="280" y1="270" x2="280" y2="310" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Output to tank */}
-      <line x1="120" y1="130" x2="120" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="120" y1="130" x2="180" y2="130" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="240" y1="130" x2="300" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="140" y1="170" x2="220" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="180" y="165" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">A</text>
+      <line x1="280" y1="170" x2="360" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="320" y="165" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">B</text>
 
       {/* Tank between legs */}
-      <line x1="180" y1="130" x2="200" y2="130" stroke="#14b8a6" strokeWidth="2" />
-      <path
-        d="M 200 130 Q 205 115 210 130 Q 215 145 220 130 Q 225 115 230 130 Q 235 145 240 130"
-        fill="none"
-        stroke="#14b8a6"
-        strokeWidth="2"
-      />
-      <line x1="240" y1="130" x2="260" y2="130" stroke="#14b8a6" strokeWidth="2" />
-      <text x="220" y="110" fill="#14b8a6" fontSize="11" textAnchor="middle">
-        Lr
-      </text>
+      <line x1="220" y1="170" x2="240" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 240 170 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="276" y1="170" x2="300" y2="170" stroke="#14b8a6" strokeWidth="2" />
+      <text x="258" y="145" fill="#14b8a6" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-      <line x1="260" y1="130" x2="280" y2="130" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="280" y1="115" x2="280" y2="145" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="288" y1="115" x2="288" y2="145" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="288" y1="130" x2="300" y2="130" stroke="#f59e0b" strokeWidth="2" />
-      <text x="284" y="110" fill="#f59e0b" fontSize="11" textAnchor="middle">
-        Cr
-      </text>
+      <line x1="300" y1="170" x2="320" y2="170" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="320" y1="152" x2="320" y2="188" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="330" y1="152" x2="330" y2="188" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="330" y1="170" x2="360" y2="170" stroke="#f59e0b" strokeWidth="2" />
+      <text x="325" y="145" fill="#f59e0b" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
+
+      {/* Node X */}
+      <circle cx="360" cy="170" r="3" fill="#a3a3a3" />
+      <text x="360" y="162" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="middle">X</text>
 
       {/* Lm — parallel to transformer primary */}
-      <circle cx="300" cy="130" r="3" fill="#a3a3a3" />
-      <line x1="300" y1="130" x2="300" y2="200" stroke="#22c55e" strokeWidth="2" />
-      <path
-        d="M 300 200 Q 305 185 310 200 Q 315 215 320 200 Q 325 185 330 200 Q 335 215 340 200"
-        fill="none"
-        stroke="#22c55e"
-        strokeWidth="2"
-      />
-      <line x1="340" y1="200" x2="340" y2="240" stroke="#22c55e" strokeWidth="2" />
-      <text x="348" y="220" fill="#22c55e" fontSize="11" textAnchor="start">
-        Lm
-      </text>
+      <line x1="360" y1="170" x2="360" y2="250" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 360 250 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+      <line x1="396" y1="250" x2="400" y2="250" stroke="#22c55e" strokeWidth="2" />
+      <text x="410" y="270" fill="#22c55e" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="start">Lm</text>
 
       {/* Transformer */}
-      <line x1="300" y1="130" x2="340" y2="130" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="360" y1="170" x2="400" y2="170" stroke="#a3a3a3" strokeWidth="2" />
       <g stroke="#a3a3a3" strokeWidth="2" fill="none">
-        <line x1="340" y1="110" x2="340" y2="150" />
-        <line x1="344" y1="105" x2="344" y2="155" />
-        <line x1="348" y1="100" x2="348" y2="160" />
-        <line x1="352" y1="105" x2="352" y2="155" />
-        <line x1="356" y1="110" x2="356" y2="150" />
-        <line x1="368" y1="110" x2="368" y2="150" />
-        <line x1="372" y1="105" x2="372" y2="155" />
-        <line x1="376" y1="100" x2="376" y2="160" />
-        <line x1="380" y1="105" x2="380" y2="155" />
-        <line x1="384" y1="110" x2="384" y2="150" />
-        <line x1="356" y1="90" x2="368" y2="90" strokeDasharray="3 3" />
-        <line x1="356" y1="170" x2="368" y2="170" strokeDasharray="3 3" />
+        <path d="M 400 140 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        <path d="M 448 140 q 6 -14 12 0 q 6 14 12 0 q 6 -14 12 0 q 6 14 12 0" />
+        <line x1="436" y1="142" x2="436" y2="198" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="444" y1="142" x2="444" y2="198" strokeDasharray="4 3" strokeWidth="1.5" />
       </g>
-      <text x="362" y="95" fill="#a3a3a3" fontSize="11" textAnchor="middle">
-        T
-      </text>
+      <circle cx="402" cy="146" r="2.5" fill="#a3a3a3" />
+      <circle cx="450" cy="146" r="2.5" fill="#a3a3a3" />
+      <text x="472" y="155" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">T</text>
+      {/* Transformer leads */}
+      <line x1="400" y1="140" x2="400" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="400" y1="200" x2="400" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="472" y1="140" x2="472" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="472" y1="200" x2="472" y2="215" stroke="#a3a3a3" strokeWidth="2" />
 
-      <text x="220" y="250" fill="#737373" fontSize="10" textAnchor="middle">
-        全桥 LLC 拓扑 — Lm 并联于变压器初级
+      {/* Secondary side: rectifier diodes + load */}
+      <line x1="472" y1="125" x2="500" y2="125" stroke="#a3a3a3" strokeWidth="2" />
+      {/* D1 (downward) */}
+      <line x1="500" y1="125" x2="500" y2="138" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 500 138 L 490 152 L 510 152 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="500" y1="152" x2="500" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="515" y="148" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D1</text>
+      <line x1="500" y1="155" x2="500" y2="185" stroke="#a3a3a3" strokeWidth="2" />
+      {/* D2 (upward) */}
+      <line x1="500" y1="185" x2="500" y2="188" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 500 188 L 490 202 L 510 202 Z" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="500" y1="202" x2="500" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="515" y="198" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace" textAnchor="start">D2</text>
+      {/* Load resistor */}
+      <line x1="500" y1="170" x2="525" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 525 170 l 6 0 l 6 -10 l 6 20 l 6 -20 l 6 20 l 6 -10 l 6 0" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinejoin="round" />
+      <line x1="567" y1="170" x2="580" y2="170" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="546" y="155" fill="#a3a3a3" fontSize="13" fontFamily="JetBrains Mono, monospace" textAnchor="middle">R</text>
+
+      {/* Return */}
+      <line x1="400" y1="215" x2="580" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="580" y1="125" x2="580" y2="215" stroke="#a3a3a3" strokeWidth="2" />
+
+      <text x="300" y="350" fill="#737373" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">
+        全桥 LLC 拓扑 — 4只 MOSFET + 全波整流
       </text>
     </svg>
   )
