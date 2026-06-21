@@ -450,15 +450,15 @@ function CurrentFlowCircuitSVG() {
   const q2BodyDiode = phase === 2
 
   /* Lm 励磁电流路径 — 只走 Lm，不经过变压器次级 */
-  const lmPos = 'M 230 115 L 230 120 L 210 120 L 210 190 L 230 190 L 230 340'
-  const lmNeg = 'M 230 340 L 230 190 L 210 190 L 210 120 L 230 120 L 230 115'
+  const lmPos = 'M 230 100 L 230 120 L 210 120 L 210 190 L 230 190 L 230 340'
+  const lmNeg = 'M 230 340 L 230 190 L 210 190 L 210 120 L 230 120 L 230 100'
 
-  const tPosPath = 'M 25 49 L 70 49 L 70 35 L 90 35 L 90 75 L 90 95 L 90 115 L 122 115 L 128 115 L 155 115 L 185 115 L 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 330 150 L 330 120 L 350 120 L 370 120 L 500 120 L 500 135 L 500 145 L 500 150 L 330 150'
-  const tNegPath = 'M 90 340 L 90 305 L 90 295 L 90 255 L 90 235 L 90 115 L 122 115 L 128 115 L 155 115 L 185 115 L 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 330 150 L 330 180 L 350 180 L 370 180 L 370 120 L 500 120 L 500 135 L 500 145 L 500 150 L 330 150'
-  const tDeadPos = 'M 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340'
-  const tDeadNeg = 'M 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340'
-  const tBodyQ2 = 'M 230 340 L 90 340 L 90 305 L 90 295 L 90 255 L 90 235 L 90 115 L 122 115 L 128 115 L 155 115 L 185 115 L 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 330 150 L 330 180 L 350 180 L 370 180 L 370 120 L 500 120 L 500 135 L 500 145 L 500 150 L 330 150'
-  const tBodyQ1 = 'M 25 49 L 70 49 L 70 35 L 90 35 L 90 75 L 90 95 L 90 115 L 122 115 L 128 115 L 155 115 L 185 115 L 230 115 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 330 150 L 330 120 L 350 120 L 370 120 L 500 120 L 500 135 L 500 145 L 500 150 L 330 150'
+  const tPosPath = 'M 25 49 L 90 49 L 90 30 L 90 75 L 90 100 L 122 100 L 128 100 L 185 100 L 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 300 150 L 300 120 L 320 120 L 500 120 L 500 135 L 500 145 L 500 150 L 300 150'
+  const tNegPath = 'M 230 340 L 90 340 L 90 280 L 90 235 L 90 100 L 122 100 L 128 100 L 185 100 L 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 300 150 L 300 180 L 320 180 L 340 180 L 340 120 L 500 120 L 500 135 L 500 145 L 500 150 L 300 150'
+  const tDeadPos = 'M 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340'
+  const tDeadNeg = 'M 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340'
+  const tBodyQ2 = 'M 230 340 L 90 340 L 90 280 L 90 235 L 90 100 L 122 100 L 128 100 L 185 100 L 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 300 150 L 300 180 L 320 180 L 340 180 L 340 120 L 500 120 L 500 135 L 500 145 L 500 150 L 300 150'
+  const tBodyQ1 = 'M 25 49 L 90 49 L 90 30 L 90 75 L 90 100 L 122 100 L 128 100 L 185 100 L 230 100 L 230 120 L 260 120 L 260 190 L 230 190 L 230 340 M 300 150 L 300 120 L 320 120 L 500 120 L 500 135 L 500 145 L 500 150 L 300 150'
 
   const currentPaths = [
     { lm: lmPos, t: tPosPath, colorLm: '#22c55e', colorT: '#14b8a6', label: '正半周: Lm电流+T传递电流' },
@@ -516,141 +516,143 @@ function CurrentFlowCircuitSVG() {
         <circle cx="25" cy="65" r="16" fill="none" stroke="#a3a3a3" strokeWidth="2" />
         <text x="25" y="58" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">+</text>
         <text x="25" y="74" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">-</text>
-        <text x="25" y="95" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Vin</text>
+        <text x="25" y="28" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Vin</text>
 
-        {/* Vin+ 到 Q1 */}
-        <line x1="25" y1="49" x2="70" y2="49" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="49" x2="70" y2="35" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="35" x2="90" y2="35" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Vin+ 到 Q1 D */}
+        <line x1="25" y1="49" x2="90" y2="49" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="90" y1="49" x2="90" y2="30" stroke="#a3a3a3" strokeWidth="2" />
 
-        {/* Vin- 到 Q2 和 GND */}
-        <line x1="25" y1="81" x2="70" y2="81" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="81" x2="70" y2="290" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="290" x2="90" y2="290" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="290" x2="70" y2="340" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="70" y1="340" x2="350" y2="340" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Vin- 到 Q2 S 和 GND */}
+        <line x1="25" y1="81" x2="25" y2="340" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="25" y1="280" x2="90" y2="280" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="25" y1="340" x2="350" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <text x="10" y="344" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
-        {/* Q1 high-side NMOS */}
-        <line x1="90" y1="35" x2="90" y2="75" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="80" y1="55" x2="90" y2="55" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
-        <line x1="90" y1="75" x2="90" y2="95" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="90" y1="68" x2="100" y2="68" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
-        <path d="M 90 68 L 96 64 L 96 72 Z" fill={q1Active ? '#14b8a6' : '#a3a3a3'} />
-        {/* Q1 体二极管 */}
+        {/* Q1 标准 NMOS 符号 */}
+        {/* D-S 竖线 */}
+        <line x1="90" y1="30" x2="90" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+        {/* G 栅极 */}
+        <line x1="75" y1="52" x2="90" y2="52" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
+        {/* S 短横线 */}
+        <line x1="85" y1="75" x2="95" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Q1 体二极管 — 阴极在 D，阳极在 S */}
         <line x1="100" y1="40" x2="100" y2="70" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
         <line x1="96" y1="40" x2="104" y2="40" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
         <path d="M 100 40 L 96 52 L 104 52 Z" fill={q1BodyDiode ? '#22c55e' : '#a3a3a3'} />
-        <text x="75" y="59" fill={q1Active ? '#14b8a6' : q1BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
+        <text x="65" y="55" fill={q1Active ? '#14b8a6' : q1BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
 
-        {/* Q2 low-side NMOS */}
-        <line x1="90" y1="255" x2="90" y2="295" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="80" y1="275" x2="90" y2="275" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
-        <line x1="90" y1="255" x2="90" y2="235" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="90" y1="295" x2="90" y2="305" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="90" y1="262" x2="100" y2="262" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
-        <path d="M 90 262 L 96 258 L 96 266 Z" fill={q2Active ? '#f59e0b' : '#a3a3a3'} />
-        {/* Q2 体二极管 */}
-        <line x1="100" y1="260" x2="100" y2="290" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
-        <line x1="96" y1="260" x2="104" y2="260" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
-        <path d="M 100 260 L 96 272 L 104 272 Z" fill={q2BodyDiode ? '#22c55e' : '#a3a3a3'} />
-        <text x="75" y="279" fill={q2Active ? '#f59e0b' : q2BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
+        {/* Q2 标准 NMOS 符号 */}
+        {/* D-S 竖线 */}
+        <line x1="90" y1="235" x2="90" y2="280" stroke="#a3a3a3" strokeWidth="2" />
+        {/* G 栅极 */}
+        <line x1="75" y1="257" x2="90" y2="257" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
+        {/* S 短横线 */}
+        <line x1="85" y1="280" x2="95" y2="280" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Q2 体二极管 — 阴极在 D，阳极在 S */}
+        <line x1="100" y1="245" x2="100" y2="275" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
+        <line x1="96" y1="245" x2="104" y2="245" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
+        <path d="M 100 245 L 96 257 L 104 257 Z" fill={q2BodyDiode ? '#22c55e' : '#a3a3a3'} />
+        <text x="65" y="260" fill={q2Active ? '#f59e0b' : q2BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
 
+        {/* Q1 S 到 SW 节点 */}
+        <line x1="90" y1="75" x2="90" y2="100" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Q2 D 到 SW 节点 */}
+        <line x1="90" y1="235" x2="90" y2="100" stroke="#a3a3a3" strokeWidth="2" />
         {/* SW 节点 */}
-        <circle cx="90" cy="115" r="3.5" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
-        <text x="72" y="118" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
+        <circle cx="90" cy="100" r="3.5" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
+        <text x="72" y="103" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
 
-        {/* 从 SW 到 Cr */}
-        <line x1="90" y1="115" x2="120" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+        {/* SW 到 Cr */}
+        <line x1="90" y1="100" x2="120" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Cr — 水平电容 */}
-        <line x1="122" y1="105" x2="122" y2="125" stroke="#f59e0b" strokeWidth="2" />
-        <line x1="128" y1="105" x2="128" y2="125" stroke="#f59e0b" strokeWidth="2" />
-        <text x="125" y="95" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
+        <line x1="122" y1="90" x2="122" y2="110" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="128" y1="90" x2="128" y2="110" stroke="#f59e0b" strokeWidth="2" />
+        <text x="125" y="80" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-        {/* 从 Cr 到 Lr */}
-        <line x1="128" y1="115" x2="155" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Cr 到 Lr */}
+        <line x1="128" y1="100" x2="155" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Lr — 水平电感 */}
-        <path d="M 155 115 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
-        <text x="170" y="95" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
+        <path d="M 155 100 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+        <text x="170" y="80" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-        {/* 从 Lr 到并联节点 */}
-        <line x1="185" y1="115" x2="230" y2="115" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Lr 到并联节点 */}
+        <line x1="185" y1="100" x2="230" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* 并联节点 — Lm 和 np 并联 */}
-        <line x1="230" y1="115" x2="230" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="230" y1="100" x2="230" y2="120" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Lm — 垂直，并联在并联节点和 GND 之间 */}
         <line x1="230" y1="120" x2="210" y2="120" stroke="#22c55e" strokeWidth="2" />
         <path d="M 210 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
         <line x1="210" y1="190" x2="230" y2="190" stroke="#22c55e" strokeWidth="2" />
-        <text x="220" y="112" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
+        <text x="220" y="105" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
         <line x1="230" y1="190" x2="230" y2="340" stroke="#22c55e" strokeWidth="2" />
 
         {/* np 原边绕组 — 垂直，并联在并联节点和 GND 之间 */}
         <line x1="230" y1="120" x2="260" y2="120" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 260 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
         <line x1="260" y1="190" x2="230" y2="190" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="275" y="170" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">np</text>
+        <text x="265" y="155" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">np</text>
         <line x1="230" y1="190" x2="230" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <circle cx="262" cy="125" r="2.5" fill="#a3a3a3" />
 
         {/* 耦合线 */}
-        <line x1="268" y1="125" x2="322" y2="125" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
-        <line x1="268" y1="185" x2="322" y2="185" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="268" y1="125" x2="292" y2="125" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="268" y1="185" x2="292" y2="185" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
 
         {/* 上次级 ns 绕组 */}
-        <line x1="330" y1="120" x2="330" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 330 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="332" cy="125" r="2.5" fill="#a3a3a3" />
-        <text x="335" y="145" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
+        <line x1="300" y1="120" x2="300" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 300 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="302" cy="125" r="2.5" fill="#a3a3a3" />
+        <text x="305" y="140" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
 
         {/* 中心抽头 */}
-        <line x1="330" y1="150" x2="580" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="300" y1="150" x2="580" y2="150" stroke="#a3a3a3" strokeWidth="2" />
         <text x="585" y="145" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo-</text>
 
         {/* 下次级 ns 绕组 */}
-        <line x1="330" y1="150" x2="330" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 330 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="332" cy="175" r="2.5" fill="#a3a3a3" />
-        <text x="335" y="170" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
+        <line x1="300" y1="150" x2="300" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 300 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        <circle cx="302" cy="175" r="2.5" fill="#a3a3a3" />
+        <text x="305" y="170" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
 
         {/* D1 — 水平，阳极接上次级上端，阴极向右接Vo+ */}
-        <line x1="330" y1="120" x2="350" y2="120" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="350" y1="120" x2="370" y2="120" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <path d="M 350 112 L 350 128 L 370 120 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="350" y1="112" x2="350" y2="128" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <text x="375" y="115" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
+        <line x1="300" y1="120" x2="320" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="320" y1="120" x2="340" y2="120" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <path d="M 320 112 L 320 128 L 340 120 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="320" y1="112" x2="320" y2="128" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <text x="325" y="105" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
         {/* Vo+ 线 */}
-        <line x1="370" y1="120" x2="580" y2="120" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="585" y="115" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo+</text>
+        <line x1="340" y1="120" x2="580" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+        <text x="585" y="105" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo+</text>
 
-        {/* D2 — 水平（逆时针转90°），阳极接下次级下端，阴极向右 */}
-        <line x1="330" y1="180" x2="350" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="350" y1="180" x2="370" y2="180" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <path d="M 350 172 L 350 188 L 370 180 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="350" y1="172" x2="350" y2="188" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <text x="375" y="175" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
+        {/* D2 — 水平，阳极接下次级下端，阴极向右 */}
+        <line x1="300" y1="180" x2="320" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="320" y1="180" x2="340" y2="180" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <path d="M 320 172 L 320 188 L 340 180 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="320" y1="172" x2="320" y2="188" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <text x="325" y="165" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
         {/* D2 阴极向上到Vo+ */}
-        <line x1="370" y1="180" x2="370" y2="120" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <line x1="340" y1="180" x2="340" y2="120" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
 
         {/* Cf 输出滤波电容 */}
         <line x1="500" y1="120" x2="500" y2="135" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="495" y1="135" x2="505" y2="135" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="495" y1="145" x2="505" y2="145" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="500" y1="145" x2="500" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="510" y="142" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
+        <text x="510" y="132" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
 
         {/* Io 输出电流 */}
         <line x1="520" y1="110" x2="550" y2="110" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 550 110 L 540 106 L 540 114 Z" fill="#a3a3a3" />
-        <text x="555" y="115" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace">Io</text>
+        <text x="555" y="105" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace">Io</text>
 
         {/* Vo 输出标注 */}
-        <text x="585" y="135" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo</text>
+        <text x="585" y="125" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo</text>
 
         {/* Lm 励磁电流路径 — 只走 Lm，不经过变压器次级 */}
         <path
