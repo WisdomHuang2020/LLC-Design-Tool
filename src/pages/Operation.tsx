@@ -320,27 +320,23 @@ function GainCurveSVG() {
 /* ─── Animated SVG Components ─── */
 
 function SwitchingAnimationSVG() {
-  const t1 = 80
-  const t2 = 200
-  const t3 = 245
-  const t4 = 270
-  const t5 = 390
-  const t6 = 435
-  const t7 = 460
-  const t8 = 580
-  const t9 = 625
-  const t10 = 650
+  const t1 = 60
+  const t2 = 180
+  const t3 = 230
+  const t4 = 280
+  const t5 = 400
+  const t6 = 450
+  const t7 = 510
+  const t8 = 630
 
   const phases = [
-    { start: t1, end: t2, color: 'rgba(20,184,166,0.08)', label: 'Q1 ON', labelColor: '#14b8a6' },
-    { start: t2, end: t3, color: 'rgba(245,158,11,0.08)', label: '死区', labelColor: '#f59e0b' },
-    { start: t3, end: t4, color: 'rgba(34,197,94,0.12)', label: 'D2导通', labelColor: '#22c55e' },
-    { start: t4, end: t5, color: 'rgba(20,184,166,0.08)', label: 'Q2 ON', labelColor: '#14b8a6' },
-    { start: t5, end: t6, color: 'rgba(245,158,11,0.08)', label: '死区', labelColor: '#f59e0b' },
-    { start: t6, end: t7, color: 'rgba(34,197,94,0.12)', label: 'D1导通', labelColor: '#22c55e' },
-    { start: t7, end: t8, color: 'rgba(20,184,166,0.08)', label: 'Q1 ON', labelColor: '#14b8a6' },
-    { start: t8, end: t9, color: 'rgba(245,158,11,0.08)', label: '死区', labelColor: '#f59e0b' },
-    { start: t9, end: t10, color: 'rgba(34,197,94,0.12)', label: 'D2导通', labelColor: '#22c55e' },
+    { start: t1, end: t2, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6' },
+    { start: t2, end: t3, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b' },
+    { start: t3, end: t4, color: 'rgba(34,197,94,0.15)', label: 'D2导通', labelColor: '#22c55e' },
+    { start: t4, end: t5, color: 'rgba(20,184,166,0.12)', label: 'Q2 ON', labelColor: '#14b8a6' },
+    { start: t5, end: t6, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b' },
+    { start: t6, end: t7, color: 'rgba(34,197,94,0.15)', label: 'D1导通', labelColor: '#22c55e' },
+    { start: t7, end: t8, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6' },
   ]
 
   const timeMarkers = [
@@ -350,15 +346,13 @@ function SwitchingAnimationSVG() {
     { t: t4, label: 't₄' },
     { t: t5, label: 't₅' },
     { t: t6, label: 't₆' },
-    { t: t7, label: 't₁' },
-    { t: t8, label: 't₂' },
-    { t: t9, label: 't₃' },
-    { t: t10, label: 't₄' },
+    { t: t7, label: "t₁'" },
+    { t: t8, label: "t₂'" },
   ]
 
-  const irPath = 'M 80 174.6 L 96 178.9 L 112 182.1 L 128 184.2 L 144 185.0 L 160 184.4 L 176 182.4 L 192 179.3 L 208 175.0 L 224 169.9 L 240 164.2 L 256 158.2 L 272 152.5 L 288 147.5 L 304 147.5 L 320 145.6 L 336 145.0 L 352 145.8 L 368 148.0 L 384 151.4 L 400 155.7 L 416 160.9 L 432 165.9 L 448 171.1 L 464 175.9 L 480 179.9 L 496 183.1 L 512 184.6 L 528 185.0 L 544 183.9 L 560 181.6 L 576 178.1 L 592 173.7 L 608 168.6 L 624 163.3 L 640 158.2 L 650 155.4'
+  const irPath = 'M 60 30.0 L 75 26.3 L 90 22.7 L 105 19.4 L 120 16.6 L 135 14.4 L 150 12.9 L 165 12.1 L 180 12.1 L 195 12.9 L 210 14.4 L 225 16.6 L 240 19.4 L 255 22.7 L 270 26.3 L 285 30.0 L 300 33.7 L 315 37.3 L 330 40.6 L 345 43.4 L 360 45.6 L 375 47.1 L 390 47.9 L 405 47.9 L 420 47.1 L 435 45.6 L 450 43.4 L 465 40.6 L 480 37.3 L 495 33.7 L 510 30.0 L 525 26.3 L 540 22.7 L 555 19.4 L 570 16.6 L 585 14.4 L 600 12.9 L 615 12.1 L 630 12.1'
 
-  const imPath = 'M 80 210 L 175 228 L 270 210 L 365 192 L 460 210 L 555 228 L 650 210'
+  const imPath = 'M 60 48 L 180 30 L 285 12 L 400 30 L 510 48 L 630 30'
 
   return (
     <svg viewBox="0 0 700 460" className="w-full max-w-3xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
@@ -402,8 +396,8 @@ function SwitchingAnimationSVG() {
       {/* Vgs Q1 */}
       <g>
         <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q1</text>
-        <line x1={t1} y1="40" x2={t10} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t1} 15 L ${t2} 15 L ${t2} 40 L ${t7} 40 L ${t7} 15 L ${t8} 15 L ${t8} 40 L ${t10} 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
+        <path d={`M ${t1} 40 L ${t1} 15 L ${t2} 15 L ${t2} 40 L ${t7} 40 L ${t7} 15 L ${t8} 15 L ${t8} 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
         <text x={(t1 + t2) / 2} y="12" fill="#14b8a6" fontSize="8" textAnchor="middle">Q1 ON</text>
         <text x={(t7 + t8) / 2} y="12" fill="#14b8a6" fontSize="8" textAnchor="middle">Q1 ON</text>
       </g>
@@ -411,18 +405,17 @@ function SwitchingAnimationSVG() {
       {/* Vgs Q2 */}
       <g transform="translate(0, 45)">
         <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
-        <line x1={t1} y1="40" x2={t10} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t4} 40 L ${t4} 15 L ${t5} 15 L ${t5} 40 L ${t10} 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2" />
+        <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
+        <path d={`M ${t1} 40 L ${t4} 40 L ${t4} 15 L ${t5} 15 L ${t5} 40 L ${t8} 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2" />
         <text x={(t4 + t5) / 2} y="12" fill="#f59e0b" fontSize="8" textAnchor="middle">Q2 ON</text>
       </g>
 
       {/* Vds Q1 */}
       <g transform="translate(0, 90)">
         <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vds_Q1</text>
-        <line x1={t1} y1="40" x2={t10} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t2} 40 L ${t3} 10 L ${t5} 10 L ${t6} 40 L ${t7} 40 L ${t8} 40 L ${t9} 10 L ${t10} 10`} fill="none" stroke="#ef4444" strokeWidth="2" />
-        <line x1={t2} y1="40" x2={t3} y2="10" stroke="url(#vdsFallGrad)" strokeWidth="2" />
-        <line x1={t8} y1="40" x2={t9} y2="10" stroke="url(#vdsFallGrad)" strokeWidth="2" />
+        <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
+        <path d={`M ${t1} 40 L ${t2} 40 L ${t3} 10 L ${t5} 10 L ${t6} 40 L ${t7} 40 L ${t8} 40`} fill="none" stroke="#ef4444" strokeWidth="2" />
+        <line x1={t5} y1="10" x2={t6} y2="40" stroke="url(#vdsFallGrad)" strokeWidth="2" />
         <rect x={t6} y="8" width={t7 - t6} height="36" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2" />
         <text x={(t6 + t7) / 2} y="56" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
         <text x={(t2 + t3) / 2} y="56" fill="#f59e0b" fontSize="9" textAnchor="middle">死区</text>
@@ -432,22 +425,22 @@ function SwitchingAnimationSVG() {
       {/* Ir */}
       <g transform="translate(0, 145)">
         <text x="65" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
-        <line x1={t1} y1="30" x2={t10} y2="30" stroke="#525252" strokeWidth="1" />
+        <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={irPath} fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
-        <text x={t10 + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
+        <text x={t8 + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
       {/* Im */}
       <g transform="translate(0, 200)">
         <text x="65" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Im</text>
-        <line x1={t1} y1="30" x2={t10} y2="30" stroke="#525252" strokeWidth="1" />
+        <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={imPath} fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
-        <text x={t10 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
+        <text x={t8 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
       {/* Time axis */}
-      <line x1={t1} y1="295" x2={t10} y2="295" stroke="#525252" strokeWidth="2" markerEnd="url(#arrowTealAnim)" />
-      <text x={(t1 + t10) / 2} y="315" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
+      <line x1={t1} y1="295" x2={t8} y2="295" stroke="#525252" strokeWidth="2" markerEnd="url(#arrowTealAnim)" />
+      <text x={(t1 + t8) / 2} y="315" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
 
       {/* Phase markers and labels */}
       {timeMarkers.map((m, i) => (
@@ -471,7 +464,7 @@ function SwitchingAnimationSVG() {
 
       {/* Phase description */}
       <text x="80" y="370" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₁→t₂: Q1导通, 正半周能量传输 | t₂→t₃: 死区, Coss充放电 | t₃→t₄: Q2体二极管导通, ZVS准备</text>
-      <text x="80" y="385" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₄→t₅: Q2导通, 负半周能量传输 | t₅→t₆: 死区, Coss充放电 | t₆→t₁: Q1体二极管导通, ZVS准备</text>
+      <text x="80" y="385" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₄→t₅: Q2导通, 负半周能量传输 | t₅→t₆: 死区, Coss充放电 | t₆→t₁': Q1体二极管导通, ZVS准备</text>
     </svg>
   )
 }
@@ -498,14 +491,16 @@ function CurrentFlowCircuitSVG() {
 
   const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 150 L 430 150 L 460 150 L 540 150 L 540 96 L 540 264 L 460 264 L 430 210 L 410 210 L 410 180 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55'
   const negPath = 'M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 210 L 430 210 L 460 264 L 540 264 L 540 96 L 540 150 L 460 150 L 430 150 L 410 150 L 410 180 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325'
+  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 210 L 430 210 L 460 264 L 540 264 L 540 150 L 460 150 L 430 150 L 410 150 L 410 180 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55'
+  const deadNegPath = 'M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 150 L 430 150 L 460 150 L 540 150 L 540 264 L 460 264 L 430 210 L 410 210 L 410 180 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325'
 
   const currentPaths = [
-    { d: posPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)' },
-    { d: posPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)' },
-    { d: negPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)' },
-    { d: negPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)' },
-    { d: negPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)' },
-    { d: posPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)' },
+    { d: posPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '正半周能量传输' },
+    { d: deadPosPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)', label: 'Coss充放电' },
+    { d: negPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)', label: 'Q2体二极管续流' },
+    { d: negPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '负半周能量传输' },
+    { d: deadNegPath, color: '#f59e0b', marker: 'url(#arrowAmberCircuit)', label: 'Coss充放电' },
+    { d: posPath, color: '#22c55e', marker: 'url(#arrowGreenCircuit)', label: 'Q1体二极管续流' },
   ]
 
   const currentPath = currentPaths[phase]
@@ -518,13 +513,15 @@ function CurrentFlowCircuitSVG() {
           <button
             key={p.id}
             onClick={() => setPhase(p.id)}
-            className={`px-2.5 py-1 rounded text-xs font-medium transition-colors font-mono ${
+            className={`px-2 py-1 rounded text-xs font-medium transition-all font-mono border ${
               phase === p.id
-                ? 'bg-primary text-white'
-                : 'bg-bg/80 text-text-secondary hover:bg-surface-elevated'
+                ? 'text-white shadow-sm'
+                : 'bg-bg/80 text-text-secondary hover:bg-surface-elevated border-border/50'
             }`}
+            style={phase === p.id ? { backgroundColor: p.color, borderColor: p.color } : {}}
           >
-            {p.label}
+            <span className="block">{p.label}</span>
+            <span className="block text-[10px] opacity-80">{p.name}</span>
           </button>
         ))}
       </div>
@@ -533,6 +530,7 @@ function CurrentFlowCircuitSVG() {
       <div className="text-center mb-3">
         <span className="text-sm font-semibold" style={{ color: activePhase.color }}>{activePhase.name}</span>
         <span className="text-xs text-text-secondary ml-2">{activePhase.desc}</span>
+        <span className="block text-xs text-text-muted mt-1">{currentPath.label}</span>
       </div>
 
       <svg viewBox="0 0 600 340" className="w-full max-w-3xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
@@ -560,15 +558,15 @@ function CurrentFlowCircuitSVG() {
         <line x1="150" y1="85" x2="150" y2="155" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="150" y1="155" x2="150" y2="180" stroke="#a3a3a3" strokeWidth="2" />
         {/* Channel */}
-        <line x1="150" y1="85" x2="150" y2="155" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="150" y1="85" x2="150" y2="155" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
         {/* Gate */}
-        <line x1="128" y1="120" x2="142" y2="120" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="128" y1="120" x2="142" y2="120" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
         {/* Source short bar + N arrow */}
-        <line x1="150" y1="148" x2="164" y2="148" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="150" y1="148" x2="164" y2="148" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
         <path d="M 150 148 L 158 144 L 158 152 Z" fill={q1Active ? '#14b8a6' : '#a3a3a3'} />
         {/* Body diode */}
-        <line x1="164" y1="95" x2="164" y2="148" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '2.5' : '1.5'} />
-        <line x1="160" y1="95" x2="168" y2="95" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '2.5' : '1.5'} />
+        <line x1="164" y1="95" x2="164" y2="148" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
+        <line x1="160" y1="95" x2="168" y2="95" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
         <path d="M 164 95 L 160 110 L 168 110 Z" fill={q1BodyDiode ? '#22c55e' : '#a3a3a3'} />
         <text x="120" y="124" fill={q1Active ? '#14b8a6' : q1BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
 
@@ -577,12 +575,12 @@ function CurrentFlowCircuitSVG() {
         <line x1="150" y1="200" x2="150" y2="270" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="150" y1="270" x2="150" y2="295" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="150" y1="295" x2="150" y2="325" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="150" y1="200" x2="150" y2="270" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth="2" />
-        <line x1="128" y1="235" x2="142" y2="235" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth="2" />
-        <line x1="150" y1="263" x2="164" y2="263" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="150" y1="200" x2="150" y2="270" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
+        <line x1="128" y1="235" x2="142" y2="235" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
+        <line x1="150" y1="263" x2="164" y2="263" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
         <path d="M 150 263 L 158 259 L 158 267 Z" fill={q2Active ? '#f59e0b' : '#a3a3a3'} />
-        <line x1="164" y1="200" x2="164" y2="263" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '2.5' : '1.5'} />
-        <line x1="160" y1="200" x2="168" y2="200" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '2.5' : '1.5'} />
+        <line x1="164" y1="200" x2="164" y2="263" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
+        <line x1="160" y1="200" x2="168" y2="200" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
         <path d="M 164 200 L 160 215 L 168 215 Z" fill={q2BodyDiode ? '#22c55e' : '#a3a3a3'} />
         <text x="120" y="239" fill={q2Active ? '#f59e0b' : q2BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
 
@@ -631,17 +629,17 @@ function CurrentFlowCircuitSVG() {
 
         {/* Rectifier diodes */}
         <line x1="430" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="460" y1="150" x2="460" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="460" y1="150" x2="460" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <path d="M 460 130 L 452 116 L 468 116 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="116" x2="468" y2="116" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
-        <line x1="460" y1="116" x2="460" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="452" y1="116" x2="468" y2="116" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <line x1="460" y1="116" x2="460" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <text x="475" y="126" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
         <line x1="430" y1="210" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="460" y1="210" x2="460" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="460" y1="210" x2="460" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <path d="M 460 230 L 452 244 L 468 244 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="244" x2="468" y2="244" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
-        <line x1="460" y1="244" x2="460" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth="2" />
+        <line x1="452" y1="244" x2="468" y2="244" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <line x1="460" y1="244" x2="460" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <text x="475" y="240" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
         {/* Output capacitor / load */}
@@ -687,6 +685,9 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
         <marker id={`arrowGreenZvs${idSuffix}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
           <path d="M 0 0 L 7 3.5 L 0 7 L 1.5 3.5 Z" fill="#22c55e" />
         </marker>
+        <marker id={`arrowRedZvs${idSuffix}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M 0 0 L 7 3.5 L 0 7 L 1.5 3.5 Z" fill="#ef4444" />
+        </marker>
         <linearGradient id={`vdsFallZvs${idSuffix}`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor="#ef4444" />
           <stop offset="100%" stopColor="#22c55e" />
@@ -702,10 +703,12 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
       </g>
 
       {/* Dead time zone */}
-      <rect x={tA} y="10" width={tD - tA} height="140" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+      <rect x={tA} y="10" width={tD - tA} height="140" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+      <text x={(tA + tD) / 2} y="24" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">死区时间</text>
 
       {/* Body diode conduction zone */}
-      <rect x={tC} y="10" width={tD - tC} height="140" fill="rgba(239,68,68,0.1)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+      <rect x={tC} y="10" width={tD - tC} height="140" fill="rgba(239,68,68,0.12)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+      <text x={(tC + tD) / 2} y="24" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">体二极管导通</text>
 
       {/* Vgs_Q2 */}
       <text x="32" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
@@ -718,24 +721,27 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
       <line x1="40" y1="64" x2="400" y2="64" stroke="#525252" strokeWidth="1" />
       <path d={`M 40 64 L ${tA} 64 L ${tB} 64 L ${tC} 90 L ${tD} 90 L 200 90 L 200 64 L 400 64`} fill="none" stroke="#ef4444" strokeWidth="2" />
       <line x1={tB} y1="64" x2={tC} y2="90" stroke={`url(#vdsFallZvs${idSuffix})`} strokeWidth="2" />
+      <text x={tB + 5} y="56" fill="#ef4444" fontSize="9" fontFamily="JetBrains Mono, monospace">Vin</text>
+      <text x={tC + 5} y="96" fill="#22c55e" fontSize="9" fontFamily="JetBrains Mono, monospace">0V</text>
 
       {/* Ir */}
       <text x="32" y="100" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
       <line x1="40" y1="106" x2="400" y2="106" stroke="#525252" strokeWidth="1" />
       <path d={`M 40 106 L ${tA} 106 L ${tD} 96`} fill="none" stroke="#f59e0b" strokeWidth="2" className="dash-flow" />
+      <text x={tA + 8} y="100" fill="#f59e0b" fontSize="9" fontFamily="JetBrains Mono, monospace">谐振电流续流</text>
 
       {/* Timing annotations */}
       <line x1={tA} y1="150" x2={tA} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
       <text x={tA} y="192" fill="#14b8a6" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tA: Q1关断</text>
 
       <line x1={tB} y1="150" x2={tB} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tB} y="192" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tB: Vds下降</text>
+      <text x={tB} y="192" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tB: Vds开始下降</text>
 
       <line x1={tC} y1="150" x2={tC} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tC} y="192" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tC: Vds=0</text>
+      <text x={tC} y="192" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tC: Vds=0, 体二极管导通</text>
 
       <line x1={tD} y1="150" x2={tD} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tD} y="192" fill="#22c55e" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tD: Vgs上升</text>
+      <text x={tD} y="192" fill="#22c55e" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tD: Vgs上升, ZVS导通</text>
 
       {/* Arrow annotations */}
       <line x1={tC} y1="78" x2={tC} y2="92" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
@@ -744,9 +750,15 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
       <line x1={tD} y1="28" x2={tD} y2="10" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowTealZvs${idSuffix})`} />
       <text x={tD + 8} y="20" fill="#14b8a6" fontSize="9" fontFamily="JetBrains Mono, monospace">ZVS导通</text>
 
+      <line x1={tA} y1="78" x2={tA} y2="64" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowRedZvs${idSuffix})`} />
+      <text x={tA + 8} y="72" fill="#ef4444" fontSize="9" fontFamily="JetBrains Mono, monospace">Q1关断</text>
+
       {/* Description */}
       <text x="220" y="220" fill="#a3a3a3" fontSize="10" textAnchor="middle">
         死区时间内，谐振电流经Q2体二极管续流，将Vds_Q2钳位至接近0V，实现ZVS。
+      </text>
+      <text x="220" y="235" fill="#a3a3a3" fontSize="10" textAnchor="middle">
+        tA→tB: Coss充放电 | tB→tC: Vds线性下降 | tC→tD: 体二极管导通窗口
       </text>
     </svg>
   )
