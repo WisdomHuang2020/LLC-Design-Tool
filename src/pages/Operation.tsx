@@ -524,7 +524,8 @@ function CurrentFlowCircuitSVG() {
         {/* Vin- 到 Q2 S 和 GND */}
         <line x1="25" y1="81" x2="25" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="25" y1="280" x2="90" y2="280" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="25" y1="340" x2="350" y2="340" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="90" y1="280" x2="90" y2="340" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="25" y1="340" x2="230" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <text x="10" y="344" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
         {/* Q1 标准 NMOS 符号 */}
