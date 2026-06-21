@@ -572,7 +572,7 @@ function CurrentFlowCircuitSVG() {
         <circle cx="25" cy="65" r="16" fill="none" stroke="#a3a3a3" strokeWidth="2" />
         <text x="25" y="58" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">+</text>
         <text x="25" y="74" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">-</text>
-        <text x="25" y="28" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Vin</text>
+        <text x="45" y="65" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vin</text>
 
         {/* Vin+ — 从圆圈顶部到Vin+线，再到Q1 D */}
         <line x1="25" y1="49" x2="25" y2="30" stroke="#a3a3a3" strokeWidth="2" />
@@ -582,7 +582,7 @@ function CurrentFlowCircuitSVG() {
         <line x1="25" y1="81" x2="25" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="90" y1="280" x2="90" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="25" y1="340" x2="230" y2="340" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="10" y="344" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
+        <text x="10" y="355" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
         {/* Q1 标准 NMOS — D(y=30) S(y=75) */}
         <line x1="90" y1="30" x2="90" y2="75" stroke="#a3a3a3" strokeWidth="2" />
@@ -608,7 +608,7 @@ function CurrentFlowCircuitSVG() {
         <line x1="90" y1="235" x2="90" y2="100" stroke="#a3a3a3" strokeWidth="2" />
         {/* SW 节点 */}
         <circle cx="90" cy="100" r="3.5" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
-        <text x="70" y="95" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
+        <text x="70" y="88" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
 
         {/* SW 到 Cr */}
         <line x1="90" y1="100" x2="120" y2="100" stroke="#a3a3a3" strokeWidth="2" />
@@ -616,14 +616,14 @@ function CurrentFlowCircuitSVG() {
         {/* Cr — 水平电容 */}
         <line x1="122" y1="90" x2="122" y2="110" stroke="#f59e0b" strokeWidth="2" />
         <line x1="128" y1="90" x2="128" y2="110" stroke="#f59e0b" strokeWidth="2" />
-        <text x="125" y="80" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
+        <text x="125" y="72" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
         {/* Cr 到 Lr */}
         <line x1="128" y1="100" x2="155" y2="100" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Lr — 水平电感 */}
         <path d="M 155 100 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
-        <text x="170" y="80" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
+        <text x="170" y="72" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
         {/* Lr 到并联节点 */}
         <line x1="185" y1="100" x2="230" y2="100" stroke="#a3a3a3" strokeWidth="2" />
@@ -635,14 +635,14 @@ function CurrentFlowCircuitSVG() {
         <line x1="230" y1="120" x2="210" y2="120" stroke="#22c55e" strokeWidth="2" />
         <path d="M 210 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
         <line x1="210" y1="190" x2="230" y2="190" stroke="#22c55e" strokeWidth="2" />
-        <text x="220" y="105" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
+        <text x="220" y="112" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
         <line x1="230" y1="190" x2="230" y2="340" stroke="#22c55e" strokeWidth="2" />
 
         {/* np 原边绕组 — 垂直，并联在并联节点和 GND 之间 */}
         <line x1="230" y1="120" x2="260" y2="120" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 260 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
         <line x1="260" y1="190" x2="230" y2="190" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="265" y="155" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">np</text>
+        <text x="265" y="148" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">np</text>
         <line x1="230" y1="190" x2="230" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <circle cx="262" cy="125" r="2.5" fill="#a3a3a3" />
 
@@ -654,7 +654,7 @@ function CurrentFlowCircuitSVG() {
         <line x1="300" y1="120" x2="300" y2="150" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 300 120 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
         <circle cx="302" cy="125" r="2.5" fill="#a3a3a3" />
-        <text x="305" y="140" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
+        <text x="305" y="132" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
 
         {/* 中心抽头 */}
         <line x1="300" y1="150" x2="580" y2="150" stroke="#a3a3a3" strokeWidth="2" />
@@ -664,25 +664,25 @@ function CurrentFlowCircuitSVG() {
         <line x1="300" y1="150" x2="300" y2="180" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 300 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
         <circle cx="302" cy="175" r="2.5" fill="#a3a3a3" />
-        <text x="305" y="170" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
+        <text x="305" y="162" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">ns</text>
 
         {/* D1 — 水平，阳极接上次级上端，阴极向右接Vo+ */}
         <line x1="300" y1="120" x2="320" y2="120" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="320" y1="120" x2="340" y2="120" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
         <path d="M 320 112 L 320 128 L 340 120 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
         <line x1="320" y1="112" x2="320" y2="128" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <text x="325" y="105" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
+        <text x="325" y="100" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
         {/* Vo+ 线 */}
         <line x1="340" y1="120" x2="580" y2="120" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="585" y="95" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo+</text>
+        <text x="585" y="90" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo+</text>
 
         {/* D2 — 水平，阳极接下次级下端，阴极向右 */}
         <line x1="300" y1="180" x2="320" y2="180" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="320" y1="180" x2="340" y2="180" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
         <path d="M 320 172 L 320 188 L 340 180 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
         <line x1="320" y1="172" x2="320" y2="188" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <text x="325" y="165" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
+        <text x="325" y="160" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
         {/* D1/D2 阴极连接竖线 */}
         <line x1="340" y1="120" x2="340" y2="180" stroke="#a3a3a3" strokeWidth="2" />
@@ -692,15 +692,12 @@ function CurrentFlowCircuitSVG() {
         <line x1="495" y1="135" x2="505" y2="135" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="495" y1="145" x2="505" y2="145" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="500" y1="145" x2="500" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="510" y="122" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
+        <text x="510" y="108" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Cf</text>
 
         {/* Io 输出电流 */}
         <line x1="520" y1="110" x2="550" y2="110" stroke="#a3a3a3" strokeWidth="2" />
         <path d="M 550 110 L 540 106 L 540 114 Z" fill="#a3a3a3" />
-        <text x="555" y="95" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace">Io</text>
-
-        {/* Vo 输出标注 */}
-        <text x="585" y="135" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo</text>
+        <text x="555" y="102" fill="#a3a3a3" fontSize="11" fontFamily="JetBrains Mono, monospace">Io</text>
 
         {/* Lm 励磁电流路径 — 只走 Lm，不经过变压器次级 */}
         <path
