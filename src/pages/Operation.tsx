@@ -147,19 +147,19 @@ function WaveformsSVG() {
         <text x={right + 12} y="40" fill="#f59e0b" fontSize="11" dominantBaseline="middle">Q2</text>
       </g>
 
-      {/* Ir — 纯正弦波 */}
+      {/* Ir — 纯正弦波（从负电流开始） */}
       <g transform="translate(0, 90)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Ir</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 40 Q 115 10 170 40 Q 227 70 285 70 Q 312 70 340 40 Q 397 10 455 10 Q 482 10 510 40 Q 540 55 580 55`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <path d={`M ${left} 70 Q 115 40 170 10 Q 255 40 340 70 Q 425 40 510 10 Q 545 40 580 55`} fill="none" stroke="#14b8a6" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* Im — 三角波 */}
+      {/* Im — 三角波（从负电流开始） */}
       <g transform="translate(0, 170)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Im</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 40 L 170 10 L 340 70 L 510 10 L 580 40`} fill="none" stroke="#22c55e" strokeWidth="2" />
+        <path d={`M ${left} 70 L 170 10 L 340 70 L 510 10 L 580 55`} fill="none" stroke="#22c55e" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
