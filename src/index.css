@@ -208,27 +208,27 @@
 }
 
 @keyframes currentFlow {
-  0% { stroke-dashoffset: 20; }
+  0% { stroke-dashoffset: 28; }
   100% { stroke-dashoffset: 0; }
 }
 .current-flow {
-  stroke-dasharray: 5 5;
+  stroke-dasharray: 8 6;
   animation: currentFlow 1s linear infinite;
 }
 @keyframes dashFlow {
-  0% { stroke-dashoffset: 24; }
+  0% { stroke-dashoffset: 28; }
   100% { stroke-dashoffset: 0; }
 }
 .dash-flow {
-  stroke-dasharray: 6 6;
-  animation: dashFlow 0.8s linear infinite;
+  stroke-dasharray: 8 6;
+  animation: dashFlow 1s linear infinite;
 }
 .dash-flow-slow {
-  stroke-dasharray: 8 8;
-  animation: dashFlow 1.2s linear infinite;
+  stroke-dasharray: 10 8;
+  animation: dashFlow 1.4s linear infinite;
 }
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.4; }
+  0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
 }
 .pulse-glow {
@@ -237,6 +237,22 @@
 @keyframes dotTravel {
   0% { offset-distance: 0%; }
   100% { offset-distance: 100%; }
+}
+/* ── SVG circuit animation helpers ── */
+.svg-glow {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+.current-path-teal {
+  stroke: #14b8a6;
+  stroke-dasharray: 8 6;
+  animation: currentFlow 1s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(20, 184, 166, 0.5));
+}
+.current-path-amber {
+  stroke: #f59e0b;
+  stroke-dasharray: 8 6;
+  animation: currentFlow 1s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.5));
 }
 
 @layer utilities {
