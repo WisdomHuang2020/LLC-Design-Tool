@@ -11,6 +11,7 @@ import {
   Square,
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
+import InlineMath from '../components/InlineMath'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -620,7 +621,7 @@ export default function Fundamentals() {
               />
               <p className="text-text-secondary text-sm mt-2">
                 在串联谐振电路中，Q 也可写作
-                <span className="font-mono text-xs">Q = ωᵣL/R = 1/(ωᵣCR)</span>
+                <InlineMath latex="Q = \\frac{\\omega_r L}{R} = \\frac{1}{\\omega_r C R}" />
                 。Q 越高，谐振曲线越尖锐，带宽越窄，选择性越好。
               </p>
             </div>
@@ -782,7 +783,7 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">fr1</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      1 / (2π√(Lr·Cr))
+                      <InlineMath latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}" />
                     </code>
                   </td>
                   <td className="py-3 px-4">Lr 与 Cr 的串联谐振频率</td>
@@ -792,11 +793,11 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">fr2</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      1 / (2π√((Lr+Lm)·Cr))
+                      <InlineMath latex="f_{r2} = \\frac{1}{2\\pi\\sqrt{(L_r+L_m)C_r}}" />
                     </code>
                     <br />
                     <code className="text-xs bg-bg px-2 py-1 rounded mt-1 inline-block">
-                      fr2 = fr1 / √(1+k)
+                      <InlineMath latex="f_{r2} = \\frac{f_{r1}}{\\sqrt{1+k}}" />
                     </code>
                   </td>
                   <td className="py-3 px-4">总电感与 Cr 的谐振频率</td>
@@ -806,7 +807,7 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">Zr</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      √(Lr / Cr)
+                      <InlineMath latex="Z_r = \\sqrt{\\frac{L_r}{C_r}}" />
                     </code>
                   </td>
                   <td className="py-3 px-4">谐振腔的特征阻抗值</td>
@@ -816,7 +817,7 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">Q</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      Zr / Rac = √(Lr/Cr) / Rac
+                      <InlineMath latex="Q = \\frac{Z_r}{R_{ac}} = \\frac{\\sqrt{L_r/C_r}}{R_{ac}}" />
                     </code>
                   </td>
                   <td className="py-3 px-4">反映负载与谐振腔的匹配程度</td>
@@ -825,7 +826,7 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-medium text-text-primary">电感比</td>
                   <td className="py-3 px-4 font-mono text-primary-light">k</td>
                   <td className="py-3 px-4">
-                    <code className="text-xs bg-bg px-2 py-1 rounded">Lm / Lr</code>
+                    <code className="text-xs bg-bg px-2 py-1 rounded"><InlineMath latex="k = \\frac{L_m}{L_r}" /></code>
                   </td>
                   <td className="py-3 px-4">决定增益曲线的峰值与 ZVS 范围</td>
                 </tr>
@@ -833,7 +834,7 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-medium text-text-primary">归一化频率</td>
                   <td className="py-3 px-4 font-mono text-primary-light">fn</td>
                   <td className="py-3 px-4">
-                    <code className="text-xs bg-bg px-2 py-1 rounded">fsw / fr1</code>
+                    <code className="text-xs bg-bg px-2 py-1 rounded"><InlineMath latex="f_n = \\frac{f_{sw}}{f_{r1}}" /></code>
                   </td>
                   <td className="py-3 px-4">开关频率相对于谐振频率的比值</td>
                 </tr>

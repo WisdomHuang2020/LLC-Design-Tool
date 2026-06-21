@@ -1,11 +1,11 @@
 {
   "name": "llc-design-tool",
   "private": true,
-  "version": "2.10.9",
+  "version": "2.10.10",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && perl patch_dist_latex.pl",
     "lint": "eslint .",
     "preview": "vite preview"
   },
