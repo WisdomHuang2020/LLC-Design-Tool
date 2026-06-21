@@ -489,10 +489,10 @@ function CurrentFlowCircuitSVG() {
   const q1BodyDiode = phase === 5
   const q2BodyDiode = phase === 2
 
-  const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 310 180 L 340 180 L 340 150 L 360 150 L 360 220 L 340 220 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55 M 400 150 L 460 150 L 540 96 L 540 264 L 460 264 L 460 220 L 400 220 L 400 150'
-  const negPath = 'M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 310 180 L 340 180 L 340 150 L 360 150 L 360 220 L 340 220 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 400 220 L 460 264 L 540 264 L 540 96 L 460 150 L 400 150 L 400 220'
-  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 310 180 L 340 180 L 340 150 L 360 150 L 360 220 L 340 220 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55 M 400 150 L 460 150 L 540 96 L 540 264 L 460 264 L 460 220 L 400 220 L 400 150'
-  const deadNegPath = 'M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 310 180 L 340 180 L 340 150 L 360 150 L 360 220 L 340 220 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 400 220 L 460 264 L 540 264 L 540 96 L 460 150 L 400 150 L 400 220'
+  const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 150 L 450 150 L 540 96 L 540 264 L 450 264 L 450 220 L 390 220 L 390 150'
+  const negPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 220 L 450 264 L 540 264 L 540 96 L 450 150 L 390 150 L 390 220'
+  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 150 L 450 150 L 540 96 L 540 264 L 450 264 L 450 220 L 390 220 L 390 150'
+  const deadNegPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 220 L 450 264 L 540 264 L 540 96 L 450 150 L 390 150 L 390 220'
 
   const currentPaths = [
     { d: posPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '正半周能量传输' },
@@ -548,9 +548,9 @@ function CurrentFlowCircuitSVG() {
 
         {/* DC input rails */}
         <line x1="50" y1="55" x2="130" y2="55" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="50" y1="325" x2="130" y2="325" stroke="#a3a3a3" strokeWidth="2" />
-        <text x="28" y="59" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Vin+</text>
-        <text x="28" y="329" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
+        <line x1="50" y1="325" x2="340" y2="325" stroke="#a3a3a3" strokeWidth="2" />
+        <text x="10" y="59" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Vin+</text>
+        <text x="10" y="329" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
         {/* Q1 high-side NMOS */}
         <line x1="130" y1="55" x2="150" y2="55" stroke="#a3a3a3" strokeWidth="2" />
@@ -588,70 +588,72 @@ function CurrentFlowCircuitSVG() {
         <circle cx="150" cy="180" r="3.5" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
         <text x="124" y="184" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
 
-        {/* Lr */}
-        <line x1="150" y1="180" x2="190" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 190 180 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
-        <line x1="220" y1="180" x2="250" y2="180" stroke="#14b8a6" strokeWidth="2" />
-        <text x="205" y="162" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
+        {/* Cr — 串联在 SW 节点和 Lr 之间 */}
+        <line x1="150" y1="180" x2="170" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="170" y1="164" x2="170" y2="196" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="180" y1="164" x2="180" y2="196" stroke="#f59e0b" strokeWidth="2" />
+        <line x1="180" y1="180" x2="210" y2="180" stroke="#f59e0b" strokeWidth="2" />
+        <text x="175" y="154" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-        {/* Cr */}
-        <line x1="250" y1="180" x2="270" y2="180" stroke="#f59e0b" strokeWidth="2" />
-        <line x1="270" y1="164" x2="270" y2="196" stroke="#f59e0b" strokeWidth="2" />
-        <line x1="280" y1="164" x2="280" y2="196" stroke="#f59e0b" strokeWidth="2" />
-        <line x1="280" y1="180" x2="310" y2="180" stroke="#f59e0b" strokeWidth="2" />
-        <text x="275" y="154" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
+        {/* Lr — 串联在 Cr 和并联节点之间 */}
+        <line x1="210" y1="180" x2="240" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 240 180 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+        <line x1="270" y1="180" x2="300" y2="180" stroke="#14b8a6" strokeWidth="2" />
+        <text x="255" y="162" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-        {/* Node X to parallel upper node */}
-        <line x1="310" y1="180" x2="340" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="340" y1="180" x2="340" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+        {/* 并联节点 — Lm 和 T 原边并联 */}
+        <line x1="300" y1="180" x2="300" y2="150" stroke="#a3a3a3" strokeWidth="2" />
 
-        {/* Lm — vertical, left side of parallel branch */}
-        <line x1="340" y1="150" x2="320" y2="150" stroke="#22c55e" strokeWidth="2" />
-        <path d="M 320 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
-        <line x1="320" y1="220" x2="340" y2="220" stroke="#22c55e" strokeWidth="2" />
-        <text x="330" y="142" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
+        {/* Lm — 竖直，并联在并联节点和 GND 之间 */}
+        <line x1="300" y1="150" x2="280" y2="150" stroke="#22c55e" strokeWidth="2" />
+        <path d="M 280 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+        <line x1="280" y1="220" x2="300" y2="220" stroke="#22c55e" strokeWidth="2" />
+        <text x="290" y="142" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lm</text>
 
-        {/* Transformer primary — vertical, right side of parallel branch */}
-        <line x1="340" y1="150" x2="360" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 360 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
-        <line x1="360" y1="220" x2="340" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Lm 下端到 GND */}
+        <line x1="300" y1="220" x2="300" y2="325" stroke="#22c55e" strokeWidth="2" />
+
+        {/* 变压器原边 — 竖直，并联在并联节点和 GND 之间 */}
+        <line x1="300" y1="150" x2="320" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 320 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        <line x1="320" y1="220" x2="300" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+
+        {/* T 原边下端到 GND */}
+        <line x1="300" y1="220" x2="300" y2="325" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Coupling between primary and secondary */}
-        <line x1="368" y1="160" x2="392" y2="160" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
-        <line x1="368" y1="210" x2="392" y2="210" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="328" y1="160" x2="382" y2="160" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="328" y1="210" x2="382" y2="210" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
 
         {/* Transformer secondary — vertical */}
-        <line x1="400" y1="150" x2="400" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 400 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        <line x1="390" y1="150" x2="390" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 390 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
 
         {/* Dots on windings */}
-        <circle cx="362" cy="156" r="2.5" fill="#a3a3a3" />
-        <circle cx="402" cy="156" r="2.5" fill="#a3a3a3" />
+        <circle cx="322" cy="156" r="2.5" fill="#a3a3a3" />
+        <circle cx="392" cy="156" r="2.5" fill="#a3a3a3" />
 
         {/* T label */}
-        <text x="385" y="170" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">T</text>
-
-        {/* Return from parallel branch */}
-        <line x1="340" y1="220" x2="340" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+        <text x="375" y="170" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">T</text>
 
         {/* Rectifier diodes */}
-        <line x1="400" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="460" y1="150" x2="460" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <path d="M 460 116 L 452 130 L 468 130 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="130" x2="468" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <line x1="460" y1="116" x2="460" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
-        <text x="475" y="126" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
+        <line x1="390" y1="150" x2="450" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="450" y1="150" x2="450" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <path d="M 450 116 L 442 130 L 458 130 Z" fill={d1Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="442" y1="130" x2="458" y2="130" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <line x1="450" y1="116" x2="450" y2="96" stroke={d1Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d1Active ? '3' : '2'} />
+        <text x="465" y="126" fill={d1Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
-        <line x1="400" y1="220" x2="460" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="460" y1="220" x2="460" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <path d="M 460 244 L 452 230 L 468 230 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
-        <line x1="452" y1="230" x2="468" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <line x1="460" y1="244" x2="460" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
-        <text x="475" y="240" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
+        <line x1="390" y1="220" x2="450" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="450" y1="220" x2="450" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <path d="M 450 244 L 442 230 L 458 230 Z" fill={d2Active ? '#22c55e' : '#a3a3a3'} />
+        <line x1="442" y1="230" x2="458" y2="230" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <line x1="450" y1="244" x2="450" y2="264" stroke={d2Active ? '#22c55e' : '#a3a3a3'} strokeWidth={d2Active ? '3' : '2'} />
+        <text x="465" y="240" fill={d2Active ? '#22c55e' : '#a3a3a3'} fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
         {/* Output capacitor / load */}
-        <line x1="460" y1="96" x2="540" y2="96" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="460" y1="264" x2="540" y2="264" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="450" y1="96" x2="540" y2="96" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="450" y1="264" x2="540" y2="264" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="540" y1="96" x2="540" y2="120" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="534" y1="120" x2="546" y2="120" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="534" y1="132" x2="546" y2="132" stroke="#a3a3a3" strokeWidth="2" />
