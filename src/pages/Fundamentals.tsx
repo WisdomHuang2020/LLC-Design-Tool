@@ -451,10 +451,10 @@ export default function Fundamentals() {
                   <td className="py-3 px-4">电流最大</td>
                   <td className="py-3 px-4">电流最小</td>
                 </tr>
-                <tr className="border-b border-border/50">
+                  <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">电压特性</td>
                   <td className="py-3 px-4">L、C 两端电压放大 Q 倍</td>
-                  <td className="py-3 px-4">回路电压最大</td>
+                  <td className="py-3 px-4">回路电压最大，支路电流放大 Q 倍</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">典型应用</td>
