@@ -69,28 +69,28 @@ export interface CurvesState {
 }
 
 const defaultParams: DesignParameters = {
-  vinMin: 350,
+  vinMin: 380,
   vinMax: 420,
-  vinNom: 385,
-  vout: 12,
-  pout: 300,
+  vinNom: 400,
+  vout: 24,
+  pout: 120,
   efficiency: 96,
   fsw: 100,
   topology: 'half-bridge',
-  rectifier: 'full-wave',
-  loadMin: 10,
+  rectifier: 'sync-center-tapped',
+  loadMin: 100,
   loadMax: 100,
   // 新增参数默认值
-  cossEq: 500,
-  cossEr: 800,
+  cossEq: 65,
+  cossEr: 35,
   cj: 100,
   td: 300,
-  vd: 0.5,
-  ioMax: 25,
-  k: 5,
+  vd: 0,
+  ioMax: 4.8,
+  k: 4,
 }
 
-const defaultCurves: CurvesState = { k: 5.0, q: 0.8 }
+const defaultCurves: CurvesState = { k: 4.0, q: 0.8 }
 
 const STORAGE_KEY = 'llc-design-tool-params'
 const RESULTS_KEY = 'llc-design-tool-results'
