@@ -220,31 +220,31 @@ function WaveformsSVG() {
           Id
         </text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* D1 电流 — 正半周导通 */}
+        {/* D1 电流 — 正半周导通，半波正弦 */}
         <path
-          d={`M ${left} 40 L 110 40 L 110 18 L 180 18 L 180 40 M 390 40 L 390 18 L 460 18 L 460 40`}
+          d={`M ${left} 40 Q 90 18 140 40 M 310 40 Q 360 18 410 40`}
           fill="none"
           stroke="#14b8a6"
           strokeWidth="2"
         />
-        {/* D2 电流 — 负半周导通 */}
+        {/* D2 电流 — 负半周导通，半波正弦 */}
         <path
-          d={`M 250 40 L 250 62 L 320 62 L 320 40 M 460 40 L 460 62 L 530 62 L 530 40`}
+          d={`M 140 40 Q 195 62 250 40 M 410 40 Q 465 62 520 40`}
           fill="none"
           stroke="#f59e0b"
           strokeWidth="2"
         />
-        <text x={right + 12} y="28" fill="#a3a3a3" fontSize="11" dominantBaseline="middle">整流二极管电流</text>
+        <text x={right + 12} y="28" fill="#a3a3a3" fontSize="11" dominantBaseline="middle">D1/D2 电流</text>
       </g>
 
-      {/* Io */}
+      {/* Io — 输出电流（Co 滤波后近似直流） */}
       <g transform="translate(0, 410)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Io
         </text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d={`M ${left} 40 L 110 40 L 110 18 L 180 18 L 180 40 L 250 40 L 250 18 L 320 18 L 320 40 L 390 40 L 390 18 L 460 18 L 460 40 L ${right} 40`}
+          d={`M ${left} 38 L ${right} 38`}
           fill="none"
           stroke={colors.io}
           strokeWidth="2"
