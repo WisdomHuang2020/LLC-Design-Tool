@@ -109,202 +109,130 @@ function SectionTitle({
 /* ─── SVG Waveform Diagrams ─── */
 
 function WaveformsSVG() {
+  const W = 620
+  const left = 60
+  const right = 560
+  const colors = {
+    q1: '#14b8a6',
+    q2: '#f59e0b',
+    vds: '#ef4444',
+    ir: '#14b8a6',
+    im: '#22c55e',
+    io: '#f59e0b',
+  }
+
   return (
     <svg
-      viewBox="0 0 560 400"
-      className="w-full max-w-2xl mx-auto h-auto"
+      viewBox={`0 0 ${W} 460`}
+      className="w-full max-w-3xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Grid background */}
-      <g stroke="#404040" strokeWidth="1" opacity="0.3">
-        {[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520].map(
-          (x) => (
-            <line key={`v${x}`} x1={x} y1="10" x2={x} y2="370" />
-          )
-        )}
-        {[20, 60, 100, 140, 180, 220, 260, 300, 340].map((y) => (
-          <line key={`h${y}`} x1="40" y1={y} x2="520" y2={y} />
+      {/* Grid */}
+      <g stroke="#404040" strokeWidth="1" opacity="0.25">
+        {Array.from({ length: 14 }, (_, i) => left + i * 40).map((x) => (
+          <line key={`v${x}`} x1={x} y1="20" x2={x} y2="410" />
+        ))}
+        {Array.from({ length: 9 }, (_, i) => 20 + i * 48).map((y) => (
+          <line key={`h${y}`} x1={left} y1={y} x2={right} y2={y} />
         ))}
       </g>
 
-      {/* ─── Vgs (Gate Drive) with dead time ─── */}
-      <g transform="translate(0, 0)">
-        <text x="10" y="25" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      <defs>
+        <marker id="arrTeal" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <circle cx="3" cy="3" r="2" fill={colors.q1} />
+        </marker>
+      </defs>
+
+      {/* Vgs */}
+      <g transform="translate(0, 10)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Vgs
         </text>
-        <line x1="40" y1="40" x2="520" y2="40" stroke="#404040" strokeWidth="1" />
-        {/* Q1: high(40-90), dead(90-100), low(100-190), dead(190-200), high(200-290), dead(290-300), low(300-390), dead(390-400) */}
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d="M 40 40 L 40 20 L 90 20 L 90 40 L 100 40 L 190 40 L 190 20 L 200 20 L 290 20 L 290 40 L 300 40 L 390 40 L 390 20 L 400 20 L 490 20 L 490 40 L 500 40 L 520 40"
+          d={`M ${left} 40 L ${left} 16 L 130 16 L 130 40 L 150 40 L 150 16 L 250 16 L 250 40 L 270 40 L 270 16 L 370 16 L 370 40 L 390 40 L 390 16 L 490 16 L 490 40 L 510 40 L 510 16 L ${right} 16 L ${right} 40`}
           fill="none"
-          stroke="#14b8a6"
+          stroke={colors.q1}
           strokeWidth="2"
         />
-        <text x="530" y="25" fill="#14b8a6" fontSize="10">
-          Q1
-        </text>
-        {/* Q2: low(40-90), dead(90-100), high(100-190), dead(190-200), low(200-290), dead(290-300), high(300-390), dead(390-400) */}
         <path
-          d="M 40 40 L 90 40 L 90 20 L 100 20 L 100 40 L 190 40 L 190 20 L 200 20 L 200 40 L 290 40 L 290 20 L 300 20 L 300 40 L 390 40 L 390 20 L 400 20 L 400 40 L 520 40"
+          d={`M ${left} 40 L 130 40 L 130 16 L 150 16 L 150 40 L 250 40 L 250 16 L 270 16 L 270 40 L 370 40 L 370 16 L 390 16 L 390 40 L 490 40 L 490 16 L 510 16 L 510 40 L ${right} 40`}
           fill="none"
-          stroke="#f59e0b"
+          stroke={colors.q2}
           strokeWidth="2"
-          strokeDasharray="4 3"
+          strokeDasharray="5 4"
         />
-        <text x="530" y="45" fill="#f59e0b" fontSize="10">
-          Q2
-        </text>
+        <text x={right + 12} y="20" fill={colors.q1} fontSize="11" dominantBaseline="middle">Q1</text>
+        <text x={right + 12} y="40" fill={colors.q2} fontSize="11" dominantBaseline="middle">Q2</text>
       </g>
 
-      {/* ─── Vds (Drain Voltage) with ZVS during dead time ─── */}
-      <g transform="translate(0, 80)">
-        <text x="10" y="25" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      {/* Vds */}
+      <g transform="translate(0, 90)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Vds
         </text>
-        <line x1="40" y1="40" x2="520" y2="40" stroke="#404040" strokeWidth="1" />
-        {/* Vds_Q1: low during Q1 on, rises during dead time, high during Q2 on, falls during dead time */}
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d="M 40 40 L 40 10 L 90 10 L 90 40 L 100 40 L 100 10 L 190 10 L 190 40 L 200 40 L 200 10 L 290 10 L 290 40 L 300 40 L 300 10 L 390 10 L 390 40 L 400 40 L 400 10 L 490 10 L 490 40 L 520 40"
+          d={`M ${left} 40 L ${left} 8 L 125 8 L 125 40 L 150 40 L 150 8 L 245 8 L 245 40 L 270 40 L 270 8 L 365 8 L 365 40 L 390 40 L 390 8 L 485 8 L 485 40 L 510 40 L 510 8 L ${right} 8 L ${right} 40`}
           fill="none"
-          stroke="#ef4444"
+          stroke={colors.vds}
           strokeWidth="2"
         />
-        {/* ZVS annotation: Vds drops to zero before Vgs rises */}
-        <rect x="190" y="5" width="10" height="40" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2" />
-        <text x="195" y="55" fill="#22c55e" fontSize="8" textAnchor="middle">ZVS</text>
-        <text x="40" y="65" fill="#737373" fontSize="9">
-          ZVS: Vds 先降至零，Vgs 再升高
-        </text>
+        <rect x="125" y="4" width="25" height="40" fill="rgba(34,197,94,0.12)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2" />
+        <rect x="365" y="4" width="25" height="40" fill="rgba(34,197,94,0.12)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2" />
+        <text x="137" y="58" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
+        <text x="377" y="58" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
       </g>
 
-      {/* ─── Ir (Resonant Current) ─── */}
-      <g transform="translate(0, 160)">
-        <text x="10" y="25" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      {/* Ir */}
+      <g transform="translate(0, 170)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Ir
         </text>
-        <line x1="40" y1="40" x2="520" y2="40" stroke="#404040" strokeWidth="1" />
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d="M 40 40 Q 70 10 100 40 Q 130 70 160 40 Q 190 10 220 40 Q 250 70 280 40 Q 310 10 340 40 Q 370 70 400 40 Q 430 10 460 40 Q 490 70 520 40"
+          d={`M ${left} 40 Q 90 8 140 40 Q 190 72 240 40 Q 290 8 340 40 Q 390 72 440 40 Q 490 8 ${right} 40`}
           fill="none"
-          stroke="#14b8a6"
+          stroke={colors.ir}
           strokeWidth="2"
         />
-        <text x="530" y="25" fill="#14b8a6" fontSize="10">
-          谐振电流
-        </text>
+        <text x={right + 12} y="28" fill={colors.ir} fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* ─── Im (Magnetizing Current) ─── */}
-      <g transform="translate(0, 240)">
-        <text x="10" y="25" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      {/* Im */}
+      <g transform="translate(0, 250)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Im
         </text>
-        <line x1="40" y1="40" x2="520" y2="40" stroke="#404040" strokeWidth="1" />
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d="M 40 40 L 100 20 L 160 60 L 220 20 L 280 60 L 340 20 L 400 60 L 460 20 L 520 60"
+          d={`M ${left} 40 L 110 16 L 180 64 L 250 16 L 320 64 L 390 16 L 460 64 L ${right} 40`}
           fill="none"
-          stroke="#22c55e"
+          stroke={colors.im}
           strokeWidth="2"
         />
-        <text x="530" y="25" fill="#22c55e" fontSize="10">
-          励磁电流
-        </text>
+        <text x={right + 12} y="28" fill={colors.im} fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
-      {/* ─── Io (Output Current) ─── */}
-      <g transform="translate(0, 300)">
-        <text x="10" y="25" fill="#a3a3a3" fontSize="11" textAnchor="end">
+      {/* Io */}
+      <g transform="translate(0, 330)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">
           Io
         </text>
-        <line x1="40" y1="40" x2="520" y2="40" stroke="#404040" strokeWidth="1" />
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path
-          d="M 40 40 L 100 40 L 100 25 L 160 25 L 160 40 L 220 40 L 220 25 L 280 25 L 280 40 L 340 40 L 340 25 L 400 25 L 400 40 L 460 40 L 460 25 L 520 25 L 520 40"
+          d={`M ${left} 40 L 110 40 L 110 18 L 180 18 L 180 40 L 250 40 L 250 18 L 320 18 L 320 40 L 390 40 L 390 18 L 460 18 L 460 40 L ${right} 40`}
           fill="none"
-          stroke="#f59e0b"
+          stroke={colors.io}
           strokeWidth="2"
         />
-        <text x="530" y="25" fill="#f59e0b" fontSize="10">
-          输出电流
-        </text>
+        <text x={right + 12} y="28" fill={colors.io} fontSize="11" dominantBaseline="middle">输出电流</text>
       </g>
 
       {/* Time axis */}
-      <line x1="40" y1="370" x2="520" y2="370" stroke="#525252" strokeWidth="2" />
-      <text x="280" y="390" fill="#737373" fontSize="10" textAnchor="middle">
+      <line x1={left} y1="410" x2={right} y2="410" stroke="#525252" strokeWidth="2" markerEnd="url(#arrTeal)" />
+      <text x={(left + right) / 2} y="435" fill="#737373" fontSize="11" textAnchor="middle">
         时间 t →
-      </text>
-    </svg>
-  )
-}
-
-function ZVSWaveformSVG() {
-  return (
-    <svg
-      viewBox="0 0 400 160"
-      className="w-full max-w-md mx-auto h-auto"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <text x="10" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Vgs
-      </text>
-      <line x1="40" y1="20" x2="360" y2="20" stroke="#404040" strokeWidth="1" />
-      <path
-        d="M 40 20 L 40 5 L 80 5 L 80 20 L 100 20 L 100 5 L 140 5 L 140 20 L 160 20 L 160 5 L 200 5 L 200 20 L 220 20 L 220 5 L 260 5 L 260 20 L 280 20 L 280 5 L 320 5 L 320 20 L 360 20"
-        fill="none"
-        stroke="#14b8a6"
-        strokeWidth="2"
-      />
-
-      <text x="10" y="55" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Vds
-      </text>
-      <line x1="40" y1="60" x2="360" y2="60" stroke="#404040" strokeWidth="1" />
-      <path
-        d="M 40 60 L 40 30 L 70 30 L 70 60 L 80 60 L 100 60 L 105 30 L 135 30 L 135 60 L 160 60 L 180 60 L 185 30 L 215 30 L 215 60 L 240 60 L 260 60 L 265 30 L 295 30 L 295 60 L 320 60 L 340 60 L 345 30 L 360 30"
-        fill="none"
-        stroke="#ef4444"
-        strokeWidth="2"
-      />
-
-      <text x="10" y="95" fill="#a3a3a3" fontSize="11" textAnchor="end">
-        Id
-      </text>
-      <line x1="40" y1="100" x2="360" y2="100" stroke="#404040" strokeWidth="1" />
-      <path
-        d="M 40 100 L 80 100 L 85 85 Q 100 70 115 85 L 120 100 L 160 100 L 165 85 Q 180 70 195 85 L 200 100 L 240 100 L 245 85 Q 260 70 275 85 L 280 100 L 320 100 L 325 85 Q 340 70 355 85 L 360 100"
-        fill="none"
-        stroke="#f59e0b"
-        strokeWidth="2"
-      />
-
-      {/* Dead time annotation */}
-      <rect
-        x="75"
-        y="2"
-        width="20"
-        height="118"
-        fill="rgba(245, 158, 11, 0.1)"
-        stroke="#f59e0b"
-        strokeWidth="1"
-        strokeDasharray="3 3"
-      />
-      <text
-        x="85"
-        y="135"
-        fill="#f59e0b"
-        fontSize="10"
-        textAnchor="middle"
-      >
-        死区时间
-      </text>
-      <text
-        x="85"
-        y="148"
-        fill="#737373"
-        fontSize="9"
-        textAnchor="middle"
-      >
-        Vds 已降至零 → ZVS
       </text>
     </svg>
   )
@@ -313,99 +241,70 @@ function ZVSWaveformSVG() {
 function GainCurveSVG() {
   return (
     <svg
-      viewBox="0 0 400 240"
+      viewBox="0 0 420 260"
       className="w-full max-w-md mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
-      {/* Grid */}
-      <g stroke="#404040" strokeWidth="1" opacity="0.3">
-        {[20, 60, 100, 140, 180, 220, 260, 300, 340, 380].map((x) => (
+      <g stroke="#404040" strokeWidth="1" opacity="0.25">
+        {[30, 70, 110, 150, 190, 230, 270, 310, 350, 390].map((x) => (
           <line key={`v${x}`} x1={x} y1="20" x2={x} y2="200" />
         ))}
-        {[20, 60, 100, 140, 180].map((y) => (
-          <line key={`h${y}`} x1="20" y1={y} x2="380" y2={y} />
+        {[30, 70, 110, 150, 190].map((y) => (
+          <line key={`h${y}`} x1="20" y1={y} x2="400" y2={y} />
         ))}
       </g>
 
-      {/* Axes */}
-      <line x1="20" y1="200" x2="380" y2="200" stroke="#525252" strokeWidth="2" />
+      <line x1="20" y1="200" x2="400" y2="200" stroke="#525252" strokeWidth="2" />
       <line x1="20" y1="20" x2="20" y2="200" stroke="#525252" strokeWidth="2" />
-      <text x="200" y="230" fill="#a3a3a3" fontSize="10" textAnchor="middle">
-        归一化频率 fn
-      </text>
-      <text
-        x="8"
-        y="110"
-        fill="#a3a3a3"
-        fontSize="10"
-        textAnchor="middle"
-        transform="rotate(-90 8 110)"
-      >
+      <text x="210" y="235" fill="#a3a3a3" fontSize="10" textAnchor="middle">归一化频率 fn</text>
+      <text x="10" y="110" fill="#a3a3a3" fontSize="10" textAnchor="middle" transform="rotate(-90 10 110)">
         电压增益 M
       </text>
 
-      {/* Fr1 marker */}
-      <line x1="200" y1="20" x2="200" y2="200" stroke="#14b8a6" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
-      <text x="200" y="15" fill="#14b8a6" fontSize="9" textAnchor="middle">
-        fr1
-      </text>
+      <line x1="210" y1="20" x2="210" y2="200" stroke="#14b8a6" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
+      <text x="210" y="14" fill="#14b8a6" fontSize="9" textAnchor="middle">fr1</text>
 
-      {/* Fr2 marker */}
       <line x1="120" y1="20" x2="120" y2="200" stroke="#f59e0b" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
-      <text x="120" y="15" fill="#f59e0b" fontSize="9" textAnchor="middle">
-        fr2
-      </text>
+      <text x="120" y="14" fill="#f59e0b" fontSize="9" textAnchor="middle">fr2</text>
 
-      {/* M=1 reference */}
-      <line x1="20" y1="120" x2="380" y2="120" stroke="#737373" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
-      <text x="375" y="117" fill="#737373" fontSize="9" textAnchor="end">
-        M=1
-      </text>
+      <line x1="20" y1="120" x2="400" y2="120" stroke="#737373" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+      <text x="395" y="116" fill="#737373" fontSize="9" textAnchor="end">M=1</text>
 
-      {/* Gain curves for different loads: peak at fr2, all cross at M=1 on fr1 */}
       <path
-        d="M 20 200 Q 60 140 100 60 Q 110 30 120 20 L 200 120 Q 250 140 300 155 Q 340 170 380 180"
+        d="M 20 200 Q 60 150 100 70 Q 110 38 120 24 L 210 120 Q 260 142 310 158 Q 350 170 400 182"
         fill="none"
         stroke="#f59e0b"
         strokeWidth="2.5"
         opacity="0.9"
       />
       <path
-        d="M 20 200 Q 60 180 100 120 Q 115 90 120 80 L 200 120 Q 240 130 280 140 Q 330 155 380 165"
+        d="M 20 200 Q 60 185 100 125 Q 115 95 120 82 L 210 120 Q 250 132 290 142 Q 340 156 400 168"
         fill="none"
         stroke="#14b8a6"
         strokeWidth="2.5"
         opacity="0.9"
       />
       <path
-        d="M 20 200 Q 60 190 100 165 Q 115 145 120 135 L 200 120 Q 250 130 300 140 Q 340 150 380 160"
+        d="M 20 200 Q 60 192 100 168 Q 115 148 120 138 L 210 120 Q 260 132 310 142 Q 350 152 400 162"
         fill="none"
         stroke="#f5f5f5"
         strokeWidth="2"
         opacity="0.4"
       />
 
-      {/* Legend */}
-      <g transform="translate(260, 30)">
+      <g transform="translate(260, 28)">
         <line x1="0" y1="0" x2="20" y2="0" stroke="#f59e0b" strokeWidth="2" />
-        <text x="26" y="4" fill="#a3a3a3" fontSize="10">
-          轻载 (Q=0.2)
-        </text>
+        <text x="26" y="4" fill="#a3a3a3" fontSize="10">轻载 (Q=0.2)</text>
         <line x1="0" y1="16" x2="20" y2="16" stroke="#14b8a6" strokeWidth="2" />
-        <text x="26" y="20" fill="#a3a3a3" fontSize="10">
-          满载 (Q=1.0)
-        </text>
+        <text x="26" y="20" fill="#a3a3a3" fontSize="10">满载 (Q=1.0)</text>
         <line x1="0" y1="32" x2="20" y2="32" stroke="#f5f5f5" strokeWidth="2" opacity="0.4" />
-        <text x="26" y="36" fill="#a3a3a3" fontSize="10">
-          重载 (Q=5.0)
-        </text>
+        <text x="26" y="36" fill="#a3a3a3" fontSize="10">重载 (Q=5.0)</text>
       </g>
 
-      {/* Operating region annotation */}
       <rect
         x="120"
         y="20"
-        width="260"
+        width="270"
         height="180"
         fill="rgba(34, 197, 94, 0.05)"
         stroke="#22c55e"
@@ -413,9 +312,7 @@ function GainCurveSVG() {
         strokeDasharray="4 4"
         opacity="0.6"
       />
-      <text x="250" y="180" fill="#22c55e" fontSize="9" textAnchor="middle">
-        Region 1 &amp; 2: ZVS 区域
-      </text>
+      <text x="255" y="185" fill="#22c55e" fontSize="9" textAnchor="middle">Region 1 &amp; 2: ZVS 区域</text>
     </svg>
   )
 }
@@ -424,222 +321,249 @@ function GainCurveSVG() {
 
 function SwitchingAnimationSVG() {
   return (
-    <svg viewBox="0 0 600 300" className="w-full max-w-2xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 620 340" className="w-full max-w-3xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id="arrowTeal" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
           <circle cx="3" cy="3" r="2" fill="#14b8a6" />
         </marker>
-        <marker id="arrowAmber" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <circle cx="3" cy="3" r="2" fill="#f59e0b" />
-        </marker>
       </defs>
-      {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.2">
-        {[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560].map((x) => (
-          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="280" />
+        {Array.from({ length: 15 }, (_, i) => 40 + i * 40).map((x) => (
+          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="300" />
         ))}
-        {[20, 60, 100, 140, 180, 220, 260].map((y) => (
-          <line key={`h${y}`} x1="40" y1={y} x2="560" y2={y} />
+        {Array.from({ length: 8 }, (_, i) => 20 + i * 40).map((y) => (
+          <line key={`h${y}`} x1="40" y1={y} x2="600" y2={y} />
         ))}
       </g>
 
       {/* Vgs Q1 */}
       <g transform="translate(0, 10)">
-        <text x="30" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">Vgs_Q1</text>
-        <line x1="40" y1="20" x2="560" y2="20" stroke="#404040" strokeWidth="1" />
-        <path d="M 40 20 L 40 5 L 120 5 L 120 20 L 160 20 L 160 5 L 240 5 L 240 20 L 280 20 L 280 5 L 360 5 L 360 20 L 400 20 L 400 5 L 480 5 L 480 20 L 520 20 L 520 5 L 560 5 L 560 20" fill="none" stroke="#14b8a6" strokeWidth="2">
+        <text x="30" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Vgs_Q1</text>
+        <line x1="40" y1="24" x2="600" y2="24" stroke="#525252" strokeWidth="1" />
+        <path d="M 40 24 L 40 6 L 130 6 L 130 24 L 170 24 L 170 6 L 260 6 L 260 24 L 300 24 L 300 6 L 390 6 L 390 24 L 430 24 L 430 6 L 520 6 L 520 24 L 560 24 L 560 6 L 600 6 L 600 24" fill="none" stroke="#14b8a6" strokeWidth="2">
           <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
         </path>
-        {/* Dead-time labels */}
-        <text x="140" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
-        <text x="260" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
-        <text x="440" y="38" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
+        <text x="150" y="42" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
+        <text x="320" y="42" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
+        <text x="540" y="42" fill="#f59e0b" fontSize="8" textAnchor="middle">死区</text>
       </g>
 
       {/* Vgs Q2 */}
-      <g transform="translate(0, 50)">
-        <text x="30" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">Vgs_Q2</text>
-        <line x1="40" y1="20" x2="560" y2="20" stroke="#404040" strokeWidth="1" />
-        <path d="M 40 20 L 120 20 L 120 5 L 160 5 L 160 20 L 240 20 L 240 5 L 280 5 L 280 20 L 360 20 L 360 5 L 400 5 L 400 20 L 480 20 L 480 5 L 520 5 L 520 20 L 560 20" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2">
+      <g transform="translate(0, 55)">
+        <text x="30" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Vgs_Q2</text>
+        <line x1="40" y1="24" x2="600" y2="24" stroke="#525252" strokeWidth="1" />
+        <path d="M 40 24 L 130 24 L 130 6 L 170 6 L 170 24 L 260 24 L 260 6 L 300 6 L 300 24 L 390 24 L 390 6 L 430 6 L 430 24 L 520 24 L 520 6 L 560 6 L 560 24 L 600 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2">
           <animate attributeName="stroke-opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" begin="0.5s" />
         </path>
       </g>
 
       {/* Vds Q1 */}
-      <g transform="translate(0, 100)">
-        <text x="30" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">Vds_Q1</text>
-        <line x1="40" y1="20" x2="560" y2="20" stroke="#404040" strokeWidth="1" />
-        <path d="M 40 20 L 40 5 L 95 5 L 95 20 L 100 20 L 120 20 L 125 5 L 175 5 L 175 20 L 200 20 L 220 20 L 225 5 L 275 5 L 275 20 L 300 20 L 320 20 L 325 5 L 375 5 L 375 20 L 400 20 L 420 20 L 425 5 L 475 5 L 475 20 L 520 20 L 520 5 L 560 5" fill="none" stroke="#ef4444" strokeWidth="2" className="dash-flow-slow">
+      <g transform="translate(0, 105)">
+        <text x="30" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Vds_Q1</text>
+        <line x1="40" y1="24" x2="600" y2="24" stroke="#525252" strokeWidth="1" />
+        <path d="M 40 24 L 40 4 L 120 4 L 120 24 L 130 24 L 170 24 L 175 4 L 245 4 L 245 24 L 300 24 L 310 4 L 390 4 L 390 24 L 400 24 L 440 24 L 445 4 L 515 4 L 515 24 L 560 24 L 570 4 L 600 4" fill="none" stroke="#ef4444" strokeWidth="2">
           <animate attributeName="stroke" values="#ef4444;#22c55e;#ef4444" dur="2s" repeatCount="indefinite" />
         </path>
-        {/* ZVS highlight: Vds drops to zero before Vgs rises */}
-        <rect x="95" y="2" width="25" height="24" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2">
+        <rect x="120" y="2" width="50" height="26" fill="rgba(34,197,94,0.12)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2">
           <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" />
         </rect>
-        <text x="108" y="-5" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
+        <rect x="390" y="2" width="50" height="26" fill="rgba(34,197,94,0.12)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2">
+          <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2s" repeatCount="indefinite" begin="1s" />
+        </rect>
+        <text x="145" y="-4" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
+        <text x="415" y="-4" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
       </g>
 
       {/* Ir */}
-      <g transform="translate(0, 160)">
-        <text x="30" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">Ir</text>
-        <line x1="40" y1="30" x2="560" y2="30" stroke="#404040" strokeWidth="1" />
-        <path d="M 40 30 Q 70 5 100 30 Q 130 55 160 30 Q 190 5 220 30 Q 250 55 280 30 Q 310 5 340 30 Q 370 55 400 30 Q 430 5 460 30 Q 490 55 520 30" fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
-        {/* Animated dot on current */}
-        <circle r="3" fill="#14b8a6">
-          <animateMotion dur="1s" repeatCount="indefinite" path="M 40 30 Q 70 5 100 30 Q 130 55 160 30 Q 190 5 220 30 Q 250 55 280 30 Q 310 5 340 30 Q 370 55 400 30 Q 430 5 460 30 Q 490 55 520 30" />
+      <g transform="translate(0, 165)">
+        <text x="30" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Ir</text>
+        <line x1="40" y1="30" x2="600" y2="30" stroke="#525252" strokeWidth="1" />
+        <path d="M 40 30 Q 75 2 130 30 Q 185 58 240 30 Q 295 2 350 30 Q 405 58 460 30 Q 515 2 570 30" fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
+        <circle r="3.5" fill="#14b8a6">
+          <animateMotion dur="1.2s" repeatCount="indefinite" path="M 40 30 Q 75 2 130 30 Q 185 58 240 30 Q 295 2 350 30 Q 405 58 460 30 Q 515 2 570 30" />
         </circle>
       </g>
 
       {/* Im */}
-      <g transform="translate(0, 220)">
-        <text x="30" y="15" fill="#a3a3a3" fontSize="11" textAnchor="end">Im</text>
-        <line x1="40" y1="20" x2="560" y2="20" stroke="#404040" strokeWidth="1" />
-        <path d="M 40 20 L 100 5 L 160 35 L 220 5 L 280 35 L 340 5 L 400 35 L 460 5 L 520 35 L 560 20" fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
+      <g transform="translate(0, 230)">
+        <text x="30" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Im</text>
+        <line x1="40" y1="24" x2="600" y2="24" stroke="#525252" strokeWidth="1" />
+        <path d="M 40 24 L 110 6 L 180 42 L 250 6 L 320 42 L 390 6 L 460 42 L 530 6 L 600 24" fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
       </g>
 
-      {/* Time axis */}
-      <line x1="40" y1="280" x2="560" y2="280" stroke="#525252" strokeWidth="2" />
-      <text x="300" y="295" fill="#737373" fontSize="10" textAnchor="middle">时间 t →</text>
+      <line x1="40" y1="300" x2="600" y2="300" stroke="#525252" strokeWidth="2" markerEnd="url(#arrowTeal)" />
+      <text x="320" y="320" fill="#737373" fontSize="10" textAnchor="middle">时间 t →</text>
     </svg>
   )
 }
 
 function CurrentFlowCircuitSVG() {
   return (
-    <svg viewBox="0 0 540 360" className="w-full max-w-2xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 600 380" className="w-full max-w-3xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        {/* Arrow markers for current direction */}
         <marker id="arrowTealCircuit" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
           <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#14b8a6" />
         </marker>
         <marker id="arrowAmberCircuit" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
           <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#f59e0b" />
         </marker>
-        <linearGradient id="gradTeal" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#0f766e" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.8" />
-        </linearGradient>
-        <linearGradient id="gradAmber" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#b45309" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.8" />
-        </linearGradient>
       </defs>
 
       {/* DC input rails */}
-      <line x1="40" y1="50" x2="120" y2="50" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="40" y1="310" x2="120" y2="310" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="20" y="54" fill="#a3a3a3" fontSize="11">Vin+</text>
-      <text x="20" y="314" fill="#a3a3a3" fontSize="11">GND</text>
+      <line x1="50" y1="55" x2="130" y2="55" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="50" y1="325" x2="130" y2="325" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="28" y="59" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Vin+</text>
+      <text x="28" y="329" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
-      {/* Q1 (high-side) */}
-      <rect x="120" y="30" width="44" height="44" fill="none" stroke="#14b8a6" strokeWidth="2" rx="2" />
-      <text x="142" y="57" fill="#14b8a6" fontSize="11" textAnchor="middle">Q1</text>
-      <line x1="142" y1="74" x2="142" y2="110" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Q1 high-side NMOS */}
+      <line x1="130" y1="55" x2="150" y2="55" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="55" x2="150" y2="85" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="85" x2="150" y2="155" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="155" x2="150" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Channel */}
+      <line x1="150" y1="85" x2="150" y2="155" stroke="#14b8a6" strokeWidth="2" />
+      {/* Gate */}
+      <line x1="128" y1="120" x2="142" y2="120" stroke="#14b8a6" strokeWidth="2" />
+      {/* Source short bar + N arrow */}
+      <line x1="150" y1="148" x2="164" y2="148" stroke="#14b8a6" strokeWidth="2" />
+      <path d="M 150 148 L 158 144 L 158 152 Z" fill="#14b8a6" />
+      {/* Body diode */}
+      <line x1="164" y1="95" x2="164" y2="148" stroke="#a3a3a3" strokeWidth="1.5" />
+      <line x1="160" y1="95" x2="168" y2="95" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 164 95 L 160 110 L 168 110 Z" fill="#a3a3a3" />
+      <text x="120" y="124" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
 
-      {/* Q2 (low-side) */}
-      <rect x="120" y="286" width="44" height="44" fill="none" stroke="#f59e0b" strokeWidth="2" rx="2" />
-      <text x="142" y="313" fill="#f59e0b" fontSize="11" textAnchor="middle">Q2</text>
-      <line x1="142" y1="286" x2="142" y2="250" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Q2 low-side NMOS */}
+      <line x1="150" y1="180" x2="150" y2="200" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="200" x2="150" y2="270" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="270" x2="150" y2="295" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="295" x2="150" y2="325" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="150" y1="200" x2="150" y2="270" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="128" y1="235" x2="142" y2="235" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="150" y1="263" x2="164" y2="263" stroke="#f59e0b" strokeWidth="2" />
+      <path d="M 150 263 L 158 259 L 158 267 Z" fill="#f59e0b" />
+      <line x1="164" y1="200" x2="164" y2="263" stroke="#a3a3a3" strokeWidth="1.5" />
+      <line x1="160" y1="200" x2="168" y2="200" stroke="#a3a3a3" strokeWidth="1.5" />
+      <path d="M 164 200 L 160 215 L 168 215 Z" fill="#a3a3a3" />
+      <text x="120" y="239" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
 
       {/* Switch node */}
-      <line x1="142" y1="110" x2="142" y2="250" stroke="#a3a3a3" strokeWidth="2" />
-      <circle cx="142" cy="180" r="4" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
-      <text x="120" y="184" fill="#f5f5f5" fontSize="9" textAnchor="end">SW</text>
+      <circle cx="150" cy="180" r="3.5" fill="#f5f5f5" stroke="#a3a3a3" strokeWidth="1" />
+      <text x="124" y="184" fill="#f5f5f5" fontSize="10" fontFamily="JetBrains Mono, monospace" textAnchor="end">SW</text>
 
-      {/* Resonant inductor Lr */}
-      <path d="M 142 180 L 170 180 L 170 170 L 180 190 L 190 170 L 200 190 L 210 170 L 220 190 L 230 180 L 260 180" fill="none" stroke="#14b8a6" strokeWidth="2" />
-      <text x="200" y="165" fill="#14b8a6" fontSize="11" textAnchor="middle">Lr</text>
+      {/* Lr */}
+      <line x1="150" y1="180" x2="190" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 190 180 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" />
+      <line x1="220" y1="180" x2="250" y2="180" stroke="#14b8a6" strokeWidth="2" />
+      <text x="205" y="162" fill="#14b8a6" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Lr</text>
 
-      {/* Resonant capacitor Cr */}
-      <line x1="260" y1="165" x2="260" y2="195" stroke="#f59e0b" strokeWidth="2" />
-      <line x1="270" y1="165" x2="270" y2="195" stroke="#f59e0b" strokeWidth="2" />
-      <text x="285" y="184" fill="#f59e0b" fontSize="11">Cr</text>
+      {/* Cr */}
+      <line x1="250" y1="180" x2="270" y2="180" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="270" y1="164" x2="270" y2="196" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="280" y1="164" x2="280" y2="196" stroke="#f59e0b" strokeWidth="2" />
+      <line x1="280" y1="180" x2="310" y2="180" stroke="#f59e0b" strokeWidth="2" />
+      <text x="275" y="154" fill="#f59e0b" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Cr</text>
 
-      {/* Transformer primary connection */}
-      <line x1="270" y1="180" x2="310" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Transformer primary / Lm */}
+      <line x1="310" y1="180" x2="340" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <g stroke="#a3a3a3" strokeWidth="2" fill="none">
+        <path d="M 340 150 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" />
+        <path d="M 380 150 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" />
+        <line x1="368" y1="152" x2="368" y2="208" strokeDasharray="4 3" strokeWidth="1.5" />
+        <line x1="376" y1="152" x2="376" y2="208" strokeDasharray="4 3" strokeWidth="1.5" />
+      </g>
+      <circle cx="342" cy="156" r="2.5" fill="#a3a3a3" />
+      <circle cx="382" cy="156" r="2.5" fill="#a3a3a3" />
+      <text x="412" y="170" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">T</text>
 
-      {/* Transformer (center-tapped primary shown as two coupled inductors) */}
-      <path d="M 310 160 Q 322 170 310 180 Q 322 190 310 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 330 160 Q 342 170 330 180 Q 342 190 330 200" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      {/* Coupling arc */}
-      <path d="M 316 158 Q 322 150 328 158" fill="none" stroke="#a3a3a3" strokeWidth="1" />
-      <path d="M 316 202 Q 322 210 328 202" fill="none" stroke="#a3a3a3" strokeWidth="1" />
-      <text x="320" y="150" fill="#a3a3a3" fontSize="11" textAnchor="middle">T</text>
+      {/* Lm branch down */}
+      <line x1="340" y1="180" x2="340" y2="250" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 340 250 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" />
+      <line x1="350" y1="250" x2="350" y2="270" stroke="#22c55e" strokeWidth="2" />
+      <line x1="340" y1="270" x2="380" y2="270" stroke="#22c55e" strokeWidth="2" />
+      <text x="390" y="274" fill="#22c55e" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="start">Lm</text>
 
-      {/* Center tap / secondary */}
-      <line x1="330" y1="180" x2="360" y2="180" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="360" y1="150" x2="360" y2="210" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 360 150 Q 372 160 360 170 Q 372 180 360 190" fill="none" stroke="#a3a3a3" strokeWidth="2" />
-      <path d="M 375 150 Q 387 160 375 170 Q 387 180 375 190" fill="none" stroke="#a3a3a3" strokeWidth="2" />
+      {/* Transformer secondary */}
+      <line x1="380" y1="180" x2="410" y2="180" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="410" y1="150" x2="410" y2="210" stroke="#a3a3a3" strokeWidth="2" />
+      <path d="M 410 150 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+      <path d="M 430 150 q 5 -12 10 0 q 5 12 10 0 q 5 -12 10 0 q 5 12 10 0" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+      <line x1="430" y1="150" x2="430" y2="210" stroke="#a3a3a3" strokeWidth="2" />
 
       {/* Rectifier diodes */}
-      <polygon points="390,140 400,150 380,150" fill="none" stroke="#22c55e" strokeWidth="2" />
-      <line x1="390" y1="150" x2="390" y2="160" stroke="#22c55e" strokeWidth="2" />
-      <text x="402" y="147" fill="#22c55e" fontSize="10">D1</text>
+      <line x1="430" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="460" y1="150" x2="460" y2="130" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 460 130 L 452 116 L 468 116 Z" fill="#22c55e" />
+      <line x1="452" y1="116" x2="468" y2="116" stroke="#22c55e" strokeWidth="2" />
+      <line x1="460" y1="116" x2="460" y2="96" stroke="#22c55e" strokeWidth="2" />
+      <text x="475" y="126" fill="#22c55e" fontSize="11" fontFamily="JetBrains Mono, monospace">D1</text>
 
-      <polygon points="390,220 400,210 380,210" fill="none" stroke="#22c55e" strokeWidth="2" />
-      <line x1="390" y1="210" x2="390" y2="200" stroke="#22c55e" strokeWidth="2" />
-      <text x="402" y="223" fill="#22c55e" fontSize="10">D2</text>
+      <line x1="430" y1="210" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="460" y1="210" x2="460" y2="230" stroke="#22c55e" strokeWidth="2" />
+      <path d="M 460 230 L 452 244 L 468 244 Z" fill="#22c55e" />
+      <line x1="452" y1="244" x2="468" y2="244" stroke="#22c55e" strokeWidth="2" />
+      <line x1="460" y1="244" x2="460" y2="264" stroke="#22c55e" strokeWidth="2" />
+      <text x="475" y="240" fill="#22c55e" fontSize="11" fontFamily="JetBrains Mono, monospace">D2</text>
 
       {/* Output capacitor / load */}
-      <line x1="390" y1="150" x2="460" y2="150" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="390" y1="210" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="460" y1="150" x2="460" y2="165" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="455" y1="165" x2="465" y2="165" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="455" y1="175" x2="465" y2="175" stroke="#a3a3a3" strokeWidth="2" />
-      <line x1="460" y1="175" x2="460" y2="210" stroke="#a3a3a3" strokeWidth="2" />
-      <text x="470" y="174" fill="#a3a3a3" fontSize="11">Co/Ro</text>
-      <text x="470" y="155" fill="#a3a3a3" fontSize="10">Vo+</text>
-      <text x="470" y="208" fill="#a3a3a3" fontSize="10">Vo-</text>
+      <line x1="460" y1="96" x2="540" y2="96" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="460" y1="264" x2="540" y2="264" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="540" y1="96" x2="540" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="534" y1="120" x2="546" y2="120" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="534" y1="132" x2="546" y2="132" stroke="#a3a3a3" strokeWidth="2" />
+      <line x1="540" y1="132" x2="540" y2="264" stroke="#a3a3a3" strokeWidth="2" />
+      <text x="552" y="132" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">Co/Ro</text>
+      <text x="552" y="108" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">Vo+</text>
+      <text x="552" y="258" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">Vo-</text>
 
-      {/* Positive half-cycle current loop: Vin+ -> Q1 -> Lr -> Cr -> T -> D1 -> Co -> GND -> Vin- */}
+      {/* Positive half-cycle current loop */}
       <path
-        id="pathPos"
-        d="M 60 50 L 120 50 L 142 50 L 142 110 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 150 L 390 150 L 460 150 L 460 210 L 390 210 L 360 210 L 360 250 L 142 250 L 142 310 L 120 310 L 60 310 L 60 50"
+        d="M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 150 L 430 150 L 460 150 L 540 150 L 540 96 L 540 264 L 460 264 L 430 210 L 410 210 L 410 180 L 380 180 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55"
         fill="none"
-        stroke="url(#gradTeal)"
+        stroke="#14b8a6"
         strokeWidth="3"
         strokeDasharray="8 6"
         strokeLinecap="round"
         markerEnd="url(#arrowTealCircuit)"
-        opacity="0.75"
+        opacity="0.85"
+        className="current-path-teal"
       >
         <animate attributeName="stroke-dashoffset" values="28;0" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0.75;0.75;0;0;0.75" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
+        <animate attributeName="opacity" values="0.85;0.85;0;0;0.85" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
       </path>
-      <circle r="4" fill="#14b8a6" opacity="0.75">
-        <animate attributeName="opacity" values="0.75;0.75;0;0;0.75" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
-        <animateMotion dur="2s" repeatCount="indefinite" path="M 60 50 L 120 50 L 142 50 L 142 110 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 150 L 390 150 L 460 150 L 460 210 L 390 210 L 360 210 L 360 250 L 142 250 L 142 310 L 120 310 L 60 310 L 60 50" />
+      <circle r="4" fill="#14b8a6" opacity="0.85">
+        <animate attributeName="opacity" values="0.85;0.85;0;0;0.85" dur="2s" repeatCount="indefinite" keyTimes="0;0.45;0.5;0.95;1" />
+        <animateMotion dur="2s" repeatCount="indefinite" path="M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 150 L 430 150 L 460 150 L 540 150 L 540 96 L 540 264 L 460 264 L 430 210 L 410 210 L 410 180 L 380 180 L 340 180 L 150 180 L 150 270 L 150 295 L 150 325 L 130 325 L 70 325 L 70 55" />
       </circle>
-      <text x="85" y="100" fill="#14b8a6" fontSize="11" fontWeight="600">+Ir</text>
+      <text x="95" y="105" fill="#14b8a6" fontSize="12" fontWeight="600" fontFamily="JetBrains Mono, monospace">+Ir</text>
 
-      {/* Negative half-cycle current loop: GND -> Q2 -> Lr -> Cr -> T -> D2 -> Co -> Vin+ -> GND (mirror) */}
+      {/* Negative half-cycle current loop */}
       <path
-        id="pathNeg"
-        d="M 60 310 L 120 310 L 142 310 L 142 250 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 210 L 390 210 L 460 210 L 460 150 L 390 150 L 360 150 L 360 110 L 142 110 L 142 50 L 120 50 L 60 50 L 60 310"
+        d="M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 210 L 430 210 L 460 210 L 540 210 L 540 264 L 540 96 L 460 96 L 430 150 L 410 150 L 410 180 L 380 180 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325"
         fill="none"
-        stroke="url(#gradAmber)"
+        stroke="#f59e0b"
         strokeWidth="3"
         strokeDasharray="8 6"
         strokeLinecap="round"
         markerEnd="url(#arrowAmberCircuit)"
         opacity="0"
+        className="current-path-amber"
       >
         <animate attributeName="stroke-dashoffset" values="28;0" dur="2s" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;0;0.75;0.75;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.95;1" />
+        <animate attributeName="opacity" values="0;0;0.85;0.85;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.95;1" />
       </path>
       <circle r="4" fill="#f59e0b" opacity="0">
         <animate attributeName="opacity" values="0;0;1;1;0" dur="2s" repeatCount="indefinite" keyTimes="0;0.5;0.55;0.95;1" />
-        <animateMotion dur="2s" repeatCount="indefinite" path="M 60 310 L 120 310 L 142 310 L 142 250 L 142 180 L 170 180 L 230 180 L 260 180 L 270 180 L 310 180 L 330 180 L 360 180 L 360 210 L 390 210 L 460 210 L 460 150 L 390 150 L 360 150 L 360 110 L 142 110 L 142 50 L 120 50 L 60 50 L 60 310" />
+        <animateMotion dur="2s" repeatCount="indefinite" path="M 70 325 L 130 325 L 150 325 L 150 270 L 150 180 L 190 180 L 220 180 L 250 180 L 270 180 L 280 180 L 340 180 L 380 180 L 410 180 L 410 210 L 430 210 L 460 210 L 540 210 L 540 264 L 540 96 L 460 96 L 430 150 L 410 150 L 410 180 L 380 180 L 340 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325" />
       </circle>
-      <text x="85" y="270" fill="#f59e0b" fontSize="11" fontWeight="600">-Ir</text>
+      <text x="95" y="285" fill="#f59e0b" fontSize="12" fontWeight="600" fontFamily="JetBrains Mono, monospace">-Ir</text>
 
       {/* Legend */}
-      <g transform="translate(40, 340)">
+      <g transform="translate(50, 355)">
         <line x1="0" y1="0" x2="20" y2="0" stroke="#14b8a6" strokeWidth="3" strokeDasharray="4 3" />
-        <text x="26" y="4" fill="#14b8a6" fontSize="10">正半周电流路径</text>
-        <line x1="150" y1="0" x2="170" y2="0" stroke="#f59e0b" strokeWidth="3" strokeDasharray="4 3" />
-        <text x="176" y="4" fill="#f59e0b" fontSize="10">负半周电流路径</text>
+        <text x="26" y="4" fill="#14b8a6" fontSize="10" fontFamily="JetBrains Mono, monospace">正半周电流路径</text>
+        <line x1="160" y1="0" x2="180" y2="0" stroke="#f59e0b" strokeWidth="3" strokeDasharray="4 3" />
+        <text x="186" y="4" fill="#f59e0b" fontSize="10" fontFamily="JetBrains Mono, monospace">负半周电流路径</text>
       </g>
     </svg>
   )
@@ -647,16 +571,15 @@ function CurrentFlowCircuitSVG() {
 
 function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
   return (
-    <svg viewBox="0 0 420 210" className="w-full max-w-lg mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 440 230" className="w-full max-w-xl mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <marker id={`arrowTealZvs${idSuffix}`} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#14b8a6" />
+        <marker id={`arrowTealZvs${idSuffix}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M 0 0 L 7 3.5 L 0 7 L 1.5 3.5 Z" fill="#14b8a6" />
         </marker>
-        <marker id={`arrowGreenZvs${idSuffix}`} markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-          <path d="M 0 0 L 8 4 L 0 8 L 2 4 Z" fill="#22c55e" />
+        <marker id={`arrowGreenZvs${idSuffix}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
+          <path d="M 0 0 L 7 3.5 L 0 7 L 1.5 3.5 Z" fill="#22c55e" />
         </marker>
       </defs>
-      {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.2">
         {[40, 80, 120, 160, 200, 240, 280, 320, 360, 400].map((x) => (
           <line key={`v${x}`} x1={x} y1="10" x2={x} y2="180" />
@@ -667,56 +590,53 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
       </g>
 
       {/* Vgs */}
-      <text x="30" y="15" fill="#a3a3a3" fontSize="10" textAnchor="end">Vgs</text>
-      <line x1="40" y1="20" x2="400" y2="20" stroke="#404040" strokeWidth="1" />
-      <path d="M 40 20 L 40 5 L 80 5 L 80 20 L 100 20 L 100 5 L 140 5 L 140 20 L 160 20" fill="none" stroke="#14b8a6" strokeWidth="2">
+      <text x="32" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Vgs</text>
+      <line x1="40" y1="22" x2="400" y2="22" stroke="#525252" strokeWidth="1" />
+      <path d="M 40 22 L 40 6 L 80 6 L 80 22 L 100 22 L 100 6 L 140 6 L 140 22 L 160 22" fill="none" stroke="#14b8a6" strokeWidth="2">
         <animate attributeName="stroke-opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
       </path>
-      {/* Vgs rising arrow */}
-      <path d="M 100 5 L 105 15 L 95 15 Z" fill="#14b8a6">
+      <path d="M 100 6 L 106 16 L 94 16 Z" fill="#14b8a6">
         <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" begin="0.3s" />
       </path>
-      <text x="145" y="12" fill="#14b8a6" fontSize="9">Vgs 上升</text>
+      <text x="150" y="14" fill="#14b8a6" fontSize="10" fontFamily="JetBrains Mono, monospace">Vgs 上升</text>
 
       {/* Vds */}
-      <text x="30" y="55" fill="#a3a3a3" fontSize="10" textAnchor="end">Vds</text>
-      <line x1="40" y1="60" x2="400" y2="60" stroke="#404040" strokeWidth="1" />
-      <path d="M 40 60 L 40 30 L 70 30 L 70 60 L 80 60 L 100 60 L 105 30 L 135 30 L 135 60 L 160 60" fill="none" stroke="#ef4444" strokeWidth="2">
+      <text x="32" y="58" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Vds</text>
+      <line x1="40" y1="64" x2="400" y2="64" stroke="#525252" strokeWidth="1" />
+      <path d="M 40 64 L 40 34 L 70 34 L 70 64 L 80 64 L 100 64 L 105 34 L 135 34 L 135 64 L 160 64" fill="none" stroke="#ef4444" strokeWidth="2">
         <animate attributeName="stroke" values="#ef4444;#22c55e;#ef4444" dur="1.5s" repeatCount="indefinite" />
       </path>
-      {/* Vds dropping arrow */}
-      <path d="M 75 50 L 80 40 L 85 50 Z" fill="#22c55e">
+      <path d="M 75 52 L 80 42 L 85 52 Z" fill="#22c55e">
         <animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite" />
       </path>
-      <text x="140" y="52" fill="#22c55e" fontSize="9">Vds 降至 0</text>
+      <text x="150" y="56" fill="#22c55e" fontSize="10" fontFamily="JetBrains Mono, monospace">Vds 降至 0</text>
 
-      {/* Id / Ir */}
-      <text x="30" y="95" fill="#a3a3a3" fontSize="10" textAnchor="end">Ir</text>
-      <line x1="40" y1="100" x2="400" y2="100" stroke="#404040" strokeWidth="1" />
-      <path d="M 40 100 L 60 100 L 65 85 Q 80 70 95 85 L 100 100 L 120 100 L 125 85 Q 140 70 155 85 L 160 100" fill="none" stroke="#f59e0b" strokeWidth="2" className="dash-flow" />
+      {/* Ir */}
+      <text x="32" y="100" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle">Ir</text>
+      <line x1="40" y1="106" x2="400" y2="106" stroke="#525252" strokeWidth="1" />
+      <path d="M 40 106 L 60 106 L 65 90 Q 80 74 95 90 L 100 106 L 120 106 L 125 90 Q 140 74 155 90 L 160 106" fill="none" stroke="#f59e0b" strokeWidth="2" className="dash-flow" />
 
       {/* Body diode conduction zone */}
-      <rect x="70" y="25" width="30" height="80" fill="rgba(239,68,68,0.1)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2">
+      <rect x="70" y="28" width="30" height="82" fill="rgba(239,68,68,0.1)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2">
         <animate attributeName="opacity" values="0.2;0.6;0.2" dur="1.5s" repeatCount="indefinite" />
       </rect>
-      <text x="25" y="70" fill="#ef4444" fontSize="9" textAnchor="end">体二极管导通钳位</text>
+      <text x="28" y="76" fill="#ef4444" fontSize="9" textAnchor="end">体二极管导通钳位</text>
 
       {/* Dead time zone */}
-      <rect x="80" y="2" width="20" height="140" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2">
+      <rect x="80" y="4" width="20" height="148" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2">
         <animate attributeName="opacity" values="0.1;0.4;0.1" dur="1.5s" repeatCount="indefinite" />
       </rect>
-      <text x="90" y="155" fill="#f59e0b" fontSize="9" textAnchor="middle">死区时间</text>
+      <text x="90" y="162" fill="#f59e0b" fontSize="9" textAnchor="middle">死区时间</text>
 
       {/* Annotation arrows */}
-      <line x1="70" y1="140" x2="70" y2="108" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
-      <text x="55" y="125" fill="#22c55e" fontSize="9" textAnchor="end">Vds=0</text>
+      <line x1="70" y1="148" x2="70" y2="114" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
+      <text x="55" y="132" fill="#22c55e" fontSize="9" textAnchor="end">Vds=0</text>
 
-      <line x1="100" y1="140" x2="100" y2="25" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowTealZvs${idSuffix})`} />
-      <text x="115" y="85" fill="#14b8a6" fontSize="9">Vgs 上升</text>
+      <line x1="100" y1="148" x2="100" y2="28" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowTealZvs${idSuffix})`} />
+      <text x="116" y="92" fill="#14b8a6" fontSize="9">Vgs 上升</text>
 
-      {/* Explanation text */}
-      <text x="220" y="190" fill="#a3a3a3" fontSize="10" textAnchor="middle">
-        死区时间内，谐振电流经体二极管续流，将 Vds 钳位到 0V，实现 ZVS。
+      <text x="220" y="200" fill="#a3a3a3" fontSize="10" textAnchor="middle">
+        死区时间内，谐振电流经体二极管续流，将 Vds 钳位至接近 0V，实现 ZVS。
       </text>
     </svg>
   )
