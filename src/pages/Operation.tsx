@@ -575,8 +575,9 @@ function CurrentFlowCircuitSVG() {
         <text x="25" y="74" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">-</text>
         <text x="25" y="28" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Vin</text>
 
-        {/* Vin+ 到 Q1 D — 水平线，Q1 D 直接和 Vin+ 同水平 */}
-        <line x1="25" y1="49" x2="90" y2="49" stroke="#a3a3a3" strokeWidth="2" />
+        {/* Vin+ 横线 — 在 Q1 上方，y=30 */}
+        <line x1="25" y1="49" x2="90" y2="30" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="90" y1="30" x2="90" y2="49" stroke="#a3a3a3" strokeWidth="2" />
 
         {/* Vin- 到 GND */}
         <line x1="25" y1="81" x2="25" y2="340" stroke="#a3a3a3" strokeWidth="2" />
