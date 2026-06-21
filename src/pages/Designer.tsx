@@ -115,8 +115,10 @@ function generateSuggestions(
   const { q, k, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMin } = results
 
   // 1. k值选择与虚拟增益
-  if (k < kMin * 1.05) {
-    s.push({ text: `电感比k=${k.toFixed(2)}过于接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k或放宽输入电压范围。`, level: 'critical' })
+  if (k < kMin) {
+    s.push({ text: `电感比k=${k.toFixed(2)}远小于所需最小值k_min=${kMin.toFixed(2)}，空载增益裕量严重不足。当前设计在最低输入电压下可能无法保证额定输出，建议将k增大到≥${kMin.toFixed(2)}或提高最低输入电压。`, level: 'critical' })
+  } else if (k < kMin * 1.05) {
+    s.push({ text: `电感比k=${k.toFixed(2)}接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k至≥${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'critical' })
   } else if (k < kMin * 1.2) {
     s.push({ text: `电感比k=${k.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
   } else {
@@ -692,7 +694,7 @@ export default function Designer() {
     const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
     // 整体设计可行性
-    const designFeasible = fmaxFeasible
+    const designFeasible = fmaxFeasible && k >= kMin
 
     // ZVS能量验证
     // 只有励磁电感 Lm 中的储能参与ZVS，Lr 在死区时间内与 Cr 谐振，不贡献ZVS能量
@@ -822,8 +824,11 @@ export default function Designer() {
     })
 
     if (!designFeasible) {
+      const kTooSmall = k < kMin
       s.unshift({
-        text: `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 k 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
+        text: kTooSmall
+          ? `电感比k=${k.toFixed(2)}远小于所需最小值k_min=${kMin.toFixed(2)}，设计不可行。空载增益裕量严重不足，当前设计在最低输入电压下可能无法保证额定输出。建议将k增大到≥${kMin.toFixed(2)}或提高最低输入电压。`
+          : `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 k 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
         level: 'critical',
       })
     }
@@ -864,6 +869,7 @@ export default function Designer() {
       zvsTimeOk,
       tZvs,
       designFeasible,
+      kMin,
       gainCurveData,
     })
     setSuggestions(s.map((item) => item.text))
@@ -1217,21 +1223,21 @@ export default function Designer() {
                         value={calculated.gMax.toFixed(3)}
                         unit=""
                         formula="Gmax = Vin_nom/Vin_min"
-                        highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
+                        highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
                       />
                       <ResultItem
                         label="空载峰值增益"
                         value={calculated.gmaxEmpty.toFixed(3)}
                         unit=""
                         formula="Gempty = 1 + 1/k"
-                        highlight={calculated.gmaxEmpty >= calculated.gMax ? 'good' : 'critical'}
+                        highlight={calculated.gmaxEmpty >= calculated.gMax * 1.05 ? 'good' : calculated.gmaxEmpty >= calculated.gMax ? 'warn' : 'critical'}
                       />
                       <ResultItem
                         label="峰值增益 Mmax"
                         value={calculated.mMax.toFixed(3)}
                         unit=""
                         formula="数值寻优峰值"
-                        highlight={calculated.mMax >= calculated.gMax ? 'good' : 'critical'}
+                        highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
                       />
                       <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
                       <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)-k)]" />
@@ -1586,7 +1592,7 @@ function ResultItem({
   value: string
   unit: string
   formula: string
-  highlight?: 'good' | 'critical'
+  highlight?: 'good' | 'warn' | 'critical'
 }) {
   return (
     <div className="bg-surface-elevated rounded-lg p-3 border border-border hover:border-border-light transition-colors">
@@ -1597,7 +1603,7 @@ function ResultItem({
       <div className="flex items-baseline gap-1">
         <span
           className={`text-xl font-mono font-semibold ${
-            highlight === 'good' ? 'text-success' : highlight === 'critical' ? 'text-danger' : 'text-text-primary'
+            highlight === 'good' ? 'text-success' : highlight === 'warn' ? 'text-warning' : highlight === 'critical' ? 'text-danger' : 'text-text-primary'
           }`}
         >
           {value}
