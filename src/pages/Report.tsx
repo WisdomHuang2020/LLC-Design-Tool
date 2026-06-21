@@ -7,6 +7,7 @@ import {
   Copy,
   Check,
   Printer,
+  FileDown,
   ArrowLeft,
   Calendar,
   Hash,
@@ -142,7 +143,14 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
   }
 
   const downloadPDF = async () => {
-    if (!reportRef.current) return
+    if (!reportRef.current) {
+      alert('报告内容未加载，请刷新页面后重试。')
+      return
+    }
+    if (!hasData) {
+      alert('尚未完成设计计算。请先在「设计工具」页面执行计算。')
+      return
+    }
     try {
       // @ts-ignore
       const html2pdf = (await import('html2pdf.js')).default
@@ -156,7 +164,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
       html2pdf().set(opt).from(reportRef.current).save()
     } catch (err) {
       console.error('PDF export failed:', err)
-      alert('PDF 导出失败，请使用打印功能')
+      alert('PDF 导出失败，可能原因：\n1. 网络问题导致 html2pdf.js 加载失败\n2. 浏览器安全策略阻止动态加载\n\n建议：使用「打印」功能（Ctrl+P），选择「另存为 PDF」。')
     }
   }
 
@@ -229,7 +237,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
             onClick={downloadPDF}
             className="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
           >
-            <Printer className="w-4 h-4" />
+            <FileDown className="w-4 h-4" />
             PDF
           </button>
           <button
