@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
   BookOpen,
   Activity,
@@ -9,6 +10,7 @@ import {
   Table,
   Triangle,
   Square,
+  ChevronDown,
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
 import InlineMath from '../components/InlineMath'
@@ -24,13 +26,19 @@ const fadeUp = {
 
 function SectionCard({
   children,
+  header,
   className = '',
   index = 0,
+  defaultOpen = true,
 }: {
   children: React.ReactNode
+  header: React.ReactNode
   className?: string
   index?: number
+  defaultOpen?: boolean
 }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen)
+
   return (
     <motion.div
       initial="hidden"
@@ -38,9 +46,34 @@ function SectionCard({
       viewport={{ once: true, margin: '-50px' }}
       variants={fadeUp}
       custom={index}
-      className={`card-surface p-6 md:p-8 ${className}`}
+      className={`card-surface overflow-hidden ${className}`}
     >
-      {children}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-6 md:px-8 md:pt-8 text-left hover:bg-surface-elevated/50 transition-colors"
+      >
+        <div>{header}</div>
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronDown className="w-6 h-6 text-text-secondary" />
+        </motion.div>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' as const }}
+          >
+            <div className="px-6 md:px-8 pb-6 md:pb-8 pt-2">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   )
 }
@@ -491,12 +524,11 @@ export default function Fundamentals() {
 
       <div className="space-y-6 md:space-y-8">
         {/* Section 1: What is Resonance? */}
-        <SectionCard index={1}>
-          <SectionTitle
+        <SectionCard index={1} header={<SectionTitle
             icon={Zap}
             title="什么是谐振？"
             subtitle="LC 谐振电路的基本概念与阻抗特性"
-          />
+          />}>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
@@ -546,12 +578,11 @@ export default function Fundamentals() {
         </SectionCard>
 
         {/* Section 2: Series vs Parallel Resonance */}
-        <SectionCard index={2}>
-          <SectionTitle
+        <SectionCard index={2} header={<SectionTitle
             icon={GitCompare}
             title="串联与并联谐振"
             subtitle="两种谐振结构的阻抗特性与适用场景对比"
-          />
+          />}>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -631,12 +662,11 @@ export default function Fundamentals() {
         </SectionCard>
 
         {/* Section 3: LLC Resonant Tank */}
-        <SectionCard index={3}>
-          <SectionTitle
+        <SectionCard index={3} header={<SectionTitle
             icon={Layers}
             title="LLC 谐振腔"
             subtitle="Lr、Cr、Lm 三元件谐振腔结构与等效电路模型"
-          />
+          />}>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
@@ -745,12 +775,11 @@ export default function Fundamentals() {
         </SectionCard>
 
         {/* Section 4: Key Parameters */}
-        <SectionCard index={4}>
-          <SectionTitle
+        <SectionCard index={4} header={<SectionTitle
             icon={Settings2}
             title="关键参数定义"
             subtitle="LLC 谐振变换器设计的核心参数与符号约定"
-          />
+          />}>
 
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
@@ -867,12 +896,11 @@ export default function Fundamentals() {
         </SectionCard>
 
         {/* Section 5: Topology Variants */}
-        <SectionCard index={5}>
-          <SectionTitle
+        <SectionCard index={5} header={<SectionTitle
             icon={Table}
             title="拓扑变体"
             subtitle="半桥与全桥 LLC 拓扑的结构对比与适用功率等级"
-          />
+          />}>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-bg/50 rounded-lg p-4">
