@@ -684,7 +684,7 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
   const tD = 460
 
   return (
-    <svg viewBox="0 0 600 280" className="w-full mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 600 320" className="w-full mx-auto h-auto" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <marker id={`arrowTealZvs${idSuffix}`} markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto">
           <path d="M 0 0 L 7 3.5 L 0 7 L 1.5 3.5 Z" fill="#14b8a6" />
@@ -700,71 +700,75 @@ function ZVSZoomAnimatedSVG({ idSuffix = '' }: { idSuffix?: string }) {
           <stop offset="100%" stopColor="#22c55e" />
         </linearGradient>
       </defs>
+
+      {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.2">
         {[60, 100, 140, 180, 220, 260, 300, 340, 380, 420, 460, 500, 540].map((x) => (
-          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="180" />
+          <line key={`v${x}`} x1={x} y1="0" x2={x} y2="180" />
         ))}
-        {[20, 60, 100, 140, 180].map((y) => (
+        {[30, 70, 110, 150, 180].map((y) => (
           <line key={`h${y}`} x1="60" y1={y} x2="580" y2={y} />
         ))}
       </g>
 
-      {/* Dead time zone */}
-      <rect x={tA} y="10" width={tD - tA} height="140" fill="rgba(245,158,11,0.12)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
-      <text x={(tA + tD) / 2} y="24" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">死区时间</text>
+      {/* ========== Vgs_Q2 (Top) ========== */}
+      <text x="55" y="15" fill="#a3a3a3" fontSize="12" textAnchor="end" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
+      <line x1="60" y1="20" x2="580" y2="20" stroke="#525252" strokeWidth="1" />
+      <path d={`M 60 20 L ${tA} 20 L ${tD} 20 L ${tD} 5 L ${tD + 60} 5 L ${tD + 60} 20 L 580 20`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+      <text x={tD + 65} y="12" fill="#14b8a6" fontSize="10" fontFamily="JetBrains Mono, monospace">Vgs上升</text>
 
-      {/* Body diode conduction zone */}
-      <rect x={tC} y="10" width={tD - tC} height="140" fill="rgba(239,68,68,0.12)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
-      <text x={(tC + tD) / 2} y="24" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">体二极管导通</text>
+      {/* ========== Vds_Q2 (Middle) ========== */}
+      <text x="55" y="65" fill="#a3a3a3" fontSize="12" textAnchor="end" fontFamily="JetBrains Mono, monospace">Vds_Q2</text>
+      <line x1="60" y1="70" x2="580" y2="70" stroke="#525252" strokeWidth="1" />
+      <path d={`M 60 70 L ${tA} 70 L ${tB} 70 L ${tC} 100 L ${tD} 100 L ${tD + 60} 100 L ${tD + 60} 70 L 580 70`} fill="none" stroke="#ef4444" strokeWidth="2" />
+      <line x1={tB} y1="70" x2={tC} y2="100" stroke={`url(#vdsFallZvs${idSuffix})`} strokeWidth="2" />
 
-      {/* Vgs_Q2 */}
-      <text x="55" y="16" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
-      <line x1="60" y1="22" x2="580" y2="22" stroke="#525252" strokeWidth="1" />
-      <path d={`M 60 22 L ${tA} 22 L ${tD} 22 L ${tD} 8 L ${tD + 60} 8 L ${tD + 60} 22 L 580 22`} fill="none" stroke="#14b8a6" strokeWidth="2" />
-      <text x={tD + 8} y="14" fill="#14b8a6" fontSize="10" fontFamily="JetBrains Mono, monospace">Vgs上升</text>
+      {/* Vin label (above Vds high level) */}
+      <text x={tB + 8} y="62" fill="#ef4444" fontSize="10" fontFamily="JetBrains Mono, monospace">Vin</text>
+      {/* 0V label (below Vds low level) */}
+      <text x={tC + 8} y="112" fill="#22c55e" fontSize="10" fontFamily="JetBrains Mono, monospace">0V</text>
 
-      {/* Vds_Q2 */}
-      <text x="55" y="68" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vds_Q2</text>
-      <line x1="60" y1="74" x2="580" y2="74" stroke="#525252" strokeWidth="1" />
-      <path d={`M 60 74 L ${tA} 74 L ${tB} 74 L ${tC} 100 L ${tD} 100 L ${tD + 60} 100 L ${tD + 60} 74 L 580 74`} fill="none" stroke="#ef4444" strokeWidth="2" />
-      <line x1={tB} y1="74" x2={tC} y2="100" stroke={`url(#vdsFallZvs${idSuffix})`} strokeWidth="2" />
-      <text x={tB + 5} y="66" fill="#ef4444" fontSize="9" fontFamily="JetBrains Mono, monospace">Vin</text>
-      <text x={tC + 5} y="108" fill="#22c55e" fontSize="9" fontFamily="JetBrains Mono, monospace">0V</text>
-
-      {/* Ir */}
-      <text x="55" y="124" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
+      {/* ========== Ir (Bottom) ========== */}
+      <text x="55" y="125" fill="#a3a3a3" fontSize="12" textAnchor="end" fontFamily="JetBrains Mono, monospace">Ir</text>
       <line x1="60" y1="130" x2="580" y2="130" stroke="#525252" strokeWidth="1" />
       <path d={`M 60 130 L ${tA} 130 L ${tD} 120`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="8 6" strokeLinecap="round" className="dash-flow" />
-      <text x={tA + 8} y="124" fill="#f59e0b" fontSize="9" fontFamily="JetBrains Mono, monospace">谐振电流续流</text>
+      <text x={tA + 8} y="140" fill="#f59e0b" fontSize="10" fontFamily="JetBrains Mono, monospace">谐振电流续流</text>
 
-      {/* Timing annotations — staggered to avoid overlap */}
-      <line x1={tA} y1="160" x2={tA} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tA} y="195" fill="#14b8a6" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tA: Q1关断</text>
+      {/* ========== Zone labels (above Vgs) ========== */}
+      <rect x={tA} y="5" width={tD - tA} height="50" fill="rgba(245,158,11,0.08)" stroke="#f59e0b" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <text x={(tA + tD) / 2} y="10" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">死区时间</text>
 
-      <line x1={tB} y1="160" x2={tB} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tB} y="215" fill="#f59e0b" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tB: Vds开始下降</text>
+      <rect x={tC} y="5" width={tD - tC} height="50" fill="rgba(239,68,68,0.08)" stroke="#ef4444" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <text x={(tC + tD) / 2} y="10" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">体二极管导通</text>
 
-      <line x1={tC} y1="160" x2={tC} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tC} y="195" fill="#ef4444" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tC: Vds=0</text>
+      {/* ========== Timing annotations (staggered, outside waveforms) ========== */}
+      <line x1={tA} y1="155" x2={tA} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={tA} y="195" fill="#14b8a6" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tA: Q1关断</text>
 
-      <line x1={tD} y1="160" x2={tD} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={tD} y="215" fill="#22c55e" fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tD: Vgs上升, ZVS导通</text>
+      <line x1={tB} y1="155" x2={tB} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={tB} y="210" fill="#f59e0b" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tB: Vds开始下降</text>
 
-      {/* Arrow annotations */}
-      <line x1={tC} y1="88" x2={tC} y2="102" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
-      <text x={tC + 8} y="96" fill="#22c55e" fontSize="9" fontFamily="JetBrains Mono, monospace">Vds=0</text>
+      <line x1={tC} y1="155" x2={tC} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={tC} y="195" fill="#ef4444" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tC: Vds=0</text>
 
-      <line x1={tD} y1="28" x2={tD} y2="10" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowTealZvs${idSuffix})`} />
-      <text x={tD + 8} y="20" fill="#14b8a6" fontSize="9" fontFamily="JetBrains Mono, monospace">ZVS导通</text>
+      <line x1={tD} y1="155" x2={tD} y2="180" stroke="#525252" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={tD} y="210" fill="#22c55e" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">tD: Vgs上升, ZVS导通</text>
 
-      <line x1={tA} y1="88" x2={tA} y2="74" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowRedZvs${idSuffix})`} />
-      <text x={tA + 8} y="82" fill="#ef4444" fontSize="9" fontFamily="JetBrains Mono, monospace">Q1关断</text>
+      {/* ========== Arrow annotations (clear of waveforms) ========== */}
+      <line x1={tC} y1="55" x2={tC} y2="68" stroke="#22c55e" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowGreenZvs${idSuffix})`} />
+      <text x={tC + 8} y="60" fill="#22c55e" fontSize="10" fontFamily="JetBrains Mono, monospace">Vds=0</text>
 
-      {/* Description */}
-      <text x="320" y="240" fill="#a3a3a3" fontSize="10" textAnchor="middle">
+      <line x1={tD} y1="22" x2={tD} y2="35" stroke="#14b8a6" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={tD + 65} y="30" fill="#14b8a6" fontSize="10" fontFamily="JetBrains Mono, monospace">ZVS导通</text>
+
+      <line x1={tA} y1="55" x2={tA} y2="68" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 2" markerEnd={`url(#arrowRedZvs${idSuffix})`} />
+      <text x={tA + 8} y="60" fill="#ef4444" fontSize="10" fontFamily="JetBrains Mono, monospace">Q1关断</text>
+
+      {/* ========== Description ========== */}
+      <text x="320" y="245" fill="#a3a3a3" fontSize="10" textAnchor="middle">
         死区时间内，谐振电流经Q2体二极管续流，将Vds_Q2钳位至接近0V，实现ZVS。
       </text>
-      <text x="320" y="255" fill="#a3a3a3" fontSize="10" textAnchor="middle">
+      <text x="320" y="260" fill="#a3a3a3" fontSize="10" textAnchor="middle">
         tA→tB: Coss充放电 | tB→tC: Vds线性下降 | tC→tD: 体二极管导通窗口
       </text>
     </svg>
