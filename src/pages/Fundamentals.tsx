@@ -758,14 +758,14 @@ export default function Fundamentals() {
               <img
                 src="hb_ref_dark.png"
                 alt="半桥 LLC 拓扑"
-                className="w-full max-w-xl mx-auto h-auto rounded-lg"
+                className="w-full h-auto rounded-lg"
               />
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
               <img
                 src="fb_ref_dark.png"
                 alt="全桥 LLC 拓扑"
-                className="w-full max-w-xl mx-auto h-auto rounded-lg"
+                className="w-full h-auto rounded-lg"
               />
             </div>
           </div>
