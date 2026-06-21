@@ -1,3 +1,5 @@
+import { useDesign } from '../lib/DesignContext'
+import GainChart from '../components/GainChart'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -110,6 +112,11 @@ function HeroCircuitBackground() {
 }
 
 function GainCurvePreview() {
+  const { results } = useDesign()
+  const hasResults = results !== null
+  const k = hasResults ? results.k : 5
+  const Q = hasResults ? results.q : 1
+
   return (
     <Link to="/curves" className="block group">
       <div className="card-surface p-6 md:p-8 transition-all duration-200 hover:border-border-light hover:scale-[1.01]">
@@ -131,62 +138,14 @@ function GainCurvePreview() {
           </div>
 
           <div className="w-full md:w-72 h-48 flex-shrink-0">
-            <svg viewBox="0 0 320 200" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              {/* Grid lines */}
-              <g stroke="#404040" strokeWidth="1" opacity="0.5">
-                <line x1="40" y1="20" x2="40" y2="180" />
-                <line x1="40" y1="180" x2="300" y2="180" />
-                {[20, 60, 100, 140, 180].map((y) => (
-                  <line key={y} x1="40" y1={y} x2="300" y2={y} strokeDasharray="4 4" opacity="0.3" />
-                ))}
-                {[80, 120, 160, 200, 240, 280].map((x) => (
-                  <line key={x} x1={x} y1="20" x2={x} y2="180" strokeDasharray="4 4" opacity="0.3" />
-                ))}
-              </g>
-
-              {/* Axes labels */}
-              <text x="170" y="198" fill="#a3a3a3" fontSize="10" textAnchor="middle">归一化频率 fn</text>
-              <text x="14" y="105" fill="#a3a3a3" fontSize="10" textAnchor="middle" transform="rotate(-90 14 105)">
-                电压增益 M
-              </text>
-
-              {/* Fr marker */}
-              <line x1="170" y1="20" x2="170" y2="180" stroke="#14b8a6" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
-              <text x="170" y="15" fill="#14b8a6" fontSize="9" textAnchor="middle">fr</text>
-
-              {/* Curves - Q=0.2 highest+widest, Q=1.0 medium, Q=5.0 lowest+steepest */}
-              <path
-                d="M 40 180 Q 80 175 120 155 Q 150 110 170 50 L 170 50 Q 190 110 220 155 Q 260 175 300 180"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="2.5"
-                opacity="0.9"
-              />
-              <path
-                d="M 40 180 Q 80 175 120 150 Q 145 120 170 90 L 170 90 Q 190 110 220 140 Q 260 168 300 170"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="2.5"
-                opacity="0.9"
-              />
-              <path
-                d="M 40 180 Q 80 165 120 100 Q 145 70 170 125 L 170 125 Q 190 70 220 100 Q 260 165 300 180"
-                fill="none"
-                stroke="#ef4444"
-                strokeWidth="2"
-                opacity="0.9"
-              />
-
-              {/* Legend */}
-              <g transform="translate(210, 30)">
-                <line x1="0" y1="0" x2="20" y2="0" stroke="#f59e0b" strokeWidth="2" />
-                <text x="26" y="4" fill="#a3a3a3" fontSize="10">Q = 0.2</text>
-                <line x1="0" y1="16" x2="20" y2="16" stroke="#3b82f6" strokeWidth="2" />
-                <text x="26" y="20" fill="#a3a3a3" fontSize="10">Q = 1.0</text>
-                <line x1="0" y1="32" x2="20" y2="32" stroke="#ef4444" strokeWidth="2" opacity="0.9" />
-                <text x="26" y="36" fill="#a3a3a3" fontSize="10">Q = 5.0</text>
-              </g>
-            </svg>
+            <GainChart
+              k={k}
+              Q={Q}
+              height={192}
+              showCurrentQ={false}
+              showLegend={false}
+              className="w-full"
+            />
           </div>
         </div>
       </div>
