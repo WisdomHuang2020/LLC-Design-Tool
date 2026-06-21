@@ -792,8 +792,8 @@ export default function Fundamentals() {
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">适用功率</td>
-                  <td className="py-3 px-4">中低功率（~500W）</td>
-                  <td className="py-3 px-4">中高功率（~1kW+）</td>
+                  <td className="py-3 px-4">中低功率（典型 100W ~ 3kW）</td>
+                  <td className="py-3 px-4">中大功率（典型 &gt; 3kW，或超高输入电压应用）</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">器件应力</td>
@@ -802,8 +802,18 @@ export default function Fundamentals() {
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">导通损耗</td>
-                  <td className="py-3 px-4">较高（2 管导通，电流需加倍）</td>
-                  <td className="py-3 px-4">较低（4 管导通，电流减半，总损耗更小）</td>
+                  <td className="py-3 px-4">相当（2 管导通，每管电流大）</td>
+                  <td className="py-3 px-4">相当（4 管导通，每管电流小，总损耗相近）</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-3 px-4 font-medium text-text-primary">整流拓扑灵活性</td>
+                  <td className="py-3 px-4">可配中心抽头或全桥整流</td>
+                  <td className="py-3 px-4">通常配全桥整流（中心抽头较少用）</td>
+                </tr>
+                <tr className="border-b border-border/50">
+                  <td className="py-3 px-4 font-medium text-text-primary">同步整流适用性</td>
+                  <td className="py-3 px-4">适用（MOSFET 替代二极管）</td>
+                  <td className="py-3 px-4">适用（MOSFET 替代二极管）</td>
                 </tr>
                 <tr>
                   <td className="py-3 px-4 font-medium text-text-primary">成本 / 复杂度</td>
@@ -814,18 +824,23 @@ export default function Fundamentals() {
             </table>
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
-              <Triangle className="w-4 h-4 text-primary-light" />
-              <span>中心抽头整流</span>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
-              <Square className="w-4 h-4 text-accent" />
-              <span>全桥整流</span>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
-              <Zap className="w-4 h-4 text-success" />
-              <span>同步整流</span>
+          <div className="mt-6 p-4 bg-bg/50 rounded-lg border border-border">
+            <h4 className="text-sm font-semibold text-text-primary mb-3">
+              整流方式说明
+            </h4>
+            <div className="flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
+                <Triangle className="w-4 h-4 text-primary-light" />
+                <span>中心抽头整流：可配合半桥或全桥，低压大电流输出更常用</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
+                <Square className="w-4 h-4 text-accent" />
+                <span>全桥整流：通常配合全桥拓扑，适用于高压小电流输出</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-2 bg-primary-dark/20 rounded-md text-sm text-text-secondary">
+                <Zap className="w-4 h-4 text-success" />
+                <span>同步整流：MOSFET 替代二极管，可应用于任何整流方式</span>
+              </div>
             </div>
           </div>
         </SectionCard>
