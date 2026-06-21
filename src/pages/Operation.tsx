@@ -13,6 +13,7 @@ import {
   Layers,
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
+import GainChart from '../components/GainChart'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -989,7 +990,7 @@ export default function Operation() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
-              <GainCurveSVG />
+              <GainChart k={5} Q={1} height={240} showCurrentQ={false} showLegend={false} showTitle={false} className="w-full" />
             </div>
             <div className="space-y-4">
               <p className="text-text-primary leading-relaxed">
