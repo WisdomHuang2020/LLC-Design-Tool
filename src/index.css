@@ -46,9 +46,18 @@
     padding: 1.5rem;
     overflow-x: auto;
     font-family: var(--font-mono);
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .math-block:hover {
+    border-color: var(--color-primary-light);
+    background-color: var(--color-surface-elevated);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.12);
   }
   .math-block.important {
     border-left: 4px solid var(--color-primary);
+  }
+  .math-block.important:hover {
+    border-left-color: var(--color-primary-light);
   }
   .math-block.has-label {
     padding: 0.5rem 1.5rem 1.5rem;
@@ -116,9 +125,12 @@
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 8px;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   }
   .card-surface:hover {
-    border-color: var(--color-border-light);
+    border-color: var(--color-primary-light);
+    background-color: var(--color-surface-elevated);
+    box-shadow: 0 0 0 1px rgba(20, 184, 166, 0.08);
   }
   .input-field {
     background-color: var(--color-surface);
