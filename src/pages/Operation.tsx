@@ -115,16 +115,29 @@ function WaveformsSVG() {
 
   return (
     <svg
-      viewBox={`0 0 ${W} 540`}
+      viewBox={`0 0 ${W} 580`}
       className="w-full max-w-3xl mx-auto h-auto"
       xmlns="http://www.w3.org/2000/svg"
     >
+      {/* 6个相位背景色带 */}
+      <g opacity="0.08">
+        {/* Q1 ON: t1→t2, t1'→t2' */}
+        <rect x="60" y="10" width="110" height="390" fill="#14b8a6" />
+        <rect x="520" y="10" width="60" height="390" fill="#14b8a6" />
+        {/* 死区: t2→t3, t5→t6 */}
+        <rect x="170" y="10" width="60" height="390" fill="#f59e0b" />
+        <rect x="420" y="10" width="60" height="390" fill="#f59e0b" />
+        {/* 体二极管导通: t3→t4, t6→t1' */}
+        <rect x="230" y="10" width="80" height="390" fill="#22c55e" />
+        <rect x="480" y="10" width="40" height="390" fill="#22c55e" />
+      </g>
+
       {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.25">
         {Array.from({ length: 14 }, (_, i) => left + i * 40).map((x) => (
-          <line key={`v${x}`} x1={x} y1="20" x2={x} y2="490" />
+          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="400" />
         ))}
-        {Array.from({ length: 11 }, (_, i) => 20 + i * 48).map((y) => (
+        {Array.from({ length: 9 }, (_, i) => 10 + i * 48).map((y) => (
           <line key={`h${y}`} x1={left} y1={y} x2={right} y2={y} />
         ))}
       </g>
@@ -135,64 +148,109 @@ function WaveformsSVG() {
         </marker>
       </defs>
 
-      {/* Vgs — 互补方波，带死区 */}
+      {/* Vgs_Q1 — 实线，只在Q1 ON期间高 */}
       <g transform="translate(0, 10)">
-        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vgs</text>
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vgs_Q1</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* Q1 ON: 90–310, 340–530 */}
-        <path d={`M 60 40 L 90 40 L 90 16 L 310 16 L 310 40 L 340 40 L 340 16 L 530 16 L 530 40 L 580 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
-        {/* Q2 ON: 60–90, 310–340, 530–580 */}
-        <path d={`M 60 40 L 60 16 L 90 16 L 90 40 L 310 40 L 310 16 L 340 16 L 340 40 L 530 40 L 530 16 L 580 16 L 580 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 4" />
-        <text x={right + 12} y="20" fill="#14b8a6" fontSize="11" dominantBaseline="middle">Q1</text>
-        <text x={right + 12} y="40" fill="#f59e0b" fontSize="11" dominantBaseline="middle">Q2</text>
+        {/* Q1 ON: t1→t2, t1'→t2' */}
+        <path d="M 60 40 L 60 16 L 170 16 L 170 40 L 520 40 L 520 16 L 580 16 L 580 40" fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">Q1</text>
       </g>
 
-      {/* Ir — 纯正弦波（谐振槽电流，从负峰值开始，过零滞后 Vgs） */}
+      {/* Vgs_Q2 — 虚线，只在Q2 ON期间高 */}
+      <g transform="translate(0, 50)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vgs_Q2</text>
+        <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
+        {/* Q2 ON: t4→t5 */}
+        <path d="M 60 40 L 310 40 L 310 16 L 420 16 L 420 40 L 580 40" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 4" />
+        <text x={right + 12} y="28" fill="#f59e0b" fontSize="11" dominantBaseline="middle">Q2</text>
+      </g>
+
+      {/* Ir — 谐振电流（死区期间有转折，fr2>fr1） */}
       <g transform="translate(0, 90)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Ir</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M 60 70 Q 95 70 125 61.2 Q 155 50.6 190 40 Q 225 27.6 255 18.8 Q 285 12.6 320 10 Q 355 11.9 390 18.8 Q 425 27.6 450 40 Q 485 50.6 520 62.5 Q 555 68.1 580 70`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <path d="M 60 60 C 100 55 130 40 170 20 C 190 12 210 8 230 10 C 250 14 280 25 310 30 C 350 38 380 55 420 60 C 440 62 460 68 480 70 C 495 68 510 55 520 60 C 540 55 560 40 580 30" fill="none" stroke="#14b8a6" strokeWidth="2" strokeDasharray="6 4" />
         <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* Im — 三角波（励磁电流，Q1 ON 期间线性上升，Q2 ON 期间线性下降） */}
-      <g transform="translate(0, 170)">
+      {/* Im — 励磁电流（近似三角波，死区斜率变化） */}
+      <g transform="translate(0, 130)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Im</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M 60 60 L 90 60 L 310 20 L 340 20 L 530 60 L 580 60`} fill="none" stroke="#22c55e" strokeWidth="2" />
+        <path d="M 60 60 L 170 20 L 230 15 L 310 30 L 420 60 L 480 65 L 520 60 L 580 35" fill="none" stroke="#22c55e" strokeWidth="2" strokeDasharray="6 4" />
         <text x={right + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
-      {/* Vds — 方波（Q1 ON=0V，Q2 ON=Vin，死区 ZVS 快速切换） */}
-      <g transform="translate(0, 250)">
-        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vds</text>
+      {/* Vds_Q1 — 死区斜坡过渡（ZVS实现，Coss充放电） */}
+      <g transform="translate(0, 170)">
+        <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vds_Q1</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M 90 40 L 310 40 L 310 10 L 530 10 L 530 40 L 580 40`} fill="none" stroke="#ef4444" strokeWidth="2" />
+        {/* 低(Q1 ON)→斜坡上升(死区1)→高(Q2 ON/D2导通)→斜坡下降(死区2)→低(D1导通/Q1 ON) */}
+        <path d="M 60 40 L 170 40 L 230 10 L 420 10 L 480 40 L 580 40" fill="none" stroke="#ef4444" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#ef4444" fontSize="11" dominantBaseline="middle">漏极电压</text>
       </g>
 
-      {/* Isec — 副边电流（= |Ir − Im| 在导通窗口，边界 ZCS 平滑过零） */}
-      <g transform="translate(0, 330)">
+      {/* Isec — 副边电流（D1/D2导通窗口，ZCS平滑过零） */}
+      <g transform="translate(0, 210)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Isec</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* D1 驼峰 — Q1 ON 期间导通，起始/结束斜率过零，中间圆弧顶 */}
-        <path d={`M 90 40 C 140 15, 180 5, 220 5 C 260 5, 290 25, 310 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
-        {/* D2 驼峰 — Q2 ON 期间导通 */}
-        <path d={`M 340 40 C 390 15, 420 5, 460 5 C 490 5, 520 25, 530 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
+        {/* D1 导通: t1→t2 (Q1 ON期间) */}
+        <path d="M 60 40 C 90 20 110 8 140 5 C 170 8 190 20 210 40" fill="none" stroke="#8b5cf6" strokeWidth="2" />
+        <path d="M 520 40 C 540 20 555 8 570 5 C 580 8 580 20 580 40" fill="none" stroke="#8b5cf6" strokeWidth="2" />
+        {/* D2 导通: t4→t5 (Q2 ON期间) */}
+        <path d="M 310 40 C 340 20 360 8 390 5 C 420 8 440 20 460 40" fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
         <text x={right + 12} y="28" fill="#8b5cf6" fontSize="11" dominantBaseline="middle">副边电流</text>
       </g>
 
       {/* Io — 输出电流（Co 滤波后近似直流 + 微小纹波） */}
-      <g transform="translate(0, 410)">
+      <g transform="translate(0, 250)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Io</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M 60 40 L 60 38 L 200 38 L 200 40 L 340 40 L 340 38 L 480 38 L 480 40 L 580 40`} fill="none" stroke="#f59e0b" strokeWidth="2" />
+        <path d="M 60 40 L 60 38 L 200 38 L 200 40 L 340 40 L 340 38 L 480 38 L 480 40 L 580 40" fill="none" stroke="#f59e0b" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#f59e0b" fontSize="11" dominantBaseline="middle">输出电流</text>
       </g>
 
-      {/* Time axis */}
-      <line x1={left} y1="490" x2={right} y2="490" stroke="#525252" strokeWidth="2" markerEnd="url(#arrTeal)" />
-      <text x={(left + right) / 2} y="515" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
+      {/* 时间轴 */}
+      <line x1={left} y1="400" x2={right} y2="400" stroke="#525252" strokeWidth="2" markerEnd="url(#arrTeal)" />
+      <text x={(left + right) / 2} y="425" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
+
+      {/* 时间标注虚线 */}
+      <line x1="60" y1="10" x2="60" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="170" y1="10" x2="170" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="230" y1="10" x2="230" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="310" y1="10" x2="310" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="420" y1="10" x2="420" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="480" y1="10" x2="480" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="520" y1="10" x2="520" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+      <line x1="580" y1="10" x2="580" y2="410" stroke="#a3a3a3" strokeWidth="1" strokeDasharray="3 2" opacity="0.5" />
+
+      {/* 时间标注文字 */}
+      <text x="60" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₁</text>
+      <text x="170" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₂</text>
+      <text x="230" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₃</text>
+      <text x="310" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₄</text>
+      <text x="420" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₅</text>
+      <text x="480" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₆</text>
+      <text x="520" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₁'</text>
+      <text x="580" y="445" fill="#a3a3a3" fontSize="11" textAnchor="middle">t₂'</text>
+
+      {/* 相位标注文字 */}
+      <text x="115" y="465" fill="#14b8a3" fontSize="11" textAnchor="middle">Q1 ON</text>
+      <text x="200" y="465" fill="#f59e0b" fontSize="11" textAnchor="middle">死区</text>
+      <text x="270" y="465" fill="#22c55e" fontSize="11" textAnchor="middle">D2导通</text>
+      <text x="365" y="465" fill="#f59e0b" fontSize="11" textAnchor="middle">Q2 ON</text>
+      <text x="450" y="465" fill="#f59e0b" fontSize="11" textAnchor="middle">死区</text>
+      <text x="500" y="465" fill="#22c55e" fontSize="11" textAnchor="middle">D1导通</text>
+      <text x="550" y="465" fill="#14b8a3" fontSize="11" textAnchor="middle">Q1 ON</text>
+
+      {/* 底部说明文字 */}
+      <text x="60" y="485" fill="#737373" fontSize="10" textAnchor="start">t₁→t₂: Q1导通, 正半周能量传输</text>
+      <text x="230" y="485" fill="#737373" fontSize="10" textAnchor="middle">t₂→t₃: 死区, Coss充放电</text>
+      <text x="310" y="485" fill="#737373" fontSize="10" textAnchor="middle">t₃→t₄: Q2体二极管导通, ZVS准备</text>
+      <text x="60" y="505" fill="#737373" fontSize="10" textAnchor="start">t₄→t₅: Q2导通, 负半周能量传输</text>
+      <text x="230" y="505" fill="#737373" fontSize="10" textAnchor="middle">t₅→t₆: 死区, Coss充放电</text>
+      <text x="420" y="505" fill="#737373" fontSize="10" textAnchor="middle">t₆→t₁': Q1体二极管导通, ZVS准备</text>
     </svg>
   )
 }
