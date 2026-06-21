@@ -381,6 +381,7 @@ interface CalculatedData {
   tZvs: number
   irRms: number
   imRms: number
+  bPeak: number
   gainCurveData: Array<{ fn: number; m: number }>
 }
 
@@ -411,10 +412,10 @@ const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
   mosfetTr: 15,
   mosfetTf: 10,
-  mosfetCoss: 500,
+  mosfetCoss: 150,
   mosfetVsd: 1.2,
   deadTime: 200,
-  primaryTurns: 18,
+  primaryTurns: 30,
   coreMaterial: 'PC95',
   coreVe: 5.0,
   coreAe: 80,
@@ -445,6 +446,7 @@ function calculateLosses(
   mosfetCoss: number
   mosfetDiode: number
   coreLoss: number
+  bPeak: number
   windingLoss: number
   rectLoss: number
   resonantLoss: number
@@ -463,17 +465,21 @@ function calculateLosses(
   const mosfetCondPer = 0.5 * ipRms * ipRms * (lp.mosfetRdsOn / 1000)
   const mosfetCond = mosfetCondPer * nSwitches
 
+  // ZVS 状态下开通损耗与 Coss 损耗可忽略（谐振电流在死区完成电容充放电）
+  const zvsOn = calc.zvsMargin && calc.zvsTimeOk
+
   // 2. Switching loss (linear approximation; with ZVS Pon ideally 0)
   const switchV = vin
-  const switchOn = 0.5 * switchV * ipPeak * (lp.mosfetTr / 1e9) * fsw * nSwitches
+  const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * (lp.mosfetTr / 1e9) * fsw * nSwitches
   const switchOff = 0.5 * switchV * ipPeak * (lp.mosfetTf / 1e9) * fsw * nSwitches
 
   // 3. Coss loss (non-linear model, simplified)
   // 系数 2/3 考虑了 MOSFET 结电容 C_oss 随 V_ds 的非线性变化
   // 不同厂商/型号的 C_oss 非线性特性不同，精确损耗建议查手册 E_oss 曲线
+  // ZVS 下 Coss 储能被谐振电流回收，损耗近似为 0
   const cossF = lp.mosfetCoss / 1e12
   const ecoss = 0.5 * cossF * vin * vin * (2 / 3)
-  const cossLoss = ecoss * fsw * nSwitches
+  const cossLoss = zvsOn ? 0 : ecoss * fsw * nSwitches
 
   // 4. Body diode conduction loss (approximate dead time current = Ip_peak * 0.7)
   // 0.7 为经验系数，实际体二极管电流波形因死区时间、C_oss 充放电波形而异
@@ -491,6 +497,7 @@ function calculateLosses(
   const aeM2 = lp.coreAe * 1e-6
   const bPeak = (vin / (calc.topology === 'half-bridge' ? 2 : 1)) / (4 * fsw * lp.primaryTurns * aeM2)
   const coreLoss = lp.coreK * Math.pow(fsw / 1e3, lp.coreAlpha) * Math.pow(bPeak * 1000, lp.coreBeta) * lp.coreVe / 1000
+  const bPeakMt = bPeak * 1000
 
   // 6. Winding loss (DC + skin effect)
   const rdc = lp.windingRdc / 1000
@@ -538,6 +545,7 @@ function calculateLosses(
     mosfetCoss: cossLoss,
     mosfetDiode: diodeLoss,
     coreLoss,
+    bPeak: bPeakMt,
     windingLoss,
     rectLoss,
     resonantLoss,
@@ -762,6 +770,12 @@ export default function Designer() {
       })
     }
 
+    // 变压器峰值磁密（用于结果展示与磁芯损耗校验）
+    const aeM2 = lossParams.coreAe * 1e-6
+    const bPeak =
+      (vinNom / (topology === 'half-bridge' ? 2 : 1)) /
+      (4 * fsw * lossParams.primaryTurns * aeM2)
+
     const data: CalculatedData = {
       n,
       fr,
@@ -780,6 +794,7 @@ export default function Designer() {
       ipRms,
       irRms,
       imRms,
+      bPeak,
       isRms,
       vinNom,
       vout,
@@ -876,6 +891,7 @@ export default function Designer() {
       zr,
       irRms,
       imRms,
+      bPeak,
       zvsTimeOk,
       tZvs,
       designFeasible,
@@ -1269,6 +1285,19 @@ export default function Designer() {
                       <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im = Vin/(4·f·Lm)" />
                       <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
                       <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
+                      <ResultItem
+                        label="峰值磁密 Bpeak"
+                        value={(calculated.bPeak * 1000).toFixed(1)}
+                        unit="mT"
+                        formula="Bpeak = Vp/(4·f·Np·Ae)"
+                        highlight={
+                          calculated.bPeak * 1000 > 300
+                            ? 'critical'
+                            : calculated.bPeak * 1000 > 200
+                              ? 'warn'
+                              : 'good'
+                        }
+                      />
                       <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
                       <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
                       <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
@@ -1674,7 +1703,7 @@ function LossAnalysisPanel({
               <input type="number" className={inputClass} value={params.mosfetTf} onChange={(e) => update('mosfetTf', Number(e.target.value))} />
             </div>
             <div>
-              <label className={labelClass}>Coss (pF)</label>
+              <label className={labelClass}>Coss (pF, 0V 标称/能量等效)</label>
               <input type="number" className={inputClass} value={params.mosfetCoss} onChange={(e) => update('mosfetCoss', Number(e.target.value))} />
             </div>
             <div>
@@ -1838,7 +1867,7 @@ function LossAnalysisPanel({
                   <td className="py-2 pr-4 font-medium">Coss 损耗</td>
                   <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
                   <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                  <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)</td>
+                  <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)，ZVS 下≈0</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-2 pr-4 font-medium">体二极管导通</td>
