@@ -154,9 +154,9 @@ function GainCurvePreview() {
               <line x1="170" y1="20" x2="170" y2="180" stroke="#14b8a6" strokeWidth="1" strokeDasharray="6 4" opacity="0.6" />
               <text x="170" y="15" fill="#14b8a6" fontSize="9" textAnchor="middle">fr</text>
 
-              {/* Curves - approximated LLC gain curves for different Q: peak at fr2, all cross at fr1 */}
+              {/* Curves - Q=0.2 highest+widest, Q=1.0 medium, Q=5.0 lowest+steepest */}
               <path
-                d="M 40 180 Q 80 170 120 130 Q 140 90 170 50 L 170 50 Q 190 80 220 130 Q 260 165 300 170"
+                d="M 40 180 Q 80 175 120 155 Q 150 110 170 50 L 170 50 Q 190 110 220 155 Q 260 175 300 180"
                 fill="none"
                 stroke="#f59e0b"
                 strokeWidth="2.5"
@@ -165,25 +165,25 @@ function GainCurvePreview() {
               <path
                 d="M 40 180 Q 80 175 120 150 Q 145 120 170 90 L 170 90 Q 190 110 220 140 Q 260 168 300 170"
                 fill="none"
-                stroke="#14b8a6"
+                stroke="#3b82f6"
                 strokeWidth="2.5"
                 opacity="0.9"
               />
               <path
-                d="M 40 180 Q 80 178 120 165 Q 140 145 170 125 L 170 125 Q 190 138 220 155 Q 260 172 300 175"
+                d="M 40 180 Q 80 165 120 100 Q 145 70 170 125 L 170 125 Q 190 70 220 100 Q 260 165 300 180"
                 fill="none"
-                stroke="#f5f5f5"
+                stroke="#ef4444"
                 strokeWidth="2"
-                opacity="0.5"
+                opacity="0.9"
               />
 
               {/* Legend */}
               <g transform="translate(210, 30)">
                 <line x1="0" y1="0" x2="20" y2="0" stroke="#f59e0b" strokeWidth="2" />
                 <text x="26" y="4" fill="#a3a3a3" fontSize="10">Q = 0.2</text>
-                <line x1="0" y1="16" x2="20" y2="16" stroke="#14b8a6" strokeWidth="2" />
+                <line x1="0" y1="16" x2="20" y2="16" stroke="#3b82f6" strokeWidth="2" />
                 <text x="26" y="20" fill="#a3a3a3" fontSize="10">Q = 1.0</text>
-                <line x1="0" y1="32" x2="20" y2="32" stroke="#f5f5f5" strokeWidth="2" opacity="0.5" />
+                <line x1="0" y1="32" x2="20" y2="32" stroke="#ef4444" strokeWidth="2" opacity="0.9" />
                 <text x="26" y="36" fill="#a3a3a3" fontSize="10">Q = 5.0</text>
               </g>
             </svg>

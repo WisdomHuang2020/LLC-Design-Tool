@@ -15,7 +15,7 @@ import { Download, Link2, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
-const Q_COLORS = ['#14b8a6', '#0f766e', '#5eead4', '#2dd4bf', '#0d9488']
+const Q_COLORS = ['#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ef4444']
 
 function calcGain(fn: number, k: number, Q: number): number {
   const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
@@ -378,7 +378,7 @@ export default function Curves() {
                 type="linear"
                 isAnimationActive={false}
                 dataKey="currentQ"
-                stroke="#f59e0b"
+                stroke="#f5f5f5"
                 strokeWidth={2.5}
                 strokeDasharray="8 4"
                 dot={false}
