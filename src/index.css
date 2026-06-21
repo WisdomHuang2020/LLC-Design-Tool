@@ -213,6 +213,11 @@
   }
 }
 
+/* SVG text should use the app font stack */
+svg text {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 /* Print styles: ensure reports print cleanly */
 @media print {
   body {
