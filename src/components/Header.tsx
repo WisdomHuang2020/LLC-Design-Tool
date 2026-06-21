@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, BookOpen, Activity, Calculator, FileText, Settings, PenTool } from 'lucide-react'
+import { Menu, X, Zap, BookOpen, Activity, Calculator, FileText, Settings, PenTool, Pencil } from 'lucide-react'
 
 const navLinks = [
   { path: '/', label: '首页', icon: Zap },
@@ -9,6 +9,7 @@ const navLinks = [
   { path: '/derivations', label: '公式推导', icon: PenTool },
   { path: '/curves', label: '特性曲线', icon: Activity },
   { path: '/designer', label: '设计工具', icon: Calculator },
+  { path: '/circuit-editor', label: '电路图', icon: Pencil },
   { path: '/report', label: '报告输出', icon: FileText },
 ]
 

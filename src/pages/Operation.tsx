@@ -517,28 +517,26 @@ function CurrentFlowCircuitSVG() {
         <text x="25" y="74" fill="#a3a3a3" fontSize="14" fontFamily="JetBrains Mono, monospace" textAnchor="middle">-</text>
         <text x="25" y="28" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="middle">Vin</text>
 
-        {/* Vin+ 到 Q1 D */}
+        {/* Vin+ 到 Q1 D — 水平线，Q1 D 直接和 Vin+ 同水平 */}
         <line x1="25" y1="49" x2="90" y2="49" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="90" y1="49" x2="90" y2="30" stroke="#a3a3a3" strokeWidth="2" />
 
-        {/* Vin- 到 Q2 S 和 GND */}
+        {/* Vin- 到 GND */}
         <line x1="25" y1="81" x2="25" y2="340" stroke="#a3a3a3" strokeWidth="2" />
-        <line x1="25" y1="280" x2="90" y2="280" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="90" y1="280" x2="90" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <line x1="25" y1="340" x2="230" y2="340" stroke="#a3a3a3" strokeWidth="2" />
         <text x="10" y="344" fill="#a3a3a3" fontSize="12" fontFamily="JetBrains Mono, monospace">GND</text>
 
-        {/* Q1 标准 NMOS 符号 */}
+        {/* Q1 标准 NMOS 符号 — D 在 y=49，S 在 y=75 */}
         {/* D-S 竖线 */}
-        <line x1="90" y1="30" x2="90" y2="75" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="90" y1="49" x2="90" y2="75" stroke="#a3a3a3" strokeWidth="2" />
         {/* G 栅极 */}
-        <line x1="75" y1="52" x2="90" y2="52" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
+        <line x1="75" y1="55" x2="90" y2="55" stroke={q1Active ? '#14b8a6' : '#a3a3a3'} strokeWidth={q1Active ? '3' : '2'} />
         {/* S 短横线 */}
         <line x1="85" y1="75" x2="95" y2="75" stroke="#a3a3a3" strokeWidth="2" />
-        {/* Q1 体二极管 — 阴极在 D，阳极在 S */}
-        <line x1="100" y1="40" x2="100" y2="70" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
-        <line x1="96" y1="40" x2="104" y2="40" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
-        <path d="M 100 40 L 96 52 L 104 52 Z" fill={q1BodyDiode ? '#22c55e' : '#a3a3a3'} />
+        {/* Q1 体二极管 — 阴极在 D(y=49)，阳极在 S */}
+        <line x1="100" y1="49" x2="100" y2="75" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
+        <line x1="96" y1="49" x2="104" y2="49" stroke={q1BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q1BodyDiode ? '3' : '1.5'} />
+        <path d="M 100 49 L 96 61 L 104 61 Z" fill={q1BodyDiode ? '#22c55e' : '#a3a3a3'} />
         <text x="65" y="55" fill={q1Active ? '#14b8a6' : q1BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q1</text>
 
         {/* Q2 标准 NMOS 符号 */}
@@ -548,10 +546,10 @@ function CurrentFlowCircuitSVG() {
         <line x1="75" y1="257" x2="90" y2="257" stroke={q2Active ? '#f59e0b' : '#a3a3a3'} strokeWidth={q2Active ? '3' : '2'} />
         {/* S 短横线 */}
         <line x1="85" y1="280" x2="95" y2="280" stroke="#a3a3a3" strokeWidth="2" />
-        {/* Q2 体二极管 — 阴极在 D，阳极在 S */}
-        <line x1="100" y1="245" x2="100" y2="275" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
-        <line x1="96" y1="245" x2="104" y2="245" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
-        <path d="M 100 245 L 96 257 L 104 257 Z" fill={q2BodyDiode ? '#22c55e' : '#a3a3a3'} />
+        {/* Q2 体二极管 — 阴极在 D(y=235)，阳极在 S */}
+        <line x1="100" y1="235" x2="100" y2="275" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
+        <line x1="96" y1="235" x2="104" y2="235" stroke={q2BodyDiode ? '#22c55e' : '#a3a3a3'} strokeWidth={q2BodyDiode ? '3' : '1.5'} />
+        <path d="M 100 235 L 96 247 L 104 247 Z" fill={q2BodyDiode ? '#22c55e' : '#a3a3a3'} />
         <text x="65" y="260" fill={q2Active ? '#f59e0b' : q2BodyDiode ? '#22c55e' : '#a3a3a3'} fontSize="12" fontFamily="JetBrains Mono, monospace" textAnchor="end">Q2</text>
 
         {/* Q1 S 到 SW 节点 */}
