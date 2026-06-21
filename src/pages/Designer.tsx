@@ -108,21 +108,23 @@ function generateSuggestions(
     ec: number
     fmax: number
     fmin: number
-    kMin: number
+    kMax: number
   }
 ): Suggestion[] {
   const s: Suggestion[] = []
-  const { q, k, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMin } = results
+  const { q, k, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
 
-  // 1. k值选择与虚拟增益
-  if (k < kMin) {
-    s.push({ text: `电感比k=${k.toFixed(2)}远小于所需最小值k_min=${kMin.toFixed(2)}，空载增益裕量严重不足。当前设计在最低输入电压下可能无法保证额定输出，建议将k增大到≥${kMin.toFixed(2)}或提高最低输入电压。`, level: 'critical' })
-  } else if (k < kMin * 1.05) {
-    s.push({ text: `电感比k=${k.toFixed(2)}接近最小值k_min=${kMin.toFixed(2)}，空载增益裕量不足。建议增大k至≥${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'critical' })
-  } else if (k < kMin * 1.2) {
-    s.push({ text: `电感比k=${k.toFixed(2)}裕量较小，建议k ≥ ${(kMin * 1.2).toFixed(2)}以获得更稳定的空载增益。`, level: 'warn' })
+  // 1. k值与空载增益约束上限 kMax
+  // kMax = 1/(Gmax - 1)，是空载增益能满足 Gmax 的最大 k 值
+  // 约束条件：k <= kMax，k 越小空载增益越高（裕量越大）
+  if (k > kMax) {
+    s.push({ text: `电感比k=${k.toFixed(2)}大于空载增益约束上限k_max=${kMax.toFixed(2)}，空载增益裕量不足。当前设计在最低输入电压下可能无法达到额定输出。建议减小k至≤${kMax.toFixed(2)}或提高最低输入电压。`, level: 'critical' })
+  } else if (k > kMax * 0.8) {
+    s.push({ text: `电感比k=${k.toFixed(2)}接近约束上限k_max=${kMax.toFixed(2)}（裕量<20%），空载增益裕量较小。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的增益裕量。`, level: 'warn' })
+  } else if (k > kMax * 0.3) {
+    s.push({ text: `电感比k=${k.toFixed(2)}处于合理范围（k_max=${kMax.toFixed(2)}），空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}，裕量良好。`, level: 'good' })
   } else {
-    s.push({ text: `电感比k=${k.toFixed(2)}选择合理，空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(2)}远小于约束上限k_max=${kMax.toFixed(2)}，空载增益裕量非常充裕。但k过小会导致励磁电流偏大，效率降低。建议考虑增大k至${(kMax * 0.3).toFixed(2)}~${(kMax * 0.7).toFixed(2)}区间以优化效率。`, level: 'good' })
   }
 
   // 2. Qmax对比分析
@@ -609,8 +611,10 @@ export default function Designer() {
     // 注：在Region 2（fn<1）空载增益理论上无穷大，此处给出Region 1工程参考值
     const gmaxEmpty = 1 + 1 / k
 
-    // k的最小值：满足空载增益 >= Gmax
-    const kMin = 1 / Math.max(1e-6, gMax - 1)
+    // k的最大值：满足空载增益 >= Gmax 的约束上限
+    // 空载增益 G_empty = 1 + 1/k >= Gmax  =>  1/k >= Gmax - 1  =>  k <= 1/(Gmax - 1)
+    // 因此 k_max 是 k 的上限，k 越小空载增益裕量越大
+    const kMax = 1 / Math.max(1e-6, gMax - 1)
 
     // ─── 步骤4：计算Qmax ───
     const fr = fsw  // 设谐振频率fr = fsw
@@ -694,7 +698,7 @@ export default function Designer() {
     const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
 
     // 整体设计可行性
-    const designFeasible = fmaxFeasible && k >= kMin
+    const designFeasible = fmaxFeasible && k <= kMax
 
     // ZVS能量验证
     // 只有励磁电感 Lm 中的储能参与ZVS，Lr 在死区时间内与 Cr 谐振，不贡献ZVS能量
@@ -820,14 +824,14 @@ export default function Designer() {
       ec,
       fmax,
       fmin,
-      kMin,
+      kMax,
     })
 
     if (!designFeasible) {
-      const kTooSmall = k < kMin
+      const kTooLarge = k > kMax
       s.unshift({
-        text: kTooSmall
-          ? `电感比k=${k.toFixed(2)}远小于所需最小值k_min=${kMin.toFixed(2)}，设计不可行。空载增益裕量严重不足，当前设计在最低输入电压下可能无法保证额定输出。建议将k增大到≥${kMin.toFixed(2)}或提高最低输入电压。`
+        text: kTooLarge
+          ? `电感比k=${k.toFixed(2)}超过空载增益约束上限k_max=${kMax.toFixed(2)}，设计不可行。空载增益裕量不足，当前设计在最低输入电压下可能无法达到额定输出。建议减小k至≤${kMax.toFixed(2)}或提高最低输入电压。`
           : `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 k 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
         level: 'critical',
       })
@@ -869,7 +873,7 @@ export default function Designer() {
       zvsTimeOk,
       tZvs,
       designFeasible,
-      kMin,
+      kMax,
       gainCurveData,
     })
     setSuggestions(s.map((item) => item.text))
