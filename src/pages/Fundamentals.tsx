@@ -676,7 +676,11 @@ export default function Fundamentals() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             <div className="bg-bg/50 rounded-lg p-4">
-              <LLCResonantTankSVG />
+              <img
+                src="llc_noarrow_v2_dark.png"
+                alt="LLC 谐振腔等效电路"
+                className="w-full max-w-xl mx-auto h-auto rounded-lg"
+              />
             </div>
             <div className="space-y-5">
               <div className="flex items-start gap-3">
