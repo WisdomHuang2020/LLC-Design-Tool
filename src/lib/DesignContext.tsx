@@ -138,6 +138,7 @@ interface DesignContextType {
   setSuggestions: (s: string[]) => void
   curves: CurvesState
   setCurves: (c: CurvesState) => void
+  reset: () => void
 }
 
 const DesignContext = createContext<DesignContextType>({
@@ -149,6 +150,7 @@ const DesignContext = createContext<DesignContextType>({
   setSuggestions: () => {},
   curves: defaultCurves,
   setCurves: () => {},
+  reset: () => {},
 })
 
 export function DesignProvider({ children }: { children: ReactNode }) {
@@ -177,8 +179,21 @@ export function DesignProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(CURVES_KEY, JSON.stringify(c)) } catch { /* ignore */ }
   }, [])
 
+  const reset = useCallback(() => {
+    setParamsState(defaultParams)
+    setResultsState(null)
+    setSuggestionsState([])
+    setCurvesState(defaultCurves)
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(RESULTS_KEY)
+      localStorage.removeItem(SUGGESTIONS_KEY)
+      localStorage.removeItem(CURVES_KEY)
+    } catch { /* ignore */ }
+  }, [])
+
   return (
-    <DesignContext.Provider value={{ params, setParams, results, setResults, suggestions, setSuggestions, curves, setCurves }}>
+    <DesignContext.Provider value={{ params, setParams, results, setResults, suggestions, setSuggestions, curves, setCurves, reset }}>
       {children}
     </DesignContext.Provider>
   )
@@ -187,3 +202,5 @@ export function DesignProvider({ children }: { children: ReactNode }) {
 export function useDesign() {
   return useContext(DesignContext)
 }
+
+export { defaultParams }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useDesign, DesignParameters } from '../lib/DesignContext'
+import { useDesign, DesignParameters, defaultParams } from '../lib/DesignContext'
 import {
   Calculator,
   Zap,
@@ -46,6 +46,71 @@ function nearestE(value: number, series: number[]): number {
     }
   }
   return closest * Math.pow(10, exponent)
+}
+
+// ─── Designer state persistence ───
+const DESIGNER_CALC_KEY = 'llc-designer-calculated'
+const DESIGNER_LOSS_KEY = 'llc-designer-loss-params'
+const DESIGNER_SHOW_KEY = 'llc-designer-show-results'
+const DESIGNER_COLLAPSED_KEY = 'llc-designer-collapsed'
+
+function loadCalculated(): CalculatedData | null {
+  try {
+    const raw = localStorage.getItem(DESIGNER_CALC_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return null
+}
+
+function loadLossParams(): LossParameters {
+  try {
+    const raw = localStorage.getItem(DESIGNER_LOSS_KEY)
+    if (raw) return { ...defaultLossParams, ...JSON.parse(raw) }
+  } catch { /* ignore */ }
+  return defaultLossParams
+}
+
+function loadShowResults(): boolean {
+  try {
+    const raw = localStorage.getItem(DESIGNER_SHOW_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return false
+}
+
+function loadCollapsed(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(DESIGNER_COLLAPSED_KEY)
+    if (raw) return JSON.parse(raw)
+  } catch { /* ignore */ }
+  return {
+    results: false,
+    suggestions: false,
+    components: false,
+    waveforms: false,
+    loss: false,
+    compensation: true,
+    compare: true,
+  }
+}
+
+function saveDesignerState(calculated: CalculatedData | null, lossParams: LossParameters, showResults: boolean, collapsed: Record<string, boolean>) {
+  try {
+    if (calculated) localStorage.setItem(DESIGNER_CALC_KEY, JSON.stringify(calculated))
+    else localStorage.removeItem(DESIGNER_CALC_KEY)
+    localStorage.setItem(DESIGNER_LOSS_KEY, JSON.stringify(lossParams))
+    localStorage.setItem(DESIGNER_SHOW_KEY, JSON.stringify(showResults))
+    localStorage.setItem(DESIGNER_COLLAPSED_KEY, JSON.stringify(collapsed))
+  } catch { /* ignore */ }
+}
+
+function clearDesignerState() {
+  try {
+    localStorage.removeItem(DESIGNER_CALC_KEY)
+    localStorage.removeItem(DESIGNER_LOSS_KEY)
+    localStorage.removeItem(DESIGNER_SHOW_KEY)
+    localStorage.removeItem(DESIGNER_COLLAPSED_KEY)
+  } catch { /* ignore */ }
 }
 
 // ─── LLC gain formula (standard FHA) ───
@@ -376,6 +441,7 @@ interface CalculatedData {
   gMax: number
   gNom: number
   designFeasible: boolean
+  kMax: number
   // 新增字段
   zvsTimeOk: boolean
   tZvs: number
@@ -557,23 +623,49 @@ function calculateLosses(
 
 // ─── Main Component ───
 export default function Designer() {
-  const { params, setParams, setResults, setSuggestions } = useDesign()
+  const { params, setParams, setResults, setSuggestions, reset } = useDesign()
   const [form, setForm] = useState<DesignParameters>(params)
-  const [showResults, setShowResults] = useState(false)
-  const [calculated, setCalculated] = useState<CalculatedData | null>(null)
+  const [showResults, setShowResults] = useState(loadShowResults)
+  const [calculated, setCalculated] = useState<CalculatedData | null>(loadCalculated)
   const [suggestions, setLocalSuggestions] = useState<Suggestion[]>([])
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
-    results: false,
-    suggestions: false,
-    components: false,
-    waveforms: false,
-    loss: false,
-    compensation: true,
-    compare: true,
-  })
-  const [lossParams, setLossParams] = useState<LossParameters>(defaultLossParams)
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(loadCollapsed)
+  const [lossParams, setLossParams] = useState<LossParameters>(loadLossParams)
   const [needsRecalculation, setNeedsRecalculation] = useState(false)
   const [lastFormSnapshot, setLastFormSnapshot] = useState<DesignParameters | null>(null)
+
+  // Load suggestions from calculated data on mount
+  useEffect(() => {
+    if (calculated) {
+      const s = generateSuggestions(form, {
+        q: calculated.q,
+        k: calculated.k,
+        mMax: calculated.mMax,
+        mRequired: calculated.mRequired,
+        mRequiredMin: calculated.mRequiredMin,
+        zvsPhase: calculated.zvsPhase,
+        lr: calculated.lr,
+        cr: calculated.cr,
+        lm: calculated.lm,
+        fsw: calculated.fsw,
+        efficiency: calculated.efficiency,
+        qmax1: calculated.qmax1,
+        qmax2: calculated.qmax2,
+        qmax3: calculated.qmax3,
+        gmaxEmpty: calculated.gmaxEmpty,
+        zvsMargin: calculated.zvsMargin,
+        zvsTimeOk: calculated.zvsTimeOk,
+        tZvs: calculated.tZvs,
+        er: calculated.zvsEr,
+        ec: calculated.zvsEc,
+        fmax: calculated.fmax,
+        fmin: calculated.fmin,
+        kMax: calculated.kMax,
+      })
+      setLocalSuggestions(s)
+      setSuggestions(s.map((item) => item.text))
+      setLastFormSnapshot({ ...form })
+    }
+  }, [])
 
   // Detect parameter changes → prompt for recalculation
   useEffect(() => {
@@ -582,6 +674,11 @@ export default function Designer() {
       setNeedsRecalculation(changed)
     }
   }, [form, lastFormSnapshot, calculated])
+
+  // Save designer state whenever key states change
+  useEffect(() => {
+    saveDesignerState(calculated, lossParams, showResults, collapsedSections)
+  }, [calculated, lossParams, showResults, collapsedSections])
 
   const handleCalculate = () => {
     const vinNom = form.vinNom
@@ -819,6 +916,7 @@ export default function Designer() {
       gMax,
       gNom,
       designFeasible,
+      kMax,
       gainCurveData,
     }
 
@@ -904,6 +1002,29 @@ export default function Designer() {
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleReset = () => {
+    if (confirm('确定要复位所有设计参数和计算结果吗？')) {
+      clearDesignerState()
+      reset()
+      setForm(defaultParams)
+      setShowResults(false)
+      setCalculated(null)
+      setLocalSuggestions([])
+      setLossParams(defaultLossParams)
+      setNeedsRecalculation(false)
+      setLastFormSnapshot(null)
+      setCollapsedSections({
+        results: false,
+        suggestions: false,
+        components: false,
+        waveforms: false,
+        loss: false,
+        compensation: true,
+        compare: true,
+      })
+    }
   }
 
   const update = <K extends keyof DesignParameters>(key: K, value: DesignParameters[K]) => {
@@ -1164,6 +1285,13 @@ export default function Designer() {
             >
               <Calculator className="w-4 h-4" />
               {needsRecalculation ? '重新计算' : '计算'}
+            </button>
+            <button
+              onClick={handleReset}
+              className="mt-2 w-full border border-border hover:bg-surface-elevated text-text-secondary font-medium py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              复位
             </button>
           </div>
         </div>
