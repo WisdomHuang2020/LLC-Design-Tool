@@ -418,7 +418,7 @@ function SwitchingAnimationSVG() {
 
       {/* Vgs Q1 */}
       <g>
-        <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q1</text>
+        <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q1</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
         <path d={`M ${t1} 40 L ${t1} 15 L ${t2} 15 L ${t2} 40 L ${t7} 40 L ${t7} 15 L ${t8} 15 L ${t8} 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
         <text x={(t1 + t2) / 2} y="12" fill="#14b8a6" fontSize="8" textAnchor="middle">Q1 ON</text>
@@ -427,7 +427,7 @@ function SwitchingAnimationSVG() {
 
       {/* Vgs Q2 */}
       <g transform="translate(0, 45)">
-        <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
+        <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
         <path d={`M ${t1} 40 L ${t4} 40 L ${t4} 15 L ${t5} 15 L ${t5} 40 L ${t8} 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2" />
         <text x={(t4 + t5) / 2} y="12" fill="#f59e0b" fontSize="8" textAnchor="middle">Q2 ON</text>
@@ -435,7 +435,7 @@ function SwitchingAnimationSVG() {
 
       {/* Vds Q1 */}
       <g transform="translate(0, 90)">
-        <text x="65" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vds_Q1</text>
+        <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vds_Q1</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
         <path d={`M ${t1} 40 L ${t2} 40 L ${t3} 10 L ${t5} 10 L ${t6} 40 L ${t7} 40 L ${t8} 40`} fill="none" stroke="#ef4444" strokeWidth="2" />
         <line x1={t5} y1="10" x2={t6} y2="40" stroke="url(#vdsFallGrad)" strokeWidth="2" />
@@ -447,7 +447,7 @@ function SwitchingAnimationSVG() {
 
       {/* Ir */}
       <g transform="translate(0, 145)">
-        <text x="65" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
+        <text x="45" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={irPath} fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
         <text x={t8 + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
@@ -455,7 +455,7 @@ function SwitchingAnimationSVG() {
 
       {/* Im */}
       <g transform="translate(0, 200)">
-        <text x="65" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Im</text>
+        <text x="45" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Im</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={imPath} fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
         <text x={t8 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
