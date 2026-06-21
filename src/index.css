@@ -47,6 +47,11 @@
     overflow-x: auto;
     font-family: var(--font-mono);
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+  }
+  .math-block::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
   .math-block:hover {
     border-color: var(--color-primary-light);
