@@ -164,6 +164,19 @@
   .katex-display {
     margin: 1rem 0;
     overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .katex-display::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  .katex-display::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .katex-display::-webkit-scrollbar-thumb {
+    background: transparent;
   }
   .katex-display .katex {
     font-size: 1.1em;
@@ -171,6 +184,19 @@
   .math-block.multiline .katex-display {
     overflow-x: auto;
     padding: 0.5rem 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .math-block.multiline .katex-display::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+  .math-block.multiline .katex-display::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .math-block.multiline .katex-display::-webkit-scrollbar-thumb {
+    background: transparent;
   }
   .math-block.multiline .katex-display .katex {
     font-size: 1.05em;
