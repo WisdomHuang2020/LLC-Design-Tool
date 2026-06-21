@@ -139,55 +139,54 @@ function WaveformsSVG() {
       <g transform="translate(0, 10)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vgs</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* Q1 ON: 60-170, 340-510 */}
-        <path d={`M ${left} 40 L ${left} 16 L 170 16 L 170 40 L 340 40 L 340 16 L 510 16 L 510 40 L 580 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
-        {/* Q2 ON: 230-340, 540-580 (partial) */}
-        <path d={`M ${left} 40 L 230 40 L 230 16 L 340 16 L 340 40 L 540 40 L 540 16 L 580 16`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 4" />
+        {/* Q1 ON: 90–310, 340–530 */}
+        <path d={`M 60 40 L 90 40 L 90 16 L 310 16 L 310 40 L 340 40 L 340 16 L 530 16 L 530 40 L 580 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        {/* Q2 ON: 60–90, 310–340, 530–580 */}
+        <path d={`M 60 40 L 60 16 L 90 16 L 90 40 L 310 40 L 310 16 L 340 16 L 340 40 L 530 40 L 530 16 L 580 16 L 580 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 4" />
         <text x={right + 12} y="20" fill="#14b8a6" fontSize="11" dominantBaseline="middle">Q1</text>
         <text x={right + 12} y="40" fill="#f59e0b" fontSize="11" dominantBaseline="middle">Q2</text>
       </g>
 
-      {/* Ir — 纯正弦波（从负峰值开始，过零线性斜率） */}
+      {/* Ir — 纯正弦波（谐振槽电流，从负峰值开始，过零滞后 Vgs） */}
       <g transform="translate(0, 90)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Ir</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 70 Q 115 40 170 10 Q 225 40 280 70 Q 335 40 390 10 Q 445 40 500 70 Q 540 40 580 55`} fill="none" stroke="#14b8a6" strokeWidth="2" />
+        <path d={`M 60 70 Q 95 70 125 61.2 Q 155 50.6 190 40 Q 225 27.6 255 18.8 Q 285 12.6 320 10 Q 355 11.9 390 18.8 Q 425 27.6 450 40 Q 485 50.6 520 62.5 Q 555 68.1 580 70`} fill="none" stroke="#14b8a6" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
-      {/* Im — 三角波（从负开始，线性斜率） */}
+      {/* Im — 三角波（励磁电流，Q1 ON 期间线性上升，Q2 ON 期间线性下降） */}
       <g transform="translate(0, 170)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Im</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 70 L 170 10 L 340 70 L 510 10 L 580 55`} fill="none" stroke="#22c55e" strokeWidth="2" />
+        <path d={`M 60 60 L 90 60 L 310 20 L 340 20 L 530 60 L 580 60`} fill="none" stroke="#22c55e" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
-      {/* Vds — 方波，死区快速下降 */}
+      {/* Vds — 方波（Q1 ON=0V，Q2 ON=Vin，死区 ZVS 快速切换） */}
       <g transform="translate(0, 250)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vds</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 40 L 170 40 L 170 10 L 340 10 L 340 40 L 510 40 L 510 10 L 580 10`} fill="none" stroke="#ef4444" strokeWidth="2" />
+        <path d={`M 90 40 L 310 40 L 310 10 L 530 10 L 530 40 L 580 40`} fill="none" stroke="#ef4444" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#ef4444" fontSize="11" dominantBaseline="middle">漏极电压</text>
       </g>
 
-      {/* Isec — 副边电流（斜的正弦波：起始/结束有斜率，中间圆弧顶） */}
+      {/* Isec — 副边电流（= |Ir − Im| 在导通窗口，边界 ZCS 平滑过零） */}
       <g transform="translate(0, 330)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Isec</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        {/* D1 驼峰 — 起始斜率上升，圆弧顶，斜率下降 */}
-        <path d={`M 90 40 Q 130 20 170 10 Q 210 20 250 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
-        <path d={`M 410 40 Q 450 20 490 10 Q 530 20 570 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
-        {/* D2 驼峰 — 负半周导通 */}
-        <path d={`M 250 40 Q 295 20 340 10 Q 385 20 430 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
+        {/* D1 驼峰 — Q1 ON 期间导通，起始/结束斜率过零，中间圆弧顶 */}
+        <path d={`M 90 40 C 140 15, 180 5, 220 5 C 260 5, 290 25, 310 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" />
+        {/* D2 驼峰 — Q2 ON 期间导通 */}
+        <path d={`M 340 40 C 390 15, 420 5, 460 5 C 490 5, 520 25, 530 40`} fill="none" stroke="#8b5cf6" strokeWidth="2" strokeDasharray="4 3" />
         <text x={right + 12} y="28" fill="#8b5cf6" fontSize="11" dominantBaseline="middle">副边电流</text>
       </g>
 
-      {/* Io — 输出电流（Co 滤波后近似直流） */}
+      {/* Io — 输出电流（Co 滤波后近似直流 + 微小纹波） */}
       <g transform="translate(0, 410)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Io</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${left} 38 L 580 38`} fill="none" stroke="#f59e0b" strokeWidth="2" />
+        <path d={`M 60 40 L 60 38 L 200 38 L 200 40 L 340 40 L 340 38 L 480 38 L 480 40 L 580 40`} fill="none" stroke="#f59e0b" strokeWidth="2" />
         <text x={right + 12} y="28" fill="#f59e0b" fontSize="11" dominantBaseline="middle">输出电流</text>
       </g>
 
