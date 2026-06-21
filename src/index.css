@@ -212,3 +212,61 @@
     background-color: var(--color-border-light);
   }
 }
+
+/* Print styles: ensure reports print cleanly */
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  /* Hide navigation header */
+  header, nav, .no-print, .print\:hidden {
+    display: none !important;
+  }
+  /* Ensure report content is full width and visible */
+  .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  /* Show report preview area */
+  .card-surface {
+    background-color: white !important;
+    border: 1px solid #ddd !important;
+    color: black !important;
+  }
+  /* Ensure table borders visible */
+  table, th, td {
+    border-color: #ccc !important;
+  }
+  /* Math blocks: remove dark background */
+  .math-block {
+    background-color: transparent !important;
+    border: none !important;
+  }
+  /* KaTeX text color */
+  .katex, .katex-display {
+    color: black !important;
+  }
+  /* Page break */
+  section {
+    page-break-inside: avoid;
+  }
+  /* Footer text */
+  .text-text-muted, .text-text-secondary {
+    color: #666 !important;
+  }
+  .text-text-primary {
+    color: black !important;
+  }
+  /* Remove gradient text for print */
+  .text-gradient {
+    background: none !important;
+    -webkit-text-fill-color: black !important;
+    color: black !important;
+  }
+  /* Links */
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
+}

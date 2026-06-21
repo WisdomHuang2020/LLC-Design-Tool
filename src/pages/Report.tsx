@@ -8,7 +8,6 @@ import {
   Check,
   Printer,
   FileDown,
-  Loader,
   ArrowLeft,
   Calendar,
   Hash,
@@ -25,7 +24,6 @@ export default function Report() {
   const { params, results, suggestions } = useDesign()
   const [notes, setNotes] = useState('')
   const [copied, setCopied] = useState(false)
-  const [generatingPDF, setGeneratingPDF] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
 
   const dateStr = new Date().toLocaleDateString('zh-CN', {
@@ -144,51 +142,13 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
     URL.revokeObjectURL(url)
   }
 
-  const downloadPDF = async () => {
-    if (!reportRef.current) {
-      alert('报告内容未加载，请刷新页面后重试。')
-      return
-    }
+  const downloadPDF = () => {
     if (!hasData) {
       alert('尚未完成设计计算。请先在「设计工具」页面执行计算。')
       return
     }
-
-    setGeneratingPDF(true)
-
-    // 释放 UI 线程，让 loading 状态有机会渲染
-    await new Promise((resolve) => setTimeout(resolve, 100))
-
-    try {
-      // @ts-ignore
-      const html2pdf = (await import('html2pdf.js')).default
-
-      const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `LLC-Design-Report-${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        // scale: 1 大幅减轻 html2canvas 渲染负担，避免阻塞主线程
-        html2canvas: { scale: 1, useCORS: true, backgroundColor: '#0a0a0a' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      }
-
-      // 30秒超时保护：html2canvas 渲染大页面可能阻塞主线程，避免无限卡死
-      const pdfPromise = html2pdf().set(opt).from(reportRef.current).save()
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('PDF 生成超时')), 30000)
-      )
-
-      await Promise.race([pdfPromise, timeoutPromise])
-    } catch (err: any) {
-      console.error('PDF export failed:', err)
-      if (err.message === 'PDF 生成超时') {
-        alert('PDF 生成超时（超过 30 秒）。\n\n原因：报告内容较多，html2canvas 渲染耗时过长。\n\n替代方案：使用「打印」功能（Ctrl+P），选择「另存为 PDF」。')
-      } else {
-        alert('PDF 导出失败，可能原因：\n1. 网络问题导致 html2pdf.js 加载失败\n2. 浏览器安全策略阻止动态加载\n\n替代方案：使用「打印」功能（Ctrl+P），选择「另存为 PDF」。')
-      }
-    } finally {
-      setGeneratingPDF(false)
-    }
+    // 直接调用浏览器打印，用户可在打印对话框中选择「另存为 PDF」
+    window.print()
   }
 
   const printReport = () => {
@@ -248,7 +208,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
           </div>
           <p className="text-text-secondary">预览、编辑并导出 LLC 谐振变换器设计报告。</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 print:hidden">
           <button
             onClick={downloadMarkdown}
             className="inline-flex items-center gap-2 bg-surface hover:bg-surface-elevated text-text-primary border border-border px-4 py-2 rounded-lg transition-colors text-sm font-medium"
@@ -258,19 +218,10 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
           </button>
           <button
             onClick={downloadPDF}
-            disabled={generatingPDF}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-              generatingPDF
-                ? 'bg-primary/60 cursor-not-allowed'
-                : 'bg-primary hover:bg-primary-light'
-            } text-white`}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
           >
-            {generatingPDF ? (
-              <Loader className="w-4 h-4 animate-spin" />
-            ) : (
-              <FileDown className="w-4 h-4" />
-            )}
-            {generatingPDF ? '生成中…' : 'PDF'}
+            <FileDown className="w-4 h-4" />
+            PDF
           </button>
           <button
             onClick={printReport}
