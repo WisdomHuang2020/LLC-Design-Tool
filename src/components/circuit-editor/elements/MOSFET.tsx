@@ -12,6 +12,8 @@ interface MOSFETProps {
   label?: string
   /** 是否处于导通状态（高亮栅极） */
   active?: boolean
+  /** 导通时的颜色（默认青色） */
+  activeColor?: string
   /** 体二极管是否导通（高亮） */
   bodyDiode?: boolean
   /** 方向：0=垂直D上S下, 180=垂直D下S上 */
@@ -30,13 +32,14 @@ export default function MOSFET({
   bdBottom,
   label = 'Q',
   active = false,
+  activeColor = '#14b8a6',
   bodyDiode = false,
 }: MOSFETProps) {
-  const gateColor = active ? '#14b8a6' : '#a3a3a3'
+  const gateColor = active ? activeColor : '#a3a3a3'
   const gateWidth = active ? 3 : 2
   const bdColor = bodyDiode ? '#22c55e' : '#a3a3a3'
   const bdWidth = bodyDiode ? 3 : 1.5
-  const labelColor = active ? '#14b8a6' : bodyDiode ? '#22c55e' : '#a3a3a3'
+  const labelColor = active ? activeColor : bodyDiode ? '#22c55e' : '#a3a3a3'
 
   // 体二极管：阴极在 D 侧，阳极在 S 侧（内部二极管箭头指向 S）
   const hasBodyDiode = bdTop && bdBottom
