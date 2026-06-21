@@ -756,14 +756,14 @@ export default function Fundamentals() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-bg/50 rounded-lg p-4">
               <img
-                src="llc_half_bridge_v3.png"
+                src="hb_exact_v3.png"
                 alt="半桥 LLC 拓扑"
                 className="w-full max-w-xl mx-auto h-auto rounded-lg"
               />
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
               <img
-                src="llc_full_bridge_v3.png"
+                src="fb_exact_v3.png"
                 alt="全桥 LLC 拓扑"
                 className="w-full max-w-xl mx-auto h-auto rounded-lg"
               />
