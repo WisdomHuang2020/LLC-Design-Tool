@@ -100,6 +100,7 @@ export default function CircuitCanvas({ state, onMoveNode, getElementProps }: Ci
               bdBottom={bdBottom}
               label={el.label}
               active={props.active}
+              activeColor={el.label === 'Q2' ? '#f59e0b' : '#14b8a6'}
               bodyDiode={props.bodyDiode}
             />
           )
@@ -257,6 +258,13 @@ export default function CircuitCanvas({ state, onMoveNode, getElementProps }: Ci
 
         {/* 元件 */}
         {renderedElements}
+
+        {/* 输出标注 */}
+        <text x={590} y={125} fill="#a3a3a3" fontSize={12} fontFamily="JetBrains Mono, monospace" textAnchor="start">Vo</text>
+        {/* Io 输出电流箭头 */}
+        <line x1={520} y1={110} x2={550} y2={110} stroke="#a3a3a3" strokeWidth={2} />
+        <path d="M 550 110 L 540 106 L 540 114 Z" fill="#a3a3a3" />
+        <text x={555} y={105} fill="#a3a3a3" fontSize={11} fontFamily="JetBrains Mono, monospace">Io</text>
 
         {/* 可拖拽节点（在最上层） */}
         {Object.values(nodes).map((n) => (

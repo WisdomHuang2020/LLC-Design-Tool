@@ -62,14 +62,13 @@ const defaultNodes: Record<NodeId, any> = {
   // Vo+ / Vo- 线
   vo_plus: { x: 580, y: 120, type: 'terminal', label: 'Vo+' },
   vo_minus: { x: 580, y: 150, type: 'terminal', label: 'Vo-' },
-  vo_label: { x: 585, y: 125, type: 'terminal' },
 
   // Cf 电容
   cf_top: { x: 500, y: 120, type: 'junction' },
   cf_bottom: { x: 500, y: 150, type: 'junction' },
 
   // GND
-  gnd: { x: 230, y: 340, type: 'junction', label: 'GND' },
+  gnd: { x: 230, y: 340, type: 'junction' },
   gnd_left: { x: 30, y: 340, type: 'junction' },
 }
 

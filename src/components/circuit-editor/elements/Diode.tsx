@@ -40,8 +40,8 @@ export default function Diode({
         <line x1={barX} y1={y - h / 2} x2={barX} y2={y + h / 2} stroke={color} strokeWidth={strokeWidth} />
         {/* 阴极横线 */}
         <line x1={arrowTipX} y1={y} x2={cathode.x} y2={y} stroke="#a3a3a3" strokeWidth={2} />
-        {/* 标签 */}
-        <text x={anode.x + 10} y={y - 10} fill={color} fontSize={11} fontFamily="JetBrains Mono, monospace">
+        {/* 标签 — 根据位置自动调整上下 */}
+        <text x={anode.x + 10} y={y < 150 ? y - 14 : y + 18} fill={color} fontSize={11} fontFamily="JetBrains Mono, monospace" dominantBaseline={y < 150 ? "auto" : "hanging"}>
           {label}
         </text>
       </g>
