@@ -8,7 +8,6 @@ import Curves from './pages/Curves'
 import Designer from './pages/Designer'
 import Report from './pages/Report'
 import { DesignProvider } from './lib/DesignContext'
-import CircuitEditor from './pages/CircuitEditor'
 
 function App() {
   return (
@@ -22,7 +21,6 @@ function App() {
             <Route path="/derivations" element={<Derivations />} />
             <Route path="/curves" element={<Curves />} />
             <Route path="/designer" element={<Designer />} />
-            <Route path="/circuit-editor" element={<CircuitEditor />} />
           </Routes>
         </Layout>
       </HashRouter>
