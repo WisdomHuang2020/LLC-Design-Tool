@@ -369,7 +369,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="I_{m,off} = \\frac{V_{in,min}}{8 f_{max} L_m} \ \\text{（半桥）}, \\qquad I_{m,off} = \\frac{V_{in,min}}{4 f_{max} L_m} \ \\text{（全桥）}"
+            latex="I_{m,off} = \\frac{V_{in,min}}{8 f_{max} L_m}  \\text{（半桥）}, \\qquad I_{m,off} = \\frac{V_{in,min}}{4 f_{max} L_m}  \\text{（全桥）}"
             label="励磁电流峰值"
           />
 
@@ -436,7 +436,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="V_{ds,max} = V_{in,max} \ \\text{（MOSFET 电压应力）}"
+            latex="V_{ds,max} = V_{in,max}  \\text{（MOSFET 电压应力）}"
             label="原边 MOSFET"
           />
 
@@ -446,12 +446,12 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="V_{RRM} = 2V_o \ \\text{（中心抽头）}, \\qquad V_{RRM} = V_o \ \\text{（全桥/全波）}"
+            latex="V_{RRM} = 2V_o  \\text{（中心抽头）}, \\qquad V_{RRM} = V_o  \\text{（全桥/全波）}"
             label="副边整流二极管电压应力"
           />
 
           <MathBlock
-            latex="I_{sec,rms} = \\frac{\\pi}{4} I_o \ \\text{（中心抽头）}, \\qquad I_{sec,rms} = \\frac{\\pi}{2\\sqrt{2}} I_o \ \\text{（全波/全桥）}"
+            latex="I_{sec,rms} = \\frac{\\pi}{4} I_o  \\text{（中心抽头）}, \\qquad I_{sec,rms} = \\frac{\\pi}{2\\sqrt{2}} I_o  \\text{（全波/全桥）}"
             label="副边绕组电流有效值"
           />
 
