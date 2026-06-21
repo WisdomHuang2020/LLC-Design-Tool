@@ -122,20 +122,20 @@ function WaveformsSVG() {
       {/* 6个相位背景色带 */}
       <g opacity="0.08">
         {/* Q1 ON: t1→t2, t1'→t2' */}
-        <rect x="60" y="10" width="110" height="460" fill="#14b8a6" />
-        <rect x="520" y="10" width="60" height="460" fill="#14b8a6" />
+        <rect x="60" y="10" width="110" height="480" fill="#14b8a6" />
+        <rect x="520" y="10" width="60" height="480" fill="#14b8a6" />
         {/* 死区: t2→t3, t5→t6 */}
-        <rect x="170" y="10" width="60" height="460" fill="#f59e0b" />
-        <rect x="420" y="10" width="60" height="460" fill="#f59e0b" />
+        <rect x="170" y="10" width="60" height="480" fill="#f59e0b" />
+        <rect x="420" y="10" width="60" height="480" fill="#f59e0b" />
         {/* 体二极管导通: t3→t4, t6→t1' */}
-        <rect x="230" y="10" width="80" height="460" fill="#22c55e" />
-        <rect x="480" y="10" width="40" height="460" fill="#22c55e" />
+        <rect x="230" y="10" width="80" height="480" fill="#22c55e" />
+        <rect x="480" y="10" width="40" height="480" fill="#22c55e" />
       </g>
 
       {/* Grid */}
       <g stroke="#404040" strokeWidth="1" opacity="0.25">
         {Array.from({ length: 14 }, (_, i) => left + i * 40).map((x) => (
-          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="470" />
+          <line key={`v${x}`} x1={x} y1="10" x2={x} y2="490" />
         ))}
         {Array.from({ length: 9 }, (_, i) => 10 + i * 48).map((y) => (
           <line key={`h${y}`} x1={left} y1={y} x2={right} y2={y} />
@@ -182,7 +182,7 @@ function WaveformsSVG() {
       </g>
 
       {/* Vds_Q1 — 死区斜坡过渡（ZVS实现，Coss充放电） */}
-      <g transform="translate(0, 280)">
+      <g transform="translate(0, 300)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Vds_Q1</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         {/* 低(Q1 ON)→斜坡上升(死区1)→高(Q2 ON/D2导通)→斜坡下降(死区2)→低(D1导通/Q1 ON) */}
@@ -191,7 +191,7 @@ function WaveformsSVG() {
       </g>
 
       {/* Isec — 副边电流（D1/D2导通窗口，ZCS平滑过零） */}
-      <g transform="translate(0, 350)">
+      <g transform="translate(0, 370)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Isec</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         {/* D1 导通: t1→t2 (Q1 ON期间) */}
@@ -203,7 +203,7 @@ function WaveformsSVG() {
       </g>
 
       {/* Io — 输出电流（Co 滤波后近似直流 + 微小纹波） */}
-      <g transform="translate(0, 420)">
+      <g transform="translate(0, 440)">
         <text x={left - 12} y="28" fill="#a3a3a3" fontSize="12" textAnchor="end" dominantBaseline="middle">Io</text>
         <line x1={left} y1="40" x2={right} y2="40" stroke="#525252" strokeWidth="1" />
         <path d="M 60 40 L 60 38 L 200 38 L 200 40 L 340 40 L 340 38 L 480 38 L 480 40 L 580 40" fill="none" stroke="#f59e0b" strokeWidth="2" />
