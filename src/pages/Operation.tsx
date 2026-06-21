@@ -489,10 +489,10 @@ function CurrentFlowCircuitSVG() {
   const q1BodyDiode = phase === 5
   const q2BodyDiode = phase === 2
 
-  const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 150 L 450 150 L 540 96 L 540 264 L 450 264 L 450 220 L 390 220 L 390 150'
-  const negPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 220 L 450 264 L 540 264 L 540 96 L 450 150 L 390 150 L 390 220'
-  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 150 L 450 150 L 540 96 L 540 264 L 450 264 L 450 220 L 390 220 L 390 150'
-  const deadNegPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 220 L 450 264 L 540 264 L 540 96 L 450 150 L 390 150 L 390 220'
+  const posPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
+  const negPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 185 L 390 220 L 450 220 L 450 264 L 450 185 L 390 185'
+  const deadPosPath = 'M 70 55 L 130 55 L 150 55 L 150 85 L 150 180 L 170 180 L 180 180 L 210 180 L 240 180 L 270 180 L 300 180 L 300 150 L 320 150 L 320 220 L 300 220 L 300 325 L 130 325 L 70 325 L 70 55 M 390 185 L 390 150 L 450 150 L 450 96 L 540 96 L 540 264 L 450 264 L 450 185 L 390 185'
+  const deadNegPath = 'M 70 325 L 130 325 L 300 325 L 300 220 L 320 220 L 320 150 L 300 150 L 300 180 L 270 180 L 240 180 L 210 180 L 180 180 L 170 180 L 150 180 L 150 85 L 150 55 L 130 55 L 70 55 L 70 325 M 390 185 L 390 220 L 450 220 L 450 264 L 450 185 L 390 185'
 
   const currentPaths = [
     { d: posPath, color: '#14b8a6', marker: 'url(#arrowTealCircuit)', label: '正半周能量传输' },
@@ -625,9 +625,19 @@ function CurrentFlowCircuitSVG() {
         <line x1="328" y1="160" x2="382" y2="160" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
         <line x1="328" y1="210" x2="382" y2="210" stroke="#a3a3a3" strokeDasharray="4 3" strokeWidth="1.5" />
 
-        {/* Transformer secondary — vertical */}
-        <line x1="390" y1="150" x2="390" y2="220" stroke="#a3a3a3" strokeWidth="2" />
-        <path d="M 390 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        {/* Transformer secondary — center-tapped full-wave rectifier */}
+        {/* 上次级绕组 */}
+        <line x1="390" y1="150" x2="390" y2="185" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 390 150 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+        {/* 下次级绕组 */}
+        <line x1="390" y1="185" x2="390" y2="220" stroke="#a3a3a3" strokeWidth="2" />
+        <path d="M 390 185 q 5 5 0 10 q -5 5 0 10 q 5 5 0 10" fill="none" stroke="#a3a3a3" strokeWidth="2" strokeLinecap="round" />
+
+        {/* 中心抽头 */}
+        <circle cx="390" cy="185" r="3" fill="#a3a3a3" />
+        <line x1="390" y1="185" x2="450" y2="185" stroke="#a3a3a3" strokeWidth="2" />
+        <line x1="450" y1="185" x2="450" y2="264" stroke="#a3a3a3" strokeWidth="2" />
+        <text x="455" y="180" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">中心抽头</text>
 
         {/* Dots on windings */}
         <circle cx="322" cy="156" r="2.5" fill="#a3a3a3" />
