@@ -52,6 +52,7 @@ export interface CalculatedResults {
   // 电流与ZVS时间
   irRms: number
   imRms: number
+  bPeak: number
   zvsTimeOk: boolean
   tZvs: number
   // 设计可行性
