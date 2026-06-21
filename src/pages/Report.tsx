@@ -83,7 +83,7 @@ export default function Report() {
 - **峰值增益 M_max**: ${r.mMax.toFixed(3)}
 - **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
-${r.mMax >= (p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin) ? '✅ 峰值增益充足，设计可行。' : '⚠️ 峰值增益不足，需调整 k 或 Q。'}
+${gainMargin < 0 ? '⚠️ 峰值增益不足，需调整 k 或 Q。' : gainMargin < 5 ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。` : '✅ 峰值增益裕量充足，设计可行。'}
 
 ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
 
@@ -200,6 +200,11 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
       : (r.n * (p.vout + p.vd)) / p.vinMax
     : 0
   const gainMargin = hasData ? ((r.mMax / mReqMin - 1) * 100) : 0
+  const gainMarginText = gainMargin < 0
+    ? '⚠️ 峰值增益不足，需调整 k 或 Q。'
+    : gainMargin < 5
+    ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。`
+    : '✅ 峰值增益裕量充足，设计可行。'
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -354,13 +359,15 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
               {hasData ? (
                 <>
                   <div className="flex items-center gap-2">
-                    {r.mMax >= mReqMin ? (
+                    {gainMargin >= 5 ? (
                       <CheckCircle className="w-4 h-4 text-success" />
+                    ) : gainMargin >= 0 ? (
+                      <AlertTriangle className="w-4 h-4 text-warning" />
                     ) : (
                       <XCircle className="w-4 h-4 text-danger" />
                     )}
                     <span className="text-sm text-text-primary">
-                      峰值增益 {r.mMax >= mReqMin ? '充足' : '不足'}
+                      峰值增益 {gainMargin >= 5 ? '充足' : gainMargin >= 0 ? '裕量不足' : '不足'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -652,14 +659,14 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计裕量</div>
-                        <div className={`text-xl font-mono font-semibold ${hasData && gainMargin >= 0 ? 'text-success' : 'text-danger'}`}>
+                        <div className={`text-xl font-mono font-semibold ${hasData ? (gainMargin < 0 ? 'text-danger' : gainMargin < 5 ? 'text-warning' : 'text-success') : ''}`}>
                           {hasData ? `${gainMargin >= 0 ? '+' : ''}${gainMargin.toFixed(1)}%` : '—'}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计可行性</div>
-                        <div className={`text-xl font-mono font-semibold ${hasData && r.designFeasible !== false ? 'text-success' : 'text-danger'}`}>
-                          {hasData ? (r.designFeasible !== false ? '可行' : '不可行') : '—'}
+                        <div className={`text-xl font-mono font-semibold ${hasData ? (r.designFeasible !== false && gainMargin >= 5 ? 'text-success' : gainMargin >= 0 ? 'text-warning' : 'text-danger') : ''}`}>
+                          {hasData ? (r.designFeasible !== false && gainMargin >= 5 ? '可行' : gainMargin >= 0 ? '风险' : '不可行') : '—'}
                         </div>
                       </div>
                     </div>
