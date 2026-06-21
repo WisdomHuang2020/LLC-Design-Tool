@@ -21,6 +21,7 @@ function App() {
             <Route path="/derivations" element={<Derivations />} />
             <Route path="/curves" element={<Curves />} />
             <Route path="/designer" element={<Designer />} />
+            <Route path="/report" element={<Report />} />
           </Routes>
         </Layout>
       </HashRouter>
