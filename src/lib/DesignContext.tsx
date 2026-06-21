@@ -56,8 +56,8 @@ export interface CalculatedResults {
   tZvs: number
   // 设计可行性
   designFeasible: boolean
-  // k最小值
-  kMin: number
+  // k最大值（空载增益约束上限）
+  kMax: number
   // 增益曲线数据
   gainCurveData: Array<{ fn: number; m: number }>
 }
