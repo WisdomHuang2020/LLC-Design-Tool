@@ -495,12 +495,12 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗</p>
-              <MathBlock latex="P_{core} = C_m f^\\alpha B^\\beta V_e" />
+              <MathBlock latex="P_{core} = C_m \\cdot f_{sw}^{\\alpha} \\cdot B_{peak}^{\\beta} \\cdot V_e" />
             </div>
           </div>
 
           <MathBlock
-            latex="B = \\frac{V_p}{4 N_p A_e f_s}, \\qquad P_{Cu} = I_{p,rms}^2 R_{ac,pri} + I_{s,rms}^2 R_{ac,sec}"
+            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_s}, \\qquad P_{Cu} = I_{p,rms}^2 R_{ac,pri} + I_{s,rms}^2 R_{ac,sec}"
             label="磁密与铜损"
           />
 
@@ -509,7 +509,7 @@ export default function Derivations() {
             <ParamRow symbol="Q_g" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
             <ParamRow symbol="V_f" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
             <ParamRow symbol="C_m, α, β" name="Steinmetz 系数" unit="-" description="磁芯材料损耗拟合系数" typical="查磁芯 datasheet" />
-            <ParamRow symbol="B" name="工作磁密峰值" unit="T" description="变压器磁芯中的磁通密度峰值" typical="0.1 ~ 0.3 T" />
+            <ParamRow symbol="B_{peak}" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，B_{peak} = V_p / (4 N_p A_e f_s)" typical="0.1 ~ 0.3 T" />
             <ParamRow symbol="N_p" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 A_e 与 B 设计" />
             <ParamRow symbol="A_e" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
           </ParamTable>
