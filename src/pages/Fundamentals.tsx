@@ -555,7 +555,7 @@ export default function Fundamentals() {
             </div>
             <div className="bg-bg/50 rounded-lg p-4">
               <img
-                src="/v1_dark_modern.png"
+                src="v1_dark_modern.png"
                 alt="串联 LC 谐振电路"
                 className="w-full max-w-xl mx-auto h-auto rounded-lg"
               />
