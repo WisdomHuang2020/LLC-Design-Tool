@@ -229,7 +229,7 @@ export default function Home() {
             <img
               src="./半桥LLC架构.svg"
               alt="半桥LLC架构"
-              className="w-full max-w-[520px] h-auto drop-shadow-2xl opacity-90"
+              className="w-full max-w-[520px] h-auto drop-shadow-2xl opacity-90 invert hue-rotate-180"
             />
           </div>
         </div>
