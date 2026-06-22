@@ -194,10 +194,24 @@ export default function Home() {
               animate="visible"
               variants={fadeUp}
               custom={2}
-              className="text-lg md:text-xl text-text-secondary leading-relaxed mb-10 max-w-2xl"
+              className="text-lg md:text-xl text-text-secondary leading-relaxed mb-6 max-w-2xl"
             >
               从理论到设计 — 完整的LLC谐振变换器学习与工程化工具
             </motion.p>
+
+            <motion.a
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              custom={2}
+              href="https://www.monolithicpower.com/en/design-tools/design-tools/llc-design-tool.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-white mb-8 transition-colors"
+            >
+              <span>参考官方工具 — MPS LLC Design Tool</span>
+              <ArrowRight className="w-4 h-4" />
+            </motion.a>
 
             <motion.div
               initial="hidden"
