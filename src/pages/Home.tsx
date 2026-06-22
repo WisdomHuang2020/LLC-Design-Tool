@@ -160,7 +160,8 @@ export default function Home() {
       <section className="relative w-full bg-bg overflow-hidden">
         <HeroCircuitBackground />
         <div className="relative max-w-7xl mx-auto px-4 py-20 md:py-28 lg:py-32">
-          <div className="max-w-3xl">
+          <div className="flex flex-col lg:flex-row items-center gap-8 xl:gap-12">
+            <div className="flex-1 max-w-3xl">
             <motion.div
               initial="hidden"
               animate="visible"
@@ -222,8 +223,18 @@ export default function Home() {
               </Link>
             </motion.div>
           </div>
+
+          {/* Right: Half-bridge LLC architecture diagram */}
+          <div className="hidden lg:flex flex-1 items-center justify-center max-w-xl">
+            <img
+              src="./半桥LLC架构.svg"
+              alt="半桥LLC架构"
+              className="w-full max-w-[520px] h-auto drop-shadow-2xl opacity-90"
+            />
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Features */}
       <section className="w-full py-16 md:py-20 bg-bg">
