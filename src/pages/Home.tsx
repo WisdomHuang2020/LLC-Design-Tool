@@ -199,20 +199,6 @@ export default function Home() {
               从理论到设计 — 完整的LLC谐振变换器学习与工程化工具
             </motion.p>
 
-            <motion.a
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              custom={2}
-              href="https://www.monolithicpower.com/en/design-tools/design-tools/llc-design-tool.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-white mb-8 transition-colors"
-            >
-              <span>参考官方工具 — MPS LLC Design Tool</span>
-              <ArrowRight className="w-4 h-4" />
-            </motion.a>
-
             <motion.div
               initial="hidden"
               animate="visible"
@@ -372,6 +358,15 @@ export default function Home() {
                 直接进入设计工具
               </Link>
             </div>
+            <a
+              href="https://www.monolithicpower.com/en/design-tools/design-tools/llc-design-tool.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary-light hover:text-white mt-6 transition-colors"
+            >
+              <span>参考MPS工具 — MPS LLC Design Tool</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
           </motion.div>
         </div>
       </section>
