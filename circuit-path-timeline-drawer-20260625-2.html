@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>电路电流时间轴绘制器</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', sans-serif;
+  background: #080a0f; color: #c8d0e0; min-height: 100vh;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.header {
+  background: #11131f; border-bottom: 1px solid #1e2235;
+  padding: 10px 16px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px; flex-shrink: 0;
+}
+.header h1 {
+  font-size: 1.1rem; font-weight: 600;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header .subtitle { font-size: 0.7rem; color: #5a6a8a; }
+.btn {
+  padding: 5px 12px; border: none; border-radius: 6px;
+  background: #1a1e2e; color: #8a95b5; font-size: 0.75rem;
+  cursor: pointer; transition: all 0.15s; font-family: inherit;
+  border: 1px solid #2a3048; font-weight: 500; white-space: nowrap;
+}
+.btn:hover { background: #22283a; border-color: #3b82f6; color: #60a5fa; }
+.btn.primary { background: linear-gradient(135deg, #3b82f6, #60a5fa); color: #fff; border-color: #3b82f6; }
+.btn.danger { border-color: #7f1d1d; color: #ef4444; }
+.btn.danger:hover { background: #450a0a; }
+.main { display: flex; flex: 1; overflow: hidden; }
+.left { width: 220px; min-width: 200px; background: #11131f; border-right: 1px solid #1e2235; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+.panel { padding: 10px 12px; border-bottom: 1px solid #1e2235; }
+.panel-title { font-size: 0.7rem; color: #8a95b5; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+.upload-zone {
+  border: 2px dashed #2a3048; border-radius: 8px;
+  padding: 16px 10px; text-align: center; transition: all 0.2s; background: #0e1018;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: #3b82f6; background: rgba(59,130,246,0.03); }
+.upload-zone p { font-size: 0.7rem; color: #5a6a8a; margin-top: 6px; }
+.upload-zone .hint { font-size: 0.62rem; color: #3a4a6a; margin-top: 4px; }
+.file-input-wrapper { margin-top: 8px; }
+.file-input-wrapper input[type="file"] {
+  width: 100%; font-size: 0.7rem; color: #5a6a8a;
+  background: #0e1018; border: 1px solid #2a3048; border-radius: 4px; padding: 4px;
+}
+.file-input-wrapper input[type="file"]:hover { border-color: #3b82f6; }
+.tool-group { display: flex; gap: 4px; flex-wrap: wrap; }
+.tool-btn {
+  padding: 5px 10px; border-radius: 5px; border: 1px solid #2a3048;
+  background: #151820; color: #7a85a5; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; font-family: inherit;
+}
+.tool-btn:hover { border-color: #3b82f6; color: #60a5fa; }
+.tool-btn.active { background: rgba(59,130,246,0.12); border-color: #3b82f6; color: #60a5fa; font-weight: 500; }
+.path-list { flex: 1; overflow-y: auto; min-height: 0; }
+.path-item {
+  background: #151820; border: 1px solid #1e2235; border-radius: 6px;
+  padding: 7px 9px; margin-bottom: 5px; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 6px; font-size: 0.72rem;
+}
+.path-item:hover { border-color: #2a3048; }
+.path-item.selected { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
+.path-item.hidden { opacity: 0.4; }
+.path-item .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15); }
+.path-item .info { flex: 1; min-width: 0; }
+.path-item .name { color: #c8d0e0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.path-item .meta { color: #5a6a8a; font-size: 0.62rem; margin-top: 1px; }
+.path-item .actions { display: flex; gap: 2px; opacity: 0; transition: opacity 0.15s; }
+.path-item:hover .actions { opacity: 1; }
+.path-item .actions .btn { padding: 1px 5px; font-size: 0.62rem; }
+.settings { display: none; }
+.settings.show { display: block; }
+.row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 0.68rem; }
+.row label { color: #7a85a5; white-space: nowrap; width: 45px; }
+input[type="range"] { flex: 1; accent-color: #3b82f6; cursor: pointer; }
+input[type="color"] { width: 24px; height: 18px; border: none; border-radius: 3px; cursor: pointer; background: none; padding: 0; }
+input[type="text"] { background: #151820; border: 1px solid #2a3048; border-radius: 3px; padding: 3px 6px; color: #c8d0e0; font-size: 0.7rem; font-family: inherit; width: 100%; }
+input[type="text"]:focus { outline: none; border-color: #3b82f6; }
+.val { font-size: 0.65rem; color: #60a5fa; font-family: monospace; min-width: 28px; text-align: right; }
+.mid { width: 360px; min-width: 320px; background: #11131f; border-right: 1px solid #1e2235; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+.mid-toolbar { display: flex; align-items: center; gap: 4px; padding: 8px 12px; border-bottom: 1px solid #1e2235; flex-wrap: wrap; }
+.mid-toolbar .label { font-size: 0.65rem; color: #5a6a8a; text-transform: uppercase; margin-right: 4px; }
+.timeline { flex: 1; overflow: auto; min-height: 0; padding: 10px 12px; }
+.tl-header { display: flex; margin-bottom: 5px; }
+.tl-cell-header {
+  width: 48px; text-align: center; font-size: 0.62rem; color: #5a6a8a;
+  border-right: 1px solid #1e2235; padding: 4px 2px; flex-shrink: 0;
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+.tl-cell-header:hover { background: rgba(59,130,246,0.05); color: #8a95b5; }
+.tl-cell-header.active { color: #60a5fa; background: rgba(59,130,246,0.08); border-bottom: 2px solid #3b82f6; }
+.tl-cell-header .name { display: block; font-weight: 600; }
+.tl-cell-header .label2 { display: block; font-size: 0.58rem; color: #3a4a6a; margin-top: 1px; }
+.tl-row { display: flex; align-items: center; margin-bottom: 3px; min-height: 26px; }
+.tl-row .rname { width: 100px; font-size: 0.68rem; color: #8a95b5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 6px; text-align: right; flex-shrink: 0; }
+.tl-row .rname .rdot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 3px; vertical-align: middle; }
+.tl-cell { width: 48px; height: 26px; border-right: 1px solid #1e2235; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; transition: all 0.15s; }
+.tl-cell:hover { background: rgba(59,130,246,0.04); }
+.tl-cell.active { background: rgba(59,130,246,0.08); }
+.tl-cell input[type="checkbox"] { width: 13px; height: 13px; accent-color: #3b82f6; cursor: pointer; }
+.step-controls { padding: 8px 12px; border-top: 1px solid #1e2235; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 0.65rem; color: #4a5a7a; }
+.right { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.svg-stage {
+  flex: 1; overflow: auto; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: #080a0f;
+}
+.svg-stage.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.svg-stage .placeholder { text-align: center; color: #2a3048; font-size: 0.8rem; }
+.svg-stage .placeholder .big-icon { font-size: 2.5rem; margin-bottom: 10px; opacity: 0.5; }
+.svg-container { position: relative; background: #000; border-radius: 10px; border: 1px solid #1e2235; box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow: hidden; transition: none; }
+.svg-container svg { display: block; }
+.coord { position: absolute; bottom: 6px; right: 6px; z-index: 20; background: rgba(0,0,0,0.7); border: 1px solid #1e2235; border-radius: 3px; padding: 2px 6px; font-size: 0.62rem; color: #5a6a8a; font-family: monospace; pointer-events: none; }
+.draft-path { fill: none; stroke: #fbbf24; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 4 4; opacity: 0.8; pointer-events: none; }
+.draft-node { fill: #fbbf24; stroke: #fff; stroke-width: 1; pointer-events: none; }
+.draft-guide { stroke: #fbbf24; stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.4; pointer-events: none; }
+.snap-dot { fill: #3b82f6; opacity: 0.7; pointer-events: none; }
+.erase-hl { fill: none; stroke: #ef4444; stroke-width: 2.5; stroke-linecap: round; opacity: 0.8; pointer-events: none; }
+.saved-path-line { fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: 0.6; pointer-events: none; }
+.saved-path-node { opacity: 0.5; pointer-events: none; }
+.anim-dash { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 6 14; animation: flowDash 0.8s linear infinite; }
+@keyframes flowDash { to { stroke-dashoffset: -20; } }
+.anim-particle { fill: #fff; }
+.anim-glow { opacity: 0.25; }
+.playbar {
+  background: #11131f; border-top: 1px solid #1e2235;
+  padding: 8px 16px; display: flex; align-items: center;
+  gap: 12px; flex-wrap: wrap; justify-content: center; flex-shrink: 0;
+}
+.playbar-group { display: flex; align-items: center; gap: 6px; }
+.playbar-label { font-size: 0.65rem; color: #5a6a8a; text-transform: uppercase; }
+.playbar-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2a3048;
+  background: #1a1e2e; color: #8a95b5; cursor: pointer; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.playbar-btn:hover { background: #22283a; border-color: #3b82f6; color: #60a5fa; }
+.playbar-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.step-display { font-size: 0.72rem; color: #60a5fa; font-weight: 600; font-family: monospace; min-width: 80px; text-align: center; }
+.progress { flex: 1; max-width: 180px; min-width: 80px; height: 4px; background: #1a1e2e; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 2px; transition: width 0.3s; }
+.toast {
+  position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1000;
+  background: #1a1e2e; border: 1px solid #2a3048; border-radius: 8px;
+  padding: 8px 16px; font-size: 0.78rem; color: #c8d0e0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a3048; border-radius: 3px; }
+@media (max-width: 1100px) { .mid { width: 320px; min-width: 300px; } .left { width: 190px; min-width: 170px; } }
+@media (max-width: 900px) { .main { flex-direction: column; } .left, .mid { width: 100%; border: none; border-bottom: 1px solid #1e2235; } .mid { max-height: 250px; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>电路电流时间轴绘制器</h1>
+    <div class="subtitle">多路径 / 多步骤 / 时间轴控制</div>
+  </div>
+  <div style="display:flex; gap:6px; align-items:center;">
+    <button class="btn" onclick="exportHTML()">导出 HTML 播放器</button>
+    <button class="btn" onclick="exportSVG()">导出 SVG 动画</button>
+    <button class="btn" onclick="exportJSON()">导出 JSON 数据</button>
+    <button class="btn danger" onclick="resetAll()">全部重置</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="left">
+    <div class="panel">
+      <div class="panel-title">电路图</div>
+      <div class="upload-zone" id="upload-zone">
+        <p>将 SVG 文件拖拽到此处</p>
+        <div class="hint">或点击下方选择文件</div>
+        <div class="file-input-wrapper">
+          <input type="file" id="file-input" accept=".svg" onchange="onFileChosen(event)">
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">工具</div>
+      <div class="tool-group">
+        <button class="tool-btn active" id="tool-draw" onclick="setTool('draw')">描绘</button>
+        <button class="tool-btn" id="tool-pan" onclick="setTool('pan')">平移</button>
+        <button class="tool-btn" id="tool-erase" onclick="setTool('erase')">擦除</button>
+      </div>
+      <div class="tool-group" style="margin-top:5px;">
+        <button class="tool-btn active" id="tool-snap" onclick="toggleSnap()">吸附</button>
+        <button class="tool-btn active" id="tool-preview" onclick="togglePreview()">预览</button>
+      </div>
+      <div class="tool-group" style="margin-top:5px;">
+        <button class="tool-btn" onclick="zoomIn()">放大</button>
+        <button class="tool-btn" onclick="zoomOut()">缩小</button>
+        <button class="tool-btn" onclick="resetZoom()">重置</button>
+      </div>
+    </div>
+    <div class="panel" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+      <div class="panel-title" style="display:flex; justify-content:space-between;">
+        <span>电流路径</span>
+        <span id="path-count" style="color:#5a6a8a; font-size:0.62rem;">0</span>
+      </div>
+      <div class="path-list" id="path-list">
+        <div style="font-size:0.65rem; color:#4a5a7a; line-height:1.5; padding:6px 2px;">
+          上传 SVG 后选择<b>描绘</b>工具，在导线上点击定义节点，按 Enter 完成。每条路径可在时间轴中分配到不同步骤。
+        </div>
+      </div>
+      <button class="btn primary" style="margin-top:6px; font-size:0.72rem;" onclick="finishPath()" id="btn-finish" disabled>完成路径</button>
+    </div>
+    <div class="panel settings" id="path-settings">
+      <div class="panel-title">路径参数</div>
+      <div class="row"><label>名称</label><input type="text" id="path-name" onchange="updatePathName()"></div>
+      <div class="row"><label>颜色</label><input type="color" id="path-color" onchange="updatePathColor()"><span class="val" id="color-val"></span></div>
+      <div class="row"><label>速度</label><input type="range" id="path-speed" min="0.2" max="3" step="0.1" value="1" oninput="updatePathSpeed(this.value)"><span class="val" id="speed-val">1.0x</span></div>
+      <div class="row"><label>线宽</label><input type="range" id="path-width" min="1" max="5" step="0.5" value="2.5" oninput="updatePathWidth(this.value)"><span class="val" id="width-val">2.5</span></div>
+      <div class="row"><label>粒子</label><input type="range" id="path-particle" min="1" max="6" step="0.5" value="2.5" oninput="updatePathParticle(this.value)"><span class="val" id="particle-val">2.5</span></div>
+      <div class="row"><label>方向</label><button class="btn" style="font-size:0.68rem; padding:3px 8px;" id="btn-direction" onclick="togglePathDirection()">正向</button></div>
+    </div>
+  </div>
+  <div class="mid">
+    <div class="mid-toolbar">
+      <span class="label">播放</span>
+      <button class="tool-btn active" id="mode-step" onclick="setPlayMode('step')">步骤</button>
+      <button class="tool-btn" id="mode-sync" onclick="setPlayMode('sync')">同步</button>
+      <button class="tool-btn" id="mode-loop" onclick="toggleLoop()">循环</button>
+    </div>
+    <div class="timeline" id="timeline">
+      <div style="text-align:center; padding:30px 10px; color:#3a4a6a; font-size:0.72rem;">绘制路径后，在此分配时间轴步骤</div>
+    </div>
+    <div class="step-controls">
+      <button class="btn" style="font-size:0.68rem; padding:3px 8px;" onclick="addStep()">+ 添加</button>
+      <button class="btn danger" style="font-size:0.68rem; padding:3px 8px;" onclick="removeLastStep()">- 删除</button>
+      <span style="font-size:0.62rem; color:#4a5a7a;">勾选 = 该路径在该步骤运行</span>
+    </div>
+  </div>
+  <div class="right">
+    <div class="svg-stage empty" id="svg-stage">
+      <div class="placeholder" id="placeholder">
+        <div class="big-icon">&#x26A1;</div>
+        <p>请上传 SVG 电路图开始绘制</p>
+        <p style="font-size:0.68rem; margin-top:6px; color:#3a4a6a;">支持 CircuitJS / Inkscape 导出的 SVG</p>
+      </div>
+      <div class="svg-container" id="svg-container" style="display:none;">
+        <svg id="main-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; display:block;"></svg>
+      </div>
+      <div class="coord" id="coord">x:0 y:0</div>
+    </div>
+    <div class="playbar">
+      <div class="playbar-group">
+        <button class="playbar-btn active" id="play-btn" onclick="togglePlay()">播放</button>
+        <button class="playbar-btn" onclick="stopPlay()">停止</button>
+      </div>
+      <div class="step-display" id="step-display">就绪</div>
+      <div class="progress"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="playbar-group">
+        <span class="playbar-label">速度</span>
+        <input type="range" style="width:80px;" min="0.2" max="3" step="0.1" value="1" oninput="updateGlobalSpeed(this.value)">
+        <span id="global-speed" style="font-size:0.68rem; color:#60a5fa; min-width:32px; font-family:monospace;">1.0x</span>
+      </div>
+      <div class="playbar-group">
+        <span class="playbar-label">显示</span>
+        <button class="tool-btn active" style="font-size:0.62rem; padding:2px 6px;" id="show-dash" onclick="toggleShow('dash')">虚线</button>
+        <button class="tool-btn active" style="font-size:0.62rem; padding:2px 6px;" id="show-particle" onclick="toggleShow('particle')">粒子</button>
+        <button class="tool-btn active" style="font-size:0.62rem; padding:2px 6px;" id="show-glow" onclick="toggleShow('glow')">辉光</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 状态 ===== */
+var svgContent = null, svgElement = null, wirePaths = [];
+var allPaths = [], currentPath = null, currentTool = 'draw';
+var snapEnabled = true, previewEnabled = true;
+var isPlaying = false, loopEnabled = false, playMode = 'step';
+var zoom = 1.0, globalSpeed = 1.0, selectedPathId = null;
+var showDash = true, showParticle = true, showGlow = true;
+var pathIdCounter = 0, panOffset = { x: 0, y: 0 };
+var isPanning = false, panStart = { x: 0, y: 0 }, lastPanOffset = { x: 0, y: 0 };
+var currentStepIndex = -1, stepTimer = null;
+
+var steps = [
+  { id: 't1', name: 't1', duration: 2.0, label: 't1-t2' },
+  { id: 't2', name: 't2', duration: 2.0, label: 't2-t3' },
+  { id: 't3', name: 't3', duration: 2.0, label: 't3-t4' },
+  { id: 't4', name: 't4', duration: 2.0, label: 't4-t5' },
+  { id: 't5', name: 't5', duration: 2.0, label: 't5-t6' }
+];
+
+/* ===== DOM ===== */
+var uploadZone = document.getElementById('upload-zone');
+var fileInput = document.getElementById('file-input');
+var svgStage = document.getElementById('svg-stage');
+var svgContainer = document.getElementById('svg-container');
+var mainSvg = document.getElementById('main-svg');
+var placeholder = document.getElementById('placeholder');
+var coord = document.getElementById('coord');
+var pathList = document.getElementById('path-list');
+var pathCount = document.getElementById('path-count');
+var pathSettings = document.getElementById('path-settings');
+var btnFinish = document.getElementById('btn-finish');
+var timeline = document.getElementById('timeline');
+var stepDisplay = document.getElementById('step-display');
+var progressFill = document.getElementById('progress-fill');
+var playBtn = document.getElementById('play-btn');
+var toast = document.getElementById('toast');
+
+var overlay = null, animLayer = null;
+
+/* ===== 辅助函数 ===== */
+function getNumericAttr(el, attr) {
+  var val = el.getAttribute(attr);
+  if (!val) return NaN;
+  if (val.indexOf('%') !== -1) return NaN;
+  var num = parseFloat(val);
+  return isNaN(num) ? NaN : num;
+}
+function getSVGViewBox() {
+  var vb = mainSvg.getAttribute('viewBox');
+  if (vb) return vb;
+  var w = getNumericAttr(mainSvg, 'width') || 800;
+  var h = getNumericAttr(mainSvg, 'height') || 600;
+  return '0 0 ' + w + ' ' + h;
+}
+function getSVGPoint(e) {
+  var rect = mainSvg.getBoundingClientRect();
+  var vbStr = mainSvg.getAttribute('viewBox');
+  if (!vbStr) {
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  var parts = vbStr.split(/[\s,]+/);
+  var vbX = parseFloat(parts[0]) || 0;
+  var vbY = parseFloat(parts[1]) || 0;
+  var vbW = parseFloat(parts[2]) || rect.width;
+  var vbH = parseFloat(parts[3]) || rect.height;
+  var scaleX = vbW / rect.width;
+  var scaleY = vbH / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX + vbX,
+    y: (e.clientY - rect.top) * scaleY + vbY
+  };
+}
+function syncOverlay() {
+  if (!overlay || !mainSvg) return;
+  var rect = mainSvg.getBoundingClientRect();
+  var containerRect = svgContainer.getBoundingClientRect();
+  overlay.style.top = (rect.top - containerRect.top) + 'px';
+  overlay.style.left = (rect.left - containerRect.left) + 'px';
+  overlay.style.width = rect.width + 'px';
+  overlay.style.height = rect.height + 'px';
+}
+
+/* ===== 上传 ===== */
+function onFileChosen(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.svg')) {
+    showToast('请选择 SVG 文件'); return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    svgContent = ev.target.result;
+    renderSVG(svgContent);
+    showToast('已加载: ' + file.name);
+  };
+  reader.onerror = function() { showToast('文件读取失败'); };
+  reader.readAsText(file);
+}
+
+uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+uploadZone.addEventListener('drop', function(e) {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  var file = e.dataTransfer.files[0];
+  if (file && file.name.toLowerCase().endsWith('.svg')) {
+    var reader = new FileReader();
+    reader.onload = function(ev) { svgContent = ev.target.result; renderSVG(svgContent); showToast('已加载: ' + file.name); };
+    reader.readAsText(file);
+  } else { showToast('请拖入 SVG 文件'); }
+});
+
+function renderSVG(text) {
+  svgStage.classList.remove('empty');
+  placeholder.style.display = 'none';
+  svgContainer.style.display = 'block';
+
+  var parser = new DOMParser();
+  var doc = parser.parseFromString(text, 'image/svg+xml');
+  var svg = doc.querySelector('svg');
+  if (!svg) { showToast('无效的 SVG 文件'); return; }
+
+  mainSvg.innerHTML = '';
+  while (svg.firstChild) {
+    mainSvg.appendChild(svg.firstChild);
+  }
+  var attrs = svg.attributes;
+  for (var i = 0; i < attrs.length; i++) {
+    var a = attrs[i];
+    if (a.name !== 'id' && a.name !== 'style') {
+      mainSvg.setAttribute(a.name, a.value);
+    }
+  }
+  mainSvg.setAttribute('id', 'main-svg');
+  mainSvg.style.width = '100%';
+  mainSvg.style.height = 'auto';
+  mainSvg.style.display = 'block';
+
+  if (!mainSvg.getAttribute('viewBox')) {
+    try {
+      var bbox = mainSvg.getBBox();
+      if (bbox.width > 0 && bbox.height > 0) {
+        mainSvg.setAttribute('viewBox', bbox.x + ' ' + bbox.y + ' ' + bbox.width + ' ' + bbox.height);
+      } else {
+        mainSvg.setAttribute('viewBox', getSVGViewBox());
+      }
+    } catch(e) {
+      mainSvg.setAttribute('viewBox', getSVGViewBox());
+    }
+  }
+
+  parseWires();
+  setupOverlay();
+  createAnimLayer();
+  resetPanZoom();
+  showToast('电路图加载完成，开始描绘路径');
+}
+
+/* ===== 解析导线 ===== */
+function parseWires() {
+  wirePaths = [];
+  var paths = mainSvg.querySelectorAll('path');
+  paths.forEach(function(p, idx) {
+    var stroke = p.getAttribute('stroke') || '';
+    var fill = p.getAttribute('fill') || '';
+    if ((stroke.indexOf('01fd') !== -1 || stroke.indexOf('02fc') !== -1 || stroke.indexOf('807f') !== -1 || stroke.indexOf('fff') !== -1) && (fill === 'none' || !fill)) {
+      var d = p.getAttribute('d');
+      if (d) {
+        var pts = parsePathPoints(d);
+        if (pts.length >= 2) wirePaths.push({ id: 'wire-' + idx, points: pts, stroke: stroke });
+      }
+    }
+  });
+  console.log('导线:', wirePaths.length);
+}
+
+function parsePathPoints(d) {
+  var nums = d.match(/[-]?\d+\.?\d*/g);
+  if (!nums) return [];
+  var pts = [];
+  for (var i = 0; i < nums.length; i += 2) {
+    if (i + 1 < nums.length) pts.push({ x: parseFloat(nums[i]), y: parseFloat(nums[i+1]) });
+  }
+  return pts;
+}
+
+/* ===== 覆盖层 ===== */
+function setupOverlay() {
+  if (overlay) overlay.remove();
+  overlay = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  overlay.setAttribute('id', 'draw-overlay');
+  overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; z-index:10; cursor:crosshair;';
+  var vb = getSVGViewBox();
+  overlay.setAttribute('viewBox', vb);
+  overlay.setAttribute('preserveAspectRatio', mainSvg.getAttribute('preserveAspectRatio') || 'xMidYMid meet');
+  svgContainer.appendChild(overlay);
+
+  overlay.addEventListener('mousemove', onMouseMove);
+  overlay.addEventListener('mousedown', onMouseDown);
+  overlay.addEventListener('mouseup', onMouseUp);
+  overlay.addEventListener('mouseleave', onMouseUp);
+  overlay.addEventListener('click', onClick);
+  overlay.addEventListener('dblclick', onDblClick);
+
+  requestAnimationFrame(function() { syncOverlay(); });
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function() { syncOverlay(); });
+    ro.observe(mainSvg);
+  }
+}
+
+function createAnimLayer() {
+  if (animLayer) animLayer.remove();
+  animLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  animLayer.setAttribute('id', 'anim-layer');
+  mainSvg.appendChild(animLayer);
+}
+
+/* ===== 鼠标交互 ===== */
+var mousePos = { x: 0, y: 0 };
+var nearestWire = null;
+
+function onMouseMove(e) {
+  if (isPanning) {
+    var dx = e.clientX - panStart.x, dy = e.clientY - panStart.y;
+    panOffset.x = lastPanOffset.x + dx;
+    panOffset.y = lastPanOffset.y + dy;
+    applyZoom(); return;
+  }
+  var pt = getSVGPoint(e); mousePos = pt;
+  coord.textContent = 'x:' + Math.round(pt.x) + ' y:' + Math.round(pt.y);
+
+  if (currentTool === 'erase') { drawEraseHL(findNearestSaved(pt)); return; }
+  if (currentTool === 'draw' && snapEnabled) {
+    nearestWire = findNearestWire(pt); drawSnap(nearestWire);
+  } else { nearestWire = null; clearSnap(); }
+  if (currentPath && currentPath.nodes.length > 0) drawDraftGuide();
+}
+
+function onMouseDown(e) {
+  if (currentTool === 'pan') { isPanning = true; panStart = { x: e.clientX, y: e.clientY }; lastPanOffset = { x: panOffset.x, y: panOffset.y }; overlay.style.cursor = 'grabbing'; e.preventDefault(); }
+}
+function onMouseUp(e) {
+  if (isPanning) {
+    isPanning = false;
+    overlay.style.cursor = currentTool === 'draw' ? 'crosshair' : (currentTool === 'erase' ? 'not-allowed' : 'grab');
+  }
+}
+
+function findNearestWire(pt) {
+  var best = null, bestDist = Infinity, TH = 15;
+  for (var w = 0; w < wirePaths.length; w++) {
+    var wp = wirePaths[w];
+    for (var i = 0; i < wp.points.length - 1; i++) {
+      var p1 = wp.points[i], p2 = wp.points[i+1];
+      var mid = { x: (p1.x+p2.x)/2, y: (p1.y+p2.y)/2 };
+      var proj = project(pt, p1, p2);
+      var candidates = [
+        { point: p1, dist: dist(pt, p1) },
+        { point: p2, dist: dist(pt, p2) },
+        { point: mid, dist: dist(pt, mid) },
+        { point: proj, dist: dist(pt, proj) }
+      ];
+      for (var c = 0; c < candidates.length; c++) {
+        var can = candidates[c];
+        if (can.dist < bestDist && can.dist < TH) { bestDist = can.dist; best = can; }
+      }
+    }
+  }
+  return best;
+}
+function dist(a, b) { return Math.sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y)); }
+function project(p, a, b) {
+  var dx = b.x - a.x, dy = b.y - a.y, len2 = dx*dx + dy*dy;
+  if (len2 === 0) return a;
+  var t = ((p.x-a.x)*dx + (p.y-a.y)*dy) / len2;
+  t = Math.max(0, Math.min(1, t));
+  return { x: a.x + t*dx, y: a.y + t*dy };
+}
+
+var snapDot = null, snapLine = null;
+function drawSnap(n) {
+  clearSnap(); if (!n) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  snapDot = document.createElementNS(ns, 'circle');
+  snapDot.setAttribute('cx', n.point.x); snapDot.setAttribute('cy', n.point.y);
+  snapDot.setAttribute('r', '4'); snapDot.setAttribute('class', 'snap-dot');
+  overlay.appendChild(snapDot);
+  if (mousePos.x !== n.point.x || mousePos.y !== n.point.y) {
+    snapLine = document.createElementNS(ns, 'line');
+    snapLine.setAttribute('x1', mousePos.x); snapLine.setAttribute('y1', mousePos.y);
+    snapLine.setAttribute('x2', n.point.x); snapLine.setAttribute('y2', n.point.y);
+    snapLine.setAttribute('stroke', '#3b82f6'); snapLine.setAttribute('stroke-width', '1');
+    snapLine.setAttribute('stroke-dasharray', '3 3'); snapLine.setAttribute('opacity', '0.5');
+    overlay.appendChild(snapLine);
+  }
+}
+function clearSnap() { if (snapDot) { snapDot.remove(); snapDot = null; } if (snapLine) { snapLine.remove(); snapLine = null; } }
+
+function findNearestSaved(pt) {
+  var best = null, bestDist = Infinity;
+  for (var p = 0; p < allPaths.length; p++) {
+    var path = allPaths[p];
+    for (var i = 0; i < path.nodes.length - 1; i++) {
+      var d = segDist(pt, path.nodes[i], path.nodes[i+1]);
+      if (d < bestDist) { bestDist = d; best = path; }
+    }
+  }
+  return bestDist < 25 ? best : null;
+}
+function segDist(p, a, b) {
+  var dx = b.x - a.x, dy = b.y - a.y, len2 = dx*dx + dy*dy;
+  if (len2 === 0) return dist(p, a);
+  var t = ((p.x-a.x)*dx + (p.y-a.y)*dy) / len2; t = Math.max(0, Math.min(1, t));
+  return dist(p, { x: a.x + t*dx, y: a.y + t*dy });
+}
+
+var eraseHL = null;
+function drawEraseHL(path) {
+  clearEraseHL(); if (!path) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var d = 'M ' + path.nodes[0].x + ' ' + path.nodes[0].y;
+  for (var i = 1; i < path.nodes.length; i++) d += ' L ' + path.nodes[i].x + ' ' + path.nodes[i].y;
+  eraseHL = document.createElementNS(ns, 'path');
+  eraseHL.setAttribute('d', d); eraseHL.setAttribute('class', 'erase-hl');
+  overlay.appendChild(eraseHL);
+}
+function clearEraseHL() { if (eraseHL) { eraseHL.remove(); eraseHL = null; } }
+
+function onClick(e) {
+  if (currentTool === 'draw') {
+    if (!svgContent) { showToast('请先上传 SVG'); return; }
+    var pt = nearestWire ? nearestWire.point : getSVGPoint(e);
+    if (!currentPath) startPath(pt); else addNode(pt);
+  } else if (currentTool === 'erase') {
+    var pt = getSVGPoint(e);
+    var nearest = findNearestSaved(pt);
+    if (nearest) { delPath(nearest.id); showToast('已删除: ' + nearest.name); clearEraseHL(); }
+    else showToast('未找到路径');
+  }
+}
+function onDblClick(e) { if (currentTool === 'draw' && currentPath) finishPath(); }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && currentPath) { e.preventDefault(); finishPath(); }
+  if (e.key === 'Escape' && currentPath) { e.preventDefault(); cancelPath(); }
+  if (e.key === ' ' && !e.repeat) { e.preventDefault(); togglePlay(); }
+  if (e.key === 'Delete' && selectedPathId) delPath(selectedPathId);
+});
+
+/* ===== 绘制路径 ===== */
+function startPath(pt) {
+  currentPath = {
+    id: 'path-' + (++pathIdCounter), name: '回路' + pathIdCounter, nodes: [pt],
+    color: '#fbbf24', speed: 1.0, width: 2.5, particleSize: 2.5, direction: 1, visible: true,
+    steps: steps.map(function() { return false; })
+  };
+  if (currentPath.steps.length > 0) currentPath.steps[0] = true;
+
+  pathSettings.classList.add('show');
+  document.getElementById('path-name').value = currentPath.name;
+  document.getElementById('path-color').value = currentPath.color;
+  document.getElementById('path-speed').value = currentPath.speed;
+  document.getElementById('speed-val').textContent = currentPath.speed.toFixed(1) + 'x';
+  document.getElementById('path-width').value = currentPath.width;
+  document.getElementById('width-val').textContent = currentPath.width;
+  document.getElementById('path-particle').value = currentPath.particleSize;
+  document.getElementById('particle-val').textContent = currentPath.particleSize;
+  document.getElementById('btn-direction').textContent = '正向';
+  btnFinish.disabled = false;
+  showToast('开始绘制，点击导线节点');
+  drawDraft();
+}
+
+function addNode(pt) {
+  if (currentPath.nodes.length >= 2) {
+    var first = currentPath.nodes[0];
+    if (dist(pt, first) < 10) { currentPath.nodes.push({ x: first.x, y: first.y }); finishPath(); return; }
+  }
+  currentPath.nodes.push(pt); drawDraft();
+  showToast('节点 ' + currentPath.nodes.length);
+}
+
+function drawDraft() {
+  overlay.querySelectorAll('.draft-node, .draft-path, .draft-guide').forEach(function(el) { el.remove(); });
+  if (!currentPath) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  currentPath.nodes.forEach(function(node, i) {
+    var c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', node.x); c.setAttribute('cy', node.y); c.setAttribute('r', i === 0 ? '4' : '3');
+    c.setAttribute('class', 'draft-node'); c.setAttribute('fill', i === 0 ? '#22c55e' : '#fbbf24');
+    overlay.appendChild(c);
+  });
+  if (currentPath.nodes.length >= 2) {
+    var p = document.createElementNS(ns, 'path');
+    var d = 'M ' + currentPath.nodes[0].x + ' ' + currentPath.nodes[0].y;
+    for (var i = 1; i < currentPath.nodes.length; i++) d += ' L ' + currentPath.nodes[i].x + ' ' + currentPath.nodes[i].y;
+    p.setAttribute('d', d); p.setAttribute('class', 'draft-path'); overlay.appendChild(p);
+  }
+}
+
+function drawDraftGuide() {
+  if (!currentPath || currentPath.nodes.length === 0) return;
+  var last = currentPath.nodes[currentPath.nodes.length - 1];
+  var target = nearestWire ? nearestWire.point : mousePos;
+  var g = overlay.querySelector('.draft-guide-line');
+  if (!g) {
+    g = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    g.setAttribute('class', 'draft-guide draft-guide-line'); overlay.appendChild(g);
+  }
+  g.setAttribute('x1', last.x); g.setAttribute('y1', last.y);
+  g.setAttribute('x2', target.x); g.setAttribute('y2', target.y);
+}
+
+function finishPath() {
+  if (!currentPath || currentPath.nodes.length < 2) { showToast('至少2个节点'); return; }
+  allPaths.push(JSON.parse(JSON.stringify(currentPath)));
+  selectedPathId = currentPath.id;
+  clearDraft(); renderList(); renderTimeline();
+  createPreview(allPaths[allPaths.length - 1]);
+  showToast('保存: ' + currentPath.name + ' (' + currentPath.nodes.length + '节点)');
+  currentPath = null;
+}
+function cancelPath() { clearDraft(); currentPath = null; showToast('取消'); }
+function clearDraft() { overlay.querySelectorAll('.draft-node, .draft-path, .draft-guide-line').forEach(function(el) { el.remove(); }); clearSnap(); btnFinish.disabled = true; }
+
+/* ===== 路径列表 ===== */
+function renderList() {
+  pathCount.textContent = allPaths.length;
+  pathList.innerHTML = '';
+  allPaths.forEach(function(path) {
+    var item = document.createElement('div');
+    item.className = 'path-item' + (path.id === selectedPathId ? ' selected' : '') + (path.visible ? '' : ' hidden');
+    item.onclick = function() { selectPath(path.id); };
+    item.innerHTML =
+      '<div class="dot" style="background:' + path.color + '"></div>' +
+      '<div class="info">' +
+        '<div class="name">' + path.name + '</div>' +
+        '<div class="meta">' + path.nodes.length + '节点 | ' + path.speed.toFixed(1) + 'x | ' + (path.direction > 0 ? '->' : '<-') + '</div>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn" onclick="event.stopPropagation(); toggleVis(\'' + path.id + '\')">' + (path.visible ? '显' : '隐') + '</button>' +
+        '<button class="btn danger" onclick="event.stopPropagation(); delPath(\'' + path.id + '\')">x</button>' +
+      '</div>';
+    pathList.appendChild(item);
+  });
+}
+
+function selectPath(id) {
+  selectedPathId = id;
+  var path = allPaths.find(function(p) { return p.id === id; });
+  if (path) {
+    document.getElementById('path-name').value = path.name;
+    document.getElementById('path-color').value = path.color;
+    document.getElementById('path-speed').value = path.speed;
+    document.getElementById('speed-val').textContent = path.speed.toFixed(1) + 'x';
+    document.getElementById('path-width').value = path.width;
+    document.getElementById('width-val').textContent = path.width;
+    document.getElementById('path-particle').value = path.particleSize;
+    document.getElementById('particle-val').textContent = path.particleSize;
+    document.getElementById('btn-direction').textContent = path.direction > 0 ? '正向' : '反向';
+    pathSettings.classList.add('show');
+  }
+  renderList(); updatePreviews();
+}
+
+function delPath(id) {
+  allPaths = allPaths.filter(function(p) { return p.id !== id; });
+  if (selectedPathId === id) { selectedPathId = null; pathSettings.classList.remove('show'); }
+  renderList(); renderTimeline(); updatePreviews();
+}
+function toggleVis(id) {
+  var path = allPaths.find(function(p) { return p.id === id; });
+  if (path) { path.visible = !path.visible; renderList(); updatePreviews(); }
+}
+
+/* ===== 路径设置 ===== */
+function updatePathName() { if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.name = document.getElementById('path-name').value; renderList(); renderTimeline(); } }
+function updatePathColor() { if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.color = document.getElementById('path-color').value; renderList(); updatePreviews(); } }
+function updatePathSpeed(v) { document.getElementById('speed-val').textContent = parseFloat(v).toFixed(1) + 'x'; if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.speed = parseFloat(v); renderList(); } }
+function updatePathWidth(v) { document.getElementById('width-val').textContent = v; if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.width = parseFloat(v); updatePreviews(); } }
+function updatePathParticle(v) { document.getElementById('particle-val').textContent = v; if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.particleSize = parseFloat(v); } }
+function togglePathDirection() { if (!selectedPathId) return; var p = allPaths.find(function(x) { return x.id === selectedPathId; }); if (p) { p.direction *= -1; document.getElementById('btn-direction').textContent = p.direction > 0 ? '正向' : '反向'; renderList(); if (isPlaying) updateAnim(); } }
+
+/* ===== 时间轴 ===== */
+function renderTimeline() {
+  timeline.innerHTML = '';
+  var header = document.createElement('div');
+  header.className = 'tl-header';
+  var corner = document.createElement('div');
+  corner.style.cssText = 'width:100px; flex-shrink:0;';
+  header.appendChild(corner);
+  steps.forEach(function(step, idx) {
+    var label = document.createElement('div');
+    label.className = 'tl-cell-header' + (idx === currentStepIndex ? ' active' : '');
+    label.innerHTML = '<span class="name">' + step.name + '</span><span class="label2">' + step.label + '</span>';
+    header.appendChild(label);
+  });
+  timeline.appendChild(header);
+  if (allPaths.length === 0) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center; padding:30px 10px; color:#3a4a6a; font-size:0.72rem;';
+    empty.textContent = '绘制路径后，在此分配时间轴步骤';
+    timeline.appendChild(empty);
+    return;
+  }
+  allPaths.forEach(function(path) {
+    var row = document.createElement('div');
+    row.className = 'tl-row';
+    var name = document.createElement('div');
+    name.className = 'rname';
+    name.innerHTML = '<span class="rdot" style="background:' + path.color + '"></span>' + path.name;
+    row.appendChild(name);
+    path.steps.forEach(function(active, sIdx) {
+      var cell = document.createElement('div');
+      cell.className = 'tl-cell' + (active ? ' active' : '');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = active;
+      cb.onchange = function() { path.steps[sIdx] = cb.checked; renderTimeline(); };
+      cell.appendChild(cb);
+      row.appendChild(cell);
+    });
+    timeline.appendChild(row);
+  });
+}
+
+function addStep() {
+  var n = steps.length;
+  steps.push({ id: 't' + (n+1), name: 't' + (n+1), duration: 2.0, label: 't' + (n+1) + '-t' + (n+2) });
+  allPaths.forEach(function(p) { p.steps.push(false); });
+  renderTimeline();
+  showToast('添加步骤: t' + (n+1));
+}
+function removeLastStep() {
+  if (steps.length <= 1) { showToast('至少保留一个步骤'); return; }
+  steps.pop();
+  allPaths.forEach(function(p) { p.steps.pop(); });
+  renderTimeline();
+  showToast('删除最后步骤');
+}
+
+/* ===== 预览 ===== */
+function createPreview(path) {
+  if (!animLayer) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var old = animLayer.querySelector('[data-path-id="' + path.id + '"]');
+  if (old) old.remove();
+  if (!path.visible) return;
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('data-path-id', path.id);
+  var p = document.createElementNS(ns, 'path');
+  var d = 'M ' + path.nodes[0].x + ' ' + path.nodes[0].y;
+  for (var i = 1; i < path.nodes.length; i++) d += ' L ' + path.nodes[i].x + ' ' + path.nodes[i].y;
+  p.setAttribute('d', d); p.setAttribute('stroke', path.color); p.setAttribute('stroke-width', path.width);
+  p.setAttribute('stroke-opacity', '0.5'); p.setAttribute('fill', 'none'); p.setAttribute('stroke-linecap', 'round');
+  p.setAttribute('class', 'saved-path-line'); g.appendChild(p);
+  path.nodes.forEach(function(node, i) {
+    var c = document.createElementNS(ns, 'circle');
+    c.setAttribute('cx', node.x); c.setAttribute('cy', node.y); c.setAttribute('r', i === 0 || i === path.nodes.length-1 ? '2.5' : '1.5');
+    c.setAttribute('fill', path.color); c.setAttribute('class', 'saved-path-node'); g.appendChild(c);
+  });
+  animLayer.appendChild(g);
+}
+function updatePreviews() {
+  if (!animLayer) return;
+  while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); }
+  if (!previewEnabled) return;
+  allPaths.forEach(function(p) { createPreview(p); });
+}
+
+/* ===== 播放控制 ===== */
+function setPlayMode(mode) {
+  playMode = mode;
+  document.getElementById('mode-step').classList.toggle('active', mode === 'step');
+  document.getElementById('mode-sync').classList.toggle('active', mode === 'sync');
+  showToast(mode === 'step' ? '步骤模式' : '同步模式');
+}
+function toggleLoop() {
+  loopEnabled = !loopEnabled;
+  document.getElementById('mode-loop').classList.toggle('active', loopEnabled);
+  showToast(loopEnabled ? '循环: 开' : '循环: 关');
+}
+
+function togglePlay() {
+  if (!svgContent) { showToast('请先上传电路图'); return; }
+  if (allPaths.length === 0) { showToast('请先绘制路径'); return; }
+  if (isPlaying) { pausePlay(); } else { startPlay(); }
+}
+
+function startPlay() {
+  isPlaying = true;
+  playBtn.textContent = '暂停';
+  playBtn.classList.add('active');
+  stepDisplay.textContent = playMode === 'step' ? '准备播放...' : '同步播放';
+  stepDisplay.style.color = '#22c55e';
+  progressFill.style.width = '0%';
+  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }
+
+  if (playMode === 'sync') {
+    allPaths.forEach(function(path) { if (path.visible) createAnim(path); });
+    stepDisplay.textContent = '同步运行';
+  } else {
+    currentStepIndex = 0;
+    playStep(0);
+  }
+}
+
+function playStep(idx) {
+  if (!isPlaying) return;
+  if (idx >= steps.length) {
+    if (loopEnabled) { currentStepIndex = 0; playStep(0); return; }
+    stopPlay(); showToast('播放完成'); return;
+  }
+  currentStepIndex = idx;
+  var step = steps[idx];
+  stepDisplay.textContent = step.name + ' (' + step.label + ')';
+  progressFill.style.width = ((idx / steps.length) * 100) + '%';
+  renderTimeline();
+  // 步骤切换时：清空旧动画，只显示当前步骤勾选的路径
+  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }
+  var any = false;
+  allPaths.forEach(function(path) {
+    if (path.visible && path.steps[idx]) { createAnim(path); any = true; }
+  });
+  stepTimer = setTimeout(function() { playStep(idx + 1); }, (step.duration / globalSpeed) * 1000);
+}
+
+function pausePlay() {
+  isPlaying = false;
+  playBtn.textContent = '播放';
+  playBtn.classList.remove('active');
+  stepDisplay.textContent = '已暂停';
+  stepDisplay.style.color = '#fbbf24';
+  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }
+  var animated = animLayer.querySelectorAll('.anim-dash');
+  animated.forEach(function(el) { el.style.animationPlayState = 'paused'; });
+}
+
+function stopPlay() {
+  isPlaying = false;
+  playBtn.textContent = '播放';
+  playBtn.classList.remove('active');
+  stepDisplay.textContent = '就绪';
+  stepDisplay.style.color = '#5a6a8a';
+  progressFill.style.width = '0%';
+  currentStepIndex = -1;
+  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }
+  renderTimeline();
+  if (previewEnabled) { updatePreviews(); } else { if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } } }
+}
+
+function createAnim(path) {
+  if (!animLayer) return;
+  var ns = 'http://www.w3.org/2000/svg';
+  var existing = animLayer.querySelector('[data-anim-id="' + path.id + '"]');
+  if (existing) return;
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('data-anim-id', path.id);
+  var d = 'M ' + path.nodes[0].x + ' ' + path.nodes[0].y;
+  for (var i = 1; i < path.nodes.length; i++) d += ' L ' + path.nodes[i].x + ' ' + path.nodes[i].y;
+  var dur = (2.5 / path.speed / globalSpeed).toFixed(2) + 's';
+  if (showDash) {
+    var dash = document.createElementNS(ns, 'path');
+    dash.setAttribute('d', d); dash.setAttribute('stroke', path.color);
+    dash.setAttribute('stroke-width', path.width); dash.setAttribute('fill', 'none');
+    dash.setAttribute('stroke-linecap', 'round'); dash.setAttribute('stroke-dasharray', '6 14');
+    dash.setAttribute('class', 'anim-dash'); dash.style.animationDuration = dur;
+    if (path.direction < 0) dash.style.animationDirection = 'reverse';
+    g.appendChild(dash);
+  }
+  if (showParticle) {
+    for (var i = 0; i < 3; i++) {
+      var pg = document.createElementNS(ns, 'g');
+      if (showGlow) {
+        var glow = document.createElementNS(ns, 'circle');
+        glow.setAttribute('r', (path.particleSize * 3).toString());
+        glow.setAttribute('class', 'anim-glow'); glow.setAttribute('fill', path.color);
+        pg.appendChild(glow);
+      }
+      var dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('r', path.particleSize.toString()); dot.setAttribute('class', 'anim-particle');
+      pg.appendChild(dot);
+      var anim = document.createElementNS(ns, 'animateMotion');
+      anim.setAttribute('dur', dur); anim.setAttribute('repeatCount', 'indefinite');
+      anim.setAttribute('path', d);
+      anim.setAttribute('begin', (i * 0.8 / path.speed / globalSpeed).toFixed(2) + 's');
+      if (path.direction < 0) { anim.setAttribute('keyPoints', '1;0'); anim.setAttribute('keyTimes', '0;1'); }
+      pg.appendChild(anim); g.appendChild(pg);
+    }
+  }
+  animLayer.appendChild(g);
+}
+
+function updateAnim() {
+  if (!isPlaying) return;
+  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }
+  allPaths.forEach(function(path) { if (path.visible) createAnim(path); });
+}
+
+function updateGlobalSpeed(v) {
+  globalSpeed = parseFloat(v);
+  document.getElementById('global-speed').textContent = globalSpeed.toFixed(1) + 'x';
+  if (isPlaying) updateAnim();
+}
+
+function toggleShow(type) {
+  if (type === 'dash') showDash = !showDash;
+  if (type === 'particle') showParticle = !showParticle;
+  if (type === 'glow') showGlow = !showGlow;
+  document.getElementById('show-dash').classList.toggle('active', showDash);
+  document.getElementById('show-particle').classList.toggle('active', showParticle);
+  document.getElementById('show-glow').classList.toggle('active', showGlow);
+  if (isPlaying) updateAnim();
+}
+
+/* ===== 工具 ===== */
+function setTool(tool) {
+  currentTool = tool;
+  ['draw', 'pan', 'erase'].forEach(function(t) { document.getElementById('tool-' + t).classList.toggle('active', t === tool); });
+  if (overlay) {
+    if (tool === 'draw') overlay.style.cursor = 'crosshair';
+    else if (tool === 'pan') overlay.style.cursor = 'grab';
+    else overlay.style.cursor = 'not-allowed';
+  }
+  if (tool !== 'draw' && currentPath) cancelPath();
+  if (tool !== 'erase') clearEraseHL();
+}
+function toggleSnap() {
+  snapEnabled = !snapEnabled;
+  document.getElementById('tool-snap').classList.toggle('active', snapEnabled);
+  showToast(snapEnabled ? '吸附: 开' : '吸附: 关');
+}
+function togglePreview() {
+  previewEnabled = !previewEnabled;
+  document.getElementById('tool-preview').classList.toggle('active', previewEnabled);
+  updatePreviews();
+  showToast(previewEnabled ? '预览: 开' : '预览: 关');
+}
+
+/* ===== 缩放平移 ===== */
+function applyZoom() {
+  if (!mainSvg) return;
+  var vb = mainSvg.viewBox.baseVal;
+  if (!vb || vb.width === 0) return;
+  var w = vb.width * zoom;
+  var h = vb.height * zoom;
+  svgContainer.style.width = w + 'px';
+  svgContainer.style.height = h + 'px';
+  svgContainer.style.marginLeft = panOffset.x + 'px';
+  svgContainer.style.marginTop = panOffset.y + 'px';
+  requestAnimationFrame(function() { syncOverlay(); });
+}
+function zoomIn() { zoom = Math.min(zoom * 1.5, 10); applyZoom(); showToast('缩放: ' + zoom.toFixed(1) + 'x'); }
+function zoomOut() { zoom = Math.max(zoom / 1.5, 0.2); applyZoom(); showToast('缩放: ' + zoom.toFixed(1) + 'x'); }
+function resetZoom() { zoom = 1.0; panOffset = { x: 0, y: 0 }; applyZoom(); showToast('缩放重置'); }
+function resetPanZoom() { zoom = 1.0; panOffset = { x: 0, y: 0 }; applyZoom(); }
+
+/* ===== 导出 ===== */
+function exportHTML() {
+  if (!svgContent || allPaths.length === 0) { showToast('请先上传电路图并绘制路径'); return; }
+  var html = buildExportHTML();
+  download(html, 'circuit-animation.html', 'text/html');
+  showToast('导出 HTML 动画');
+}
+function exportSVG() {
+  if (!svgContent || allPaths.length === 0) { showToast('请先上传电路图并绘制路径'); return; }
+  var svg = buildExportSVG();
+  download(svg, 'circuit-animation.svg', 'image/svg+xml');
+  showToast('导出 SVG 动画');
+}
+function exportJSON() {
+  if (allPaths.length === 0) { showToast('请先绘制路径'); return; }
+  var data = { steps: steps, paths: allPaths.map(function(p) {
+    return { name: p.name, nodes: p.nodes, color: p.color, speed: p.speed, width: p.width, particleSize: p.particleSize, direction: p.direction, steps: p.steps };
+  }) };
+  download(JSON.stringify(data, null, 2), 'circuit-data.json', 'application/json');
+  showToast('导出 JSON 数据');
+}
+
+function buildExportHTML() {
+  if (!svgContent || allPaths.length === 0) { showToast('请先上传电路图并绘制路径'); return; }
+  var svgClone = mainSvg.cloneNode(true);
+  svgClone.removeAttribute('id');
+  var clonedAnimLayer = svgClone.querySelector('#anim-layer');
+  if (clonedAnimLayer) clonedAnimLayer.remove();
+  var svgString = new XMLSerializer().serializeToString(svgClone);
+  svgString = svgString.replace(/<\/script>/gi, '<\\/script>');
+
+  var stepsData = JSON.stringify(steps);
+  var pathsData = JSON.stringify(allPaths.filter(function(p) { return p.visible; }).map(function(p) {
+    return { id: p.id, name: p.name, nodes: p.nodes, color: p.color, speed: p.speed, width: p.width, particleSize: p.particleSize, direction: p.direction, visible: p.visible, steps: p.steps };
+  }));
+
+  var page = '<!DOCTYPE html>\n<html lang="zh-CN">\n<head>\n<meta charset="UTF-8">\n<title>电路电流动画 - 播放器</title>\n<style>\n' +
+    '*{margin:0;padding:0;box-sizing:border-box}\n' +
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#080a0f;color:#c8d0e0;height:100vh;overflow:hidden}\n' +
+    '.container{display:flex;height:100vh}\n' +
+    '.sidebar{width:340px;min-width:300px;background:#11131f;border-right:1px solid #1e2235;display:flex;flex-direction:column;overflow:hidden}\n' +
+    '.panel{padding:12px;border-bottom:1px solid #1e2235}\n' +
+    '.panel-title{font-size:.75rem;color:#8a95b5;font-weight:600;margin-bottom:10px;text-transform:uppercase}\n' +
+    '.timeline{flex:1;overflow:auto;padding:10px 12px}\n' +
+    '.tl-header{display:flex;padding-left:100px;margin-bottom:6px}\n' +
+    '.tl-header-cell{width:48px;text-align:center;font-size:.65rem;color:#5a6a8a;border-right:1px solid #1e2235;padding:4px 2px}\n' +
+    '.tl-row{display:flex;align-items:center;margin-bottom:4px}\n' +
+    '.tl-row .rname{width:100px;font-size:.7rem;color:#8a95b5;text-align:right;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n' +
+    '.tl-cell{width:48px;height:28px;display:flex;align-items:center;justify-content:center;border-right:1px solid #1e2235}\n' +
+    '.tl-cell input{width:14px;height:14px;accent-color:#3b82f6;cursor:pointer}\n' +
+    '.controls{padding:10px 12px;border-top:1px solid #1e2235;display:flex;gap:6px;flex-wrap:wrap}\n' +
+    '.btn{padding:5px 12px;border:1px solid #2a3048;border-radius:5px;background:#1a1e2e;color:#8a95b5;font-size:.75rem;cursor:pointer;font-family:inherit}\n' +
+    '.btn:hover{border-color:#3b82f6;color:#60a5fa}\n' +
+    '.btn.active{background:#3b82f6;color:#fff;border-color:#3b82f6}\n' +
+    '.stage{flex:1;display:flex;flex-direction:column;overflow:hidden}\n' +
+    '.svg-area{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#080a0f}\n' +
+    '.svg-box{background:#000;border-radius:10px;border:1px solid #1e2235;overflow:hidden;min-width:200px;min-height:150px}\n' +
+    '.svg-box svg{display:block;width:100%;height:auto}\n' +
+    '.playbar{background:#11131f;border-top:1px solid #1e2235;padding:10px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}\n' +
+    '.step-display{font-size:.75rem;color:#60a5fa;font-weight:600;font-family:monospace;min-width:100px}\n' +
+    '.progress{flex:1;height:4px;background:#1a1e2e;border-radius:2px;overflow:hidden;max-width:200px}\n' +
+    '.progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width .3s}\n' +
+    '.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}\n' +
+    '.anim-dash{fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:6 14;animation:flowDash .8s linear infinite}\n' +
+    '@keyframes flowDash{to{stroke-dashoffset:-20}}\n' +
+    '.anim-particle{fill:#fff}\n' +
+    '.anim-glow{opacity:.25}\n' +
+    '::-webkit-scrollbar{width:5px;height:5px}\n' +
+    '::-webkit-scrollbar-thumb{background:#2a3048;border-radius:3px}\n' +
+    '</style>\n</head>\n<body>\n' +
+    '<div class="container">\n' +
+    '<div class="sidebar">\n' +
+    '<div class="panel">\n' +
+    '<div class="panel-title">时间轴矩阵</div>\n' +
+    '<div class="timeline" id="timeline"></div>\n' +
+    '</div>\n' +
+    '<div class="controls">\n' +
+    '<button class="btn" id="btn-play" onclick="togglePlay()">播放</button>\n' +
+    '<button class="btn" onclick="stopPlay()">停止</button>\n' +
+    '<button class="btn active" id="btn-step" onclick="setMode(\'step\')">步骤</button>\n' +
+    '<button class="btn" id="btn-sync" onclick="setMode(\'sync\')">同步</button>\n' +
+    '<button class="btn" id="btn-loop" onclick="toggleLoop()">循环</button>\n' +
+    '</div>\n' +
+    '</div>\n' +
+    '<div class="stage">\n' +
+    '<div class="svg-area" id="svg-area">\n' +
+    '<div class="svg-box" id="svg-box">' + svgString + '</div>\n' +
+    '</div>\n' +
+    '<div class="playbar">\n' +
+    '<span class="step-display" id="step-display">就绪</span>\n' +
+    '<div class="progress"><div class="progress-fill" id="progress-fill"></div></div>\n' +
+    '<span style="font-size:.65rem;color:#5a6a8a">速度</span>\n' +
+    '<input type="range" style="width:80px" min="0.2" max="3" step="0.1" value="1" oninput="updateSpeed(this.value)">\n' +
+    '<span id="speed-val" style="font-size:.68rem;color:#60a5fa;font-family:monospace;min-width:32px">1.0x</span>\n' +
+    '<span style="font-size:.65rem;color:#5a6a8a">显示</span>\n' +
+    '<button class="btn active" style="font-size:.62rem;padding:2px 6px" id="show-dash" onclick="toggleShow(\'dash\')">虚线</button>\n' +
+    '<button class="btn active" style="font-size:.62rem;padding:2px 6px" id="show-particle" onclick="toggleShow(\'particle\')">粒子</button>\n' +
+    '<button class="btn active" style="font-size:.62rem;padding:2px 6px" id="show-glow" onclick="toggleShow(\'glow\')">辉光</button>\n' +
+    '</div>\n' +
+    '</div>\n' +
+    '</div>\n' +
+    '<script>\n' +
+    'var steps = ' + stepsData + ';\n' +
+    'var paths = ' + pathsData + ';\n' +
+    'var isPlaying = false, loopEnabled = false, playMode = "step", currentStepIndex = -1, stepTimer = null;\n' +
+    'var globalSpeed = 1.0, showDash = true, showParticle = true, showGlow = true;\n' +
+    'var animLayer = null;\n' +
+    'function init() { renderTimeline(); setupAnimLayer(); }\n' +
+    'function setupAnimLayer() {\n' +
+    '  var svg = document.querySelector("#svg-box svg");\n' +
+    '  if (!svg) return;\n' +
+    '  animLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");\n' +
+    '  animLayer.setAttribute("id", "anim-layer");\n' +
+    '  svg.appendChild(animLayer);\n' +
+    '}\n' +
+    'function renderTimeline() {\n' +
+    '  var tl = document.getElementById("timeline");\n' +
+    '  tl.innerHTML = "";\n' +
+    '  var header = document.createElement("div");\n' +
+    '  header.className = "tl-header";\n' +
+    '  var corner = document.createElement("div");\n' +
+    '  corner.style.cssText = "width:100px;flex-shrink:0";\n' +
+    '  header.appendChild(corner);\n' +
+    '  steps.forEach(function(s) {\n' +
+    '    var h = document.createElement("div");\n' +
+    '    h.className = "tl-header-cell";\n' +
+    '    h.innerHTML = "<b>" + s.name + "</b><br><span style=\'font-size:.58rem;color:#3a4a6a\'>" + s.label + "</span>";\n' +
+    '    header.appendChild(h);\n' +
+    '  });\n' +
+    '  tl.appendChild(header);\n' +
+    '  paths.forEach(function(p) {\n' +
+    '    var row = document.createElement("div");\n' +
+    '    row.className = "tl-row";\n' +
+    '    var name = document.createElement("div");\n' +
+    '    name.className = "rname";\n' +
+    '    name.innerHTML = "<span class=\'dot\' style=\'background:" + p.color + "\'></span>" + p.name;\n' +
+    '    row.appendChild(name);\n' +
+    '    p.steps.forEach(function(active, idx) {\n' +
+    '      var cell = document.createElement("div");\n' +
+    '      cell.className = "tl-cell";\n' +
+    '      var cb = document.createElement("input");\n' +
+    '      cb.type = "checkbox";\n' +
+    '      cb.checked = active;\n' +
+    '      cb.onchange = function() { p.steps[idx] = cb.checked; };\n' +
+    '      cell.appendChild(cb);\n' +
+    '      row.appendChild(cell);\n' +
+    '    });\n' +
+    '    tl.appendChild(row);\n' +
+    '  });\n' +
+    '}\n' +
+    'function togglePlay() { if (isPlaying) { pausePlay(); } else { startPlay(); } }\n' +
+    'function startPlay() {\n' +
+    '  isPlaying = true;\n' +
+    '  document.getElementById("btn-play").textContent = "暂停";\n' +
+    '  document.getElementById("btn-play").classList.add("active");\n' +
+    '  document.getElementById("step-display").textContent = playMode === "step" ? "准备播放..." : "同步播放";\n' +
+    '  document.getElementById("step-display").style.color = "#22c55e";\n' +
+    '  document.getElementById("progress-fill").style.width = "0%";\n' +
+    '  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }\n' +
+    '  if (playMode === "sync") {\n' +
+    '    paths.forEach(function(p) { if (p.visible) createAnim(p); });\n' +
+    '    document.getElementById("step-display").textContent = "同步运行";\n' +
+    '  } else {\n' +
+    '    currentStepIndex = 0;\n' +
+    '    playStep(0);\n' +
+    '  }\n' +
+    '}\n' +
+    'function playStep(idx) {\n' +
+    '  if (!isPlaying) return;\n' +
+    '  if (idx >= steps.length) {\n' +
+    '    if (loopEnabled) { currentStepIndex = 0; playStep(0); return; }\n' +
+    '    stopPlay(); return;\n' +
+    '  }\n' +
+    '  currentStepIndex = idx;\n' +
+    '  var step = steps[idx];\n' +
+    '  document.getElementById("step-display").textContent = step.name + " (" + step.label + ")";\n' +
+    '  document.getElementById("progress-fill").style.width = ((idx / steps.length) * 100) + "%";\n' +
+    '  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }\n' +
+    '  paths.forEach(function(p) {\n' +
+    '    if (p.visible && p.steps[idx]) createAnim(p);\n' +
+    '  });\n' +
+    '  stepTimer = setTimeout(function() { playStep(idx + 1); }, (step.duration / globalSpeed) * 1000);\n' +
+    '}\n' +
+    'function pausePlay() {\n' +
+    '  isPlaying = false;\n' +
+    '  document.getElementById("btn-play").textContent = "播放";\n' +
+    '  document.getElementById("btn-play").classList.remove("active");\n' +
+    '  document.getElementById("step-display").textContent = "已暂停";\n' +
+    '  document.getElementById("step-display").style.color = "#fbbf24";\n' +
+    '  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }\n' +
+    '  if (animLayer) {\n' +
+    '    var dashes = animLayer.querySelectorAll(".anim-dash");\n' +
+    '    dashes.forEach(function(el) { el.style.animationPlayState = "paused"; });\n' +
+    '  }\n' +
+    '}\n' +
+    'function stopPlay() {\n' +
+    '  isPlaying = false;\n' +
+    '  document.getElementById("btn-play").textContent = "播放";\n' +
+    '  document.getElementById("btn-play").classList.remove("active");\n' +
+    '  document.getElementById("step-display").textContent = "就绪";\n' +
+    '  document.getElementById("step-display").style.color = "#5a6a8a";\n' +
+    '  document.getElementById("progress-fill").style.width = "0%";\n' +
+    '  currentStepIndex = -1;\n' +
+    '  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }\n' +
+    '  if (animLayer) { while (animLayer.firstChild) { animLayer.removeChild(animLayer.firstChild); } }\n' +
+    '}\n' +
+    'function createAnim(path) {\n' +
+    '  if (!animLayer) return;\n' +
+    '  var ns = "http://www.w3.org/2000/svg";\n' +
+    '  var existing = animLayer.querySelector(\'[data-anim-id="\' + path.id + \'"]\');\n' +
+    '  if (existing) return;\n' +
+    '  var g = document.createElementNS(ns, "g");\n' +
+    '  g.setAttribute("data-anim-id", path.id);\n' +
+    '  var d = "M " + path.nodes[0].x + " " + path.nodes[0].y;\n' +
+    '  for (var i = 1; i < path.nodes.length; i++) d += " L " + path.nodes[i].x + " " + path.nodes[i].y;\n' +
+    '  var dur = (2.5 / path.speed / globalSpeed).toFixed(2) + "s";\n' +
+    '  if (showDash) {\n' +
+    '    var dash = document.createElementNS(ns, "path");\n' +
+    '    dash.setAttribute("d", d); dash.setAttribute("stroke", path.color);\n' +
+    '    dash.setAttribute("stroke-width", path.width); dash.setAttribute("fill", "none");\n' +
+    '    dash.setAttribute("stroke-linecap", "round"); dash.setAttribute("stroke-dasharray", "6 14");\n' +
+    '    dash.setAttribute("class", "anim-dash"); dash.style.animationDuration = dur;\n' +
+    '    if (path.direction < 0) dash.style.animationDirection = "reverse";\n' +
+    '    g.appendChild(dash);\n' +
+    '  }\n' +
+    '  if (showParticle) {\n' +
+    '    for (var i = 0; i < 3; i++) {\n' +
+    '      var pg = document.createElementNS(ns, "g");\n' +
+    '      if (showGlow) {\n' +
+    '        var glow = document.createElementNS(ns, "circle");\n' +
+    '        glow.setAttribute("r", (path.particleSize * 3).toString());\n' +
+    '        glow.setAttribute("class", "anim-glow"); glow.setAttribute("fill", path.color);\n' +
+    '        pg.appendChild(glow);\n' +
+    '      }\n' +
+    '      var dot = document.createElementNS(ns, "circle");\n' +
+    '      dot.setAttribute("r", path.particleSize.toString()); dot.setAttribute("class", "anim-particle");\n' +
+    '      pg.appendChild(dot);\n' +
+    '      var anim = document.createElementNS(ns, "animateMotion");\n' +
+    '      anim.setAttribute("dur", dur); anim.setAttribute("repeatCount", "indefinite");\n' +
+    '      anim.setAttribute("path", d);\n' +
+    '      anim.setAttribute("begin", (i * 0.8 / path.speed / globalSpeed).toFixed(2) + "s");\n' +
+    '      if (path.direction < 0) { anim.setAttribute("keyPoints", "1;0"); anim.setAttribute("keyTimes", "0;1"); }\n' +
+    '      pg.appendChild(anim); g.appendChild(pg);\n' +
+    '    }\n' +
+    '  }\n' +
+    '  animLayer.appendChild(g);\n' +
+    '}\n' +
+    'function setMode(mode) {\n' +
+    '  playMode = mode;\n' +
+    '  document.getElementById("btn-step").classList.toggle("active", mode === "step");\n' +
+    '  document.getElementById("btn-sync").classList.toggle("active", mode === "sync");\n' +
+    '}\n' +
+    'function toggleLoop() {\n' +
+    '  loopEnabled = !loopEnabled;\n' +
+    '  document.getElementById("btn-loop").classList.toggle("active", loopEnabled);\n' +
+    '}\n' +
+    'function updateSpeed(v) {\n' +
+    '  globalSpeed = parseFloat(v);\n' +
+    '  document.getElementById("speed-val").textContent = globalSpeed.toFixed(1) + "x";\n' +
+    '  if (isPlaying) { stopPlay(); startPlay(); }\n' +
+    '}\n' +
+    'function toggleShow(type) {\n' +
+    '  if (type === "dash") showDash = !showDash;\n' +
+    '  if (type === "particle") showParticle = !showParticle;\n' +
+    '  if (type === "glow") showGlow = !showGlow;\n' +
+    '  document.getElementById("show-dash").classList.toggle("active", showDash);\n' +
+    '  document.getElementById("show-particle").classList.toggle("active", showParticle);\n' +
+    '  document.getElementById("show-glow").classList.toggle("active", showGlow);\n' +
+    '  if (isPlaying) { stopPlay(); startPlay(); }\n' +
+    '}\n' +
+    'if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", init); } else { init(); }\n' +
+    '</' + 'script>\n</body>\n</html>';
+  return page;
+}
+
+function buildExportSVG() {
+  var svgClone = mainSvg.cloneNode(true);
+  svgClone.removeAttribute('id');
+  var clonedAnimLayer = svgClone.querySelector('#anim-layer');
+  if (clonedAnimLayer) clonedAnimLayer.remove();
+  var ns = 'http://www.w3.org/2000/svg';
+  var animGroup = document.createElementNS(ns, 'g');
+  allPaths.filter(function(p) { return p.visible; }).forEach(function(path) {
+    var d = 'M ' + path.nodes[0].x + ' ' + path.nodes[0].y;
+    for (var i = 1; i < path.nodes.length; i++) d += ' L ' + path.nodes[i].x + ' ' + path.nodes[i].y;
+    var dur = (2.5 / path.speed / globalSpeed).toFixed(2);
+    var dash = document.createElementNS(ns, 'path');
+    dash.setAttribute('d', d); dash.setAttribute('stroke', path.color);
+    dash.setAttribute('stroke-width', path.width); dash.setAttribute('fill', 'none');
+    dash.setAttribute('stroke-linecap', 'round'); dash.setAttribute('stroke-dasharray', '6 14');
+    var anim = document.createElementNS(ns, 'animate');
+    anim.setAttribute('attributeName', 'stroke-dashoffset'); anim.setAttribute('from', '0'); anim.setAttribute('to', '-20');
+    anim.setAttribute('dur', (1.0 / path.speed / globalSpeed).toFixed(2) + 's'); anim.setAttribute('repeatCount', 'indefinite');
+    dash.appendChild(anim); animGroup.appendChild(dash);
+    for (var i = 0; i < 3; i++) {
+      var pg = document.createElementNS(ns, 'g');
+      var dot = document.createElementNS(ns, 'circle');
+      dot.setAttribute('r', path.particleSize.toString()); dot.setAttribute('fill', '#fff');
+      var am = document.createElementNS(ns, 'animateMotion');
+      am.setAttribute('dur', dur + 's'); am.setAttribute('repeatCount', 'indefinite');
+      am.setAttribute('path', d); am.setAttribute('begin', (i * 0.8 / path.speed / globalSpeed).toFixed(2) + 's');
+      if (path.direction < 0) { am.setAttribute('keyPoints', '1;0'); am.setAttribute('keyTimes', '0;1'); }
+      pg.appendChild(dot); pg.appendChild(am); animGroup.appendChild(pg);
+    }
+  });
+  svgClone.appendChild(animGroup);
+  return new XMLSerializer().serializeToString(svgClone);
+}
+
+function download(content, filename, mime) {
+  var blob = new Blob([content], { type: mime });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+/* ===== 重置 ===== */
+function resetAll() {
+  if (!confirm('确定重置所有内容？')) return;
+  svgContent = null; svgElement = null; wirePaths = []; allPaths = [];
+  currentPath = null; selectedPathId = null; pathIdCounter = 0;
+  isPlaying = false; currentStepIndex = -1;
+  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }
+  steps = [
+    { id: 't1', name: 't1', duration: 2.0, label: 't1-t2' },
+    { id: 't2', name: 't2', duration: 2.0, label: 't2-t3' },
+    { id: 't3', name: 't3', duration: 2.0, label: 't3-t4' },
+    { id: 't4', name: 't4', duration: 2.0, label: 't4-t5' },
+    { id: 't5', name: 't5', duration: 2.0, label: 't5-t6' }
+  ];
+  svgStage.classList.add('empty'); placeholder.style.display = 'block';
+  svgContainer.style.display = 'none'; mainSvg.innerHTML = '';
+  pathList.innerHTML = '<div style="font-size:0.65rem; color:#4a5a7a; line-height:1.5; padding:6px 2px;">上传 SVG 后选择<b>描绘</b>工具，在导线上点击定义节点，按 Enter 完成。每条路径可在时间轴中分配到不同步骤。</div>';
+  pathCount.textContent = '0'; pathSettings.classList.remove('show');
+  stepDisplay.textContent = '就绪'; stepDisplay.style.color = '#5a6a8a';
+  progressFill.style.width = '0%'; playBtn.textContent = '播放'; playBtn.classList.remove('active');
+  if (overlay) overlay.remove(); if (animLayer) animLayer = null;
+  overlay = null; animLayer = null; resetPanZoom();
+  fileInput.value = ''; // 清空文件输入，允许重新选择同一文件
+  renderTimeline(); showToast('已重置');
+}
+
+/* ===== Toast ===== */
+function showToast(msg) {
+  toast.textContent = msg; toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+
+/* ===== 初始化 ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  renderTimeline();
+  showToast('欢迎使用电路电流时间轴绘制器');
+});
+</script>
+</body>
+</html>
