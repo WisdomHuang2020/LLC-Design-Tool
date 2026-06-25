@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
 import GainChart from '../components/GainChart'
+import { LLC_key_waveform_dark } from '../components/LLC_key_waveform_dark'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -797,11 +798,7 @@ export default function Operation() {
           />}>
 
           <div className="bg-bg/50 rounded-lg p-4">
-            <img
-              src="/LLC_key_waveform_dark.svg"
-              className="w-full max-w-3xl mx-auto h-auto"
-              alt="LLC 关键波形"
-            />
+            <LLC_key_waveform_dark />
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
