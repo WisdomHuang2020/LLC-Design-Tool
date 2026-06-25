@@ -1,9 +1,10 @@
 export function LLC_key_waveform_dark() {
   return (
-    <div
-      className="w-full max-w-3xl mx-auto h-auto"
-      dangerouslySetInnerHTML={{
-        __html: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <div className="flex justify-center w-full">
+      <div
+        className="w-full max-w-3xl h-auto"
+        dangerouslySetInnerHTML={{
+          __html: `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
@@ -1309,5 +1310,6 @@ export function LLC_key_waveform_dark() {
 `
       }}
     />
+    </div>
   );
 }

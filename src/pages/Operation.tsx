@@ -802,58 +802,64 @@ export default function Operation() {
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-primary-light" />
-                <h4 className="text-sm font-semibold text-text-primary">Vgs — 栅极驱动</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                两个互补的方波信号，之间存在死区时间（Dead Time）。死区时间长度直接影响 ZVS 能否成功实现。
-              </p>
-            </div>
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-primary-light" />
-                <h4 className="text-sm font-semibold text-text-primary">Ir — 谐振电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                近似正弦的交流电流，包含 Lr 与 Cr 谐振分量。Ir 在死区时间内的方向决定结电容的充放电方向。
-              </p>
-            </div>
+            {/* VLG — 漏极电压（子图1 主波形） */}
             <div className="p-4 bg-bg/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-success" />
-                <h4 className="text-sm font-semibold text-text-primary">Im — 励磁电流</h4>
+                <h4 className="text-sm font-semibold text-text-primary">VLG — 漏极电压</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                三角波或近似三角波，由输出电压反射到原边后加在 Lm 上产生。Im 峰值在谐振电流过零时达到最大。
+                MOSFET 漏极对地电压波形。在死区时间内，通过谐振电流对结电容充放电，VLG 在栅极驱动升高之前降至零，实现 ZVS。
               </p>
             </div>
+            {/* ILOAD — 负载电流（子图1 辅助波形） */}
             <div className="p-4 bg-bg/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-danger" />
-                <h4 className="text-sm font-semibold text-text-primary">Vds — 漏极电压</h4>
+                <div className="w-3 h-3 rounded-full bg-primary-light" />
+                <h4 className="text-sm font-semibold text-text-primary">ILOAD — 负载电流</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                在死区时间内，通过谐振电流对结电容充放电，Vds 在 Vgs 升高之前降至零。这是 ZVS 的关键特征。
+                近似正弦的交流电流，包含 Lr 与 Cr 谐振分量。ILOAD 在死区时间内的方向决定结电容的充放电方向。
               </p>
             </div>
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
-                <h4 className="text-sm font-semibold text-text-primary">Isec — 副边电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                仅在谐振电流绝对值大于励磁电流时流通，对应整流二极管导通时段。在 Region 2 时自然实现 ZCS。
-              </p>
-            </div>
+            {/* IQ1 — Q1 栅极驱动（子图2） */}
             <div className="p-4 bg-bg/50 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 rounded-full bg-accent" />
-                <h4 className="text-sm font-semibold text-text-primary">Io — 输出电流</h4>
+                <h4 className="text-sm font-semibold text-text-primary">IQ1 — Q1 栅极驱动</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                经整流后的脉动直流，频率为开关频率的两倍。输出滤波电容主要滤除此二倍频纹波。
+                Q1 的栅极驱动信号。高电平期间 Q1 导通，正半周能量传输。死区时间内 Q1 和 Q2 均关断，实现 ZVS。
+              </p>
+            </div>
+            {/* IQ2 — Q2 栅极驱动（子图3 主波形） */}
+            <div className="p-4 bg-bg/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-danger" />
+                <h4 className="text-sm font-semibold text-text-primary">IQ2 — Q2 栅极驱动</h4>
+              </div>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                Q2 的栅极驱动信号。与 IQ1 互补，高电平期间 Q2 导通，负半周能量传输。两个驱动之间存在死区时间。
+              </p>
+            </div>
+            {/* IR — 励磁电流（子图3 辅助波形） */}
+            <div className="p-4 bg-bg/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
+                <h4 className="text-sm font-semibold text-text-primary">IR — 励磁电流</h4>
+              </div>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                三角波或近似三角波，由输出电压反射到原边后加在 Lm 上产生。IR 峰值在谐振电流过零时达到最大。
+              </p>
+            </div>
+            {/* ISEC — 副边电流（子图4） */}
+            <div className="p-4 bg-bg/50 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
+                <h4 className="text-sm font-semibold text-text-primary">ISEC — 副边电流</h4>
+              </div>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                仅在谐振电流绝对值大于励磁电流时流通，对应整流二极管导通时段。在 Region 2 时自然实现 ZCS。
               </p>
             </div>
           </div>
