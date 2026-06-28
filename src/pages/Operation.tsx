@@ -799,7 +799,7 @@ export default function Operation() {
 
           <div className="bg-bg/50 rounded-lg p-4">
             <img
-              src="/LLC_key_waveform.svg"
+              src="./LLC_key_waveform.svg"
               className="w-full max-w-3xl mx-auto invert brightness-90"
               alt="LLC 关键波形"
             />
