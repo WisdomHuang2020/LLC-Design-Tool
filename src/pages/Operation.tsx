@@ -798,7 +798,11 @@ export default function Operation() {
           />}>
 
           <div className="bg-bg/50 rounded-lg p-4">
-            <LLC_key_waveform_dark />
+            <img
+              src="/LLC_key_waveform.svg"
+              className="w-full max-w-3xl mx-auto invert brightness-90"
+              alt="LLC 关键波形"
+            />
           </div>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
