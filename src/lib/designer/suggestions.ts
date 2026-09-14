@@ -8,19 +8,19 @@ export function generateSuggestions(
   results: SuggestionInputs,
 ): Suggestion[] {
   const s: Suggestion[] = []
-  const { q, k, mMax, mRequired, mRequiredMin, zvsPhase, lr, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
+  const { q, k, mMax, mRequired, mRequiredMin, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
 
-  // 1. k值与空载增益约束上限 kMax
-  // kMax = 1/(Gmax - 1)，是空载增益能满足 Gmax 的最大 k 值
-  // 约束条件：k <= kMax，k 越小空载增益越高（裕量越大）
-  if (k > kMax) {
-    s.push({ text: `电感比k=${k.toFixed(2)}大于空载增益约束上限k_max=${kMax.toFixed(2)}，空载增益裕量不足。当前设计在最低输入电压下可能无法达到额定输出。建议减小k至≤${kMax.toFixed(2)}或提高最低输入电压。`, level: 'critical' })
+  // 1. k值与空载降压约束上限 kMax
+  // kMax = Gmin/(1-Gmin)（仅当 Gmin<1 时有约束）：Region 1 空载增益下限 k/(k+1)
+  // 必须 ≤ Gmin，否则最高输入电压空载时输出过压，设计不可行
+  if (!Number.isFinite(kMax)) {
+    s.push({ text: `Gmin=${mRequiredMin.toFixed(3)}≥1，空载降压约束不存在，k 取值不受高输入电压限制。`, level: 'good' })
+  } else if (k > kMax) {
+    s.push({ text: `电感比k=${k.toFixed(2)}超过空载降压约束上限k_max=${kMax.toFixed(2)}：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} > Gmin=${mRequiredMin.toFixed(3)}，最高输入电压空载时无法将增益降至所需值，输出过压。建议减小k至≤${kMax.toFixed(2)}或缩窄输入电压上限。`, level: 'critical' })
   } else if (k > kMax * 0.8) {
-    s.push({ text: `电感比k=${k.toFixed(2)}接近约束上限k_max=${kMax.toFixed(2)}（裕量<20%），空载增益裕量较小。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的增益裕量。`, level: 'warn' })
-  } else if (k > kMax * 0.3) {
-    s.push({ text: `电感比k=${k.toFixed(2)}处于合理范围（k_max=${kMax.toFixed(2)}），空载峰值增益Gmax_empty=${gmaxEmpty.toFixed(3)} > 所需Gmax=${mRequired.toFixed(3)}，裕量良好。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(2)}接近空载降压约束上限k_max=${kMax.toFixed(2)}（裕量<20%）。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的空载降压裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${k.toFixed(2)}远小于约束上限k_max=${kMax.toFixed(2)}，空载增益裕量非常充裕。但k过小会导致励磁电流偏大，效率降低。建议考虑增大k至${(kMax * 0.3).toFixed(2)}~${(kMax * 0.7).toFixed(2)}区间以优化效率。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(2)}满足空载降压约束（k_max=${kMax.toFixed(2)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
   }
 
   // 2. Qmax对比分析

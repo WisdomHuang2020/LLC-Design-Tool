@@ -84,7 +84,7 @@ export interface CalculatedData {
   irRms: number
   imRms: number
   bPeak: number
-  gainCurveData: Array<{ fn: number; m: number }>
+  gainCurveData: Array<{ fn: number; m: number; mLight: number }>
 }
 
 /** 损耗模型输入参数 */

@@ -57,10 +57,10 @@ export interface CalculatedResults {
   tZvs: number
   // 设计可行性
   designFeasible: boolean
-  // k最大值（空载增益约束上限）
+  // k最大值（空载降压约束上限，k ≤ Gmin/(1-Gmin)）
   kMax: number
-  // 增益曲线数据
-  gainCurveData: Array<{ fn: number; m: number }>
+  // 增益曲线数据（m: 满载，mLight: 最小负载）
+  gainCurveData: Array<{ fn: number; m: number; mLight: number }>
 }
 
 export interface CurvesState {

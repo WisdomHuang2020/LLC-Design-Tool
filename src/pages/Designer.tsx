@@ -226,7 +226,7 @@ export default function Designer() {
                     <div>
                       <p className="text-sm text-danger font-medium">设计参数不可行</p>
                       <p className="text-xs text-text-secondary mt-1">
-                        高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或降低输入电压上限。
+                        高输入电压空载时所需最小增益低于 Region 1 空载增益下限 k/(k+1)。请减小电感比 k 或降低输入电压上限。
                       </p>
                     </div>
                   </div>
