@@ -5,7 +5,7 @@ import {
   Zap,
   TrendingUp,
   AlertTriangle,
-  CheckCircle,
+  Server,
   XCircle,
   ArrowRight,
   Info,
@@ -21,11 +21,14 @@ import {
   GitCompare,
   LineChart as LineChartIcon,
   RotateCcw,
+  Database,
+  CloudOff,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line, ReferenceLine } from 'recharts'
 import CompensationSection from '../components/CompensationSection'
 import DesignCompare, { saveDesignSnapshot } from '../components/DesignCompare'
+import { designApi } from '../lib/api'
 
 // ─── E-Series helpers ───
 const E12 = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2]
@@ -632,6 +635,8 @@ export default function Designer() {
   const [lossParams, setLossParams] = useState<LossParameters>(loadLossParams)
   const [needsRecalculation, setNeedsRecalculation] = useState(false)
   const [lastFormSnapshot, setLastFormSnapshot] = useState<DesignParameters | null>(null)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [serverConnected, setServerConnected] = useState<boolean | null>(null)
 
   // Load suggestions from calculated data on mount
   useEffect(() => {
@@ -1000,6 +1005,27 @@ export default function Designer() {
     setShowResults(true)
   }
 
+  const handleSaveToServer = async () => {
+    if (!calculated) return
+    const name = prompt('保存设计名称:', `设计 ${new Date().toLocaleTimeString()}`)
+    if (!name) return
+    
+    setSaveStatus('saving')
+    try {
+      await designApi.create({
+        name,
+        description: `${form.topology} | ${form.vinNom}V→${form.vout}V | ${form.pout}W`,
+        parameters: form,
+        results: calculated,
+      })
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch (err) {
+      console.error('保存失败:', err)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }))
   }
@@ -1512,7 +1538,7 @@ export default function Designer() {
                         }`}
                       >
                         {s.level === 'good' ? (
-                          <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                          <Server className="w-5 h-5 text-success shrink-0 mt-0.5" />
                         ) : s.level === 'warn' ? (
                           <AlertTriangle className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                         ) : (
@@ -1683,13 +1709,41 @@ export default function Designer() {
                             ipRms: calculated.ipRms,
                             isRms: calculated.isRms,
                           })
-                          alert(`已保存: ${name}`)
+                          alert(`已保存到本地: ${name}`)
                         }
                       }}
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-light text-white text-sm rounded-lg transition-colors"
                     >
                       <Save className="w-3.5 h-3.5" />
-                      保存当前设计
+                      保存到本地
+                    </button>
+                    <button
+                      onClick={handleSaveToServer}
+                      disabled={saveStatus === 'saving'}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                        saveStatus === 'saved'
+                          ? 'bg-green-600 text-white'
+                          : saveStatus === 'error'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-surface-elevated border border-border hover:border-primary-light text-text-primary'
+                      }`}
+                    >
+                      {saveStatus === 'saving' ? (
+                        <Database className="w-3.5 h-3.5 animate-pulse" />
+                      ) : saveStatus === 'saved' ? (
+                        <Server className="w-3.5 h-3.5" />
+                      ) : saveStatus === 'error' ? (
+                        <CloudOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Database className="w-3.5 h-3.5" />
+                      )}
+                      {saveStatus === 'saving'
+                        ? '保存中...'
+                        : saveStatus === 'saved'
+                        ? '已保存到服务器'
+                        : saveStatus === 'error'
+                        ? '保存失败'
+                        : '保存到服务器'}
                     </button>
                   </div>
                 </div>
