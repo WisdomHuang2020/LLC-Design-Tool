@@ -3,6 +3,10 @@
 import type { DesignParameters } from '../DesignContext'
 import type { Suggestion, SuggestionInputs } from './types'
 
+/** 非有限值格式化：避免 Infinity 被直接渲染成 "Infinity"（与 ResultsSummaryCard 的显示口径一致） */
+const fmt = (v: number, digits = 3): string =>
+  Number.isFinite(v) ? v.toFixed(digits) : Number.isNaN(v) ? '—' : '∞'
+
 export function generateSuggestions(
   params: DesignParameters,
   results: SuggestionInputs,
@@ -32,7 +36,7 @@ export function generateSuggestions(
   } else if (qmax3 === qmaxMin) {
     s.push({ text: `Qmax3(Coss能量限制)=${qmax3.toFixed(3)} 为最小约束，寄生电容是设计瓶颈。建议选用低Coss MOSFET。`, level: 'warn' })
   }
-  s.push({ text: `Qmax分解：Qmax1=${qmax1.toFixed(3)}, Qmax2=${qmax2.toFixed(3)}, Qmax3=${qmax3.toFixed(3)}，实际取Q=${q.toFixed(3)}(95%裕量)。`, level: 'good' })
+  s.push({ text: `Qmax分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)}，实际取Q=${q.toFixed(3)}(95%裕量)。`, level: 'good' })
 
   // 3. Q value
   if (q > 1.0) {
@@ -75,12 +79,16 @@ export function generateSuggestions(
   const fmaxKHz = fmax / 1000
   const fminKHz = fmin / 1000
   const frKHz = fsw / 1000
-  if (fmaxKHz > frKHz * 2.0) {
-    s.push({ text: `频率调节范围过宽（fmax=${fmaxKHz.toFixed(1)}kHz >> fr=${frKHz.toFixed(1)}kHz），磁性元件设计困难。`, level: 'critical' })
-  } else if (fmaxKHz > frKHz * 1.5) {
-    s.push({ text: `频率范围较宽（fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz），注意磁性元件在宽频下的损耗。`, level: 'warn' })
-  } else {
-    s.push({ text: `频率范围合理：fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz（fr=${frKHz.toFixed(1)}kHz）。`, level: 'good' })
+  // fmax 非有限 = 设计不可行（Gmin < k/(k+1)），此时不给频率范围建议，
+  // 否则会渲染出 "fmax=InfinitykHz" 这类无意义文本；原因已由上方 k_max 告警说明。
+  if (Number.isFinite(fmax)) {
+    if (fmaxKHz > frKHz * 2.0) {
+      s.push({ text: `频率调节范围过宽（fmax=${fmaxKHz.toFixed(1)}kHz >> fr=${frKHz.toFixed(1)}kHz），磁性元件设计困难。`, level: 'critical' })
+    } else if (fmaxKHz > frKHz * 1.5) {
+      s.push({ text: `频率范围较宽（fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz），注意磁性元件在宽频下的损耗。`, level: 'warn' })
+    } else {
+      s.push({ text: `频率范围合理：fmin=${fminKHz.toFixed(1)}kHz ~ fmax=${fmaxKHz.toFixed(1)}kHz（fr=${frKHz.toFixed(1)}kHz）。`, level: 'good' })
+    }
   }
 
   // 7. Efficiency target

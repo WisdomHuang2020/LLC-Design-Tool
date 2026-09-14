@@ -42,6 +42,40 @@ export function peakGain(k: number, q: number): number {
   return maxM
 }
 
+/**
+ * 满载增益曲线（给定 Q）上 M = target 的交点频率（归一化 fn），取**感性区一侧**（峰值频率右侧）。
+ *
+ * 为什么取右侧：LLC 增益曲线在峰值频率处达到最大，向右（频率升高）单调下降，控制环才能稳定；
+ * 峰值左侧 dM/dfn > 0，属折叠区（容性），环路无法稳定停留。
+ * 该交点即「满载 + 最低母线」所需的最低开关频率 —— 轻载在同一增益要求下所需频率更高，
+ * 故满载是最坏情况，此值即全工况的最低开关频率。
+ *
+ * @returns 归一化频率 fn；若满载峰值增益都达不到 target，则返回峰值频率本身
+ */
+export function fullLoadGainCrossing(k: number, q: number, target: number): number {
+  const fnLower = 1 / Math.sqrt(1 + k) // 空载极点，Region 1 / Region 2 分界
+  const step = 0.001
+  let fnPeak = fnLower + step
+  let mPeak = -Infinity
+  for (let fn = fnLower + step; fn <= 1; fn += step) {
+    const m = gainM(fn, k, q)
+    if (m > mPeak) {
+      mPeak = m
+      fnPeak = fn
+    }
+  }
+  if (mPeak <= target) return fnPeak // 峰值即最大增益能力，达不到 target
+  // 在 [fnPeak, 1] 上二分：gainM 在此区间随 fn 单调下降
+  let lo = fnPeak
+  let hi = 1
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2
+    if (gainM(mid, k, q) >= target) lo = mid
+    else hi = mid
+  }
+  return (lo + hi) / 2
+}
+
 // ZVS phase check at fsw (fn = 1 since fr = fsw in our design)
 export function zvsPhase(k: number, q: number): number {
   // At fn=1, the real part of Zin is (ωLm)²Rac / (Rac² + (ωLm)²)
