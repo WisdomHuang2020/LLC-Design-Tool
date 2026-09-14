@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useDesign, DesignParameters, defaultParams } from '../lib/DesignContext'
 import {
   Calculator,
@@ -18,6 +18,7 @@ import {
   BatteryCharging,
   Gauge,
   Save,
+  Trash2,
   GitCompare,
   LineChart as LineChartIcon,
   RotateCcw,
@@ -25,7 +26,14 @@ import {
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line, ReferenceLine } from 'recharts'
 import CompensationSection from '../components/CompensationSection'
-import DesignCompare, { saveDesignSnapshot } from '../components/DesignCompare'
+import DesignCompare from '../components/DesignCompare'
+import {
+  MAX_SNAPSHOTS,
+  getSnapshots,
+  removeSnapshot,
+  saveDesignSnapshot,
+  subscribeSnapshots,
+} from '../lib/designSnapshots'
 
 // ─── E-Series helpers ───
 const E12 = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2]
@@ -632,6 +640,9 @@ export default function Designer() {
   const [lossParams, setLossParams] = useState<LossParameters>(loadLossParams)
   const [needsRecalculation, setNeedsRecalculation] = useState(false)
   const [lastFormSnapshot, setLastFormSnapshot] = useState<DesignParameters | null>(null)
+  const snapshots = useSyncExternalStore(subscribeSnapshots, getSnapshots)
+  const [snapshotName, setSnapshotName] = useState('')
+  const [snapshotStatus, setSnapshotStatus] = useState<{ text: string; error: boolean } | null>(null)
 
   // Load suggestions from calculated data on mount
   useEffect(() => {
@@ -1002,6 +1013,38 @@ export default function Designer() {
 
   const toggleSection = (key: string) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleSaveSnapshot = () => {
+    if (!calculated) return
+    const name = snapshotName.trim() || `设计 ${snapshots.length + 1}`
+    const { ok, error, dropped } = saveDesignSnapshot(name, form, {
+      n: calculated.n,
+      fr: calculated.fr,
+      lr: calculated.lr,
+      cr: calculated.cr,
+      lm: calculated.lm,
+      q: calculated.q,
+      k: calculated.k,
+      mMax: calculated.mMax,
+      mRequired: calculated.gMax,
+      zvsMargin: calculated.zvsMargin,
+      ipRms: calculated.ipRms,
+      isRms: calculated.isRms,
+    })
+    if (!ok) {
+      setSnapshotStatus({ text: `保存失败：${error ?? '浏览器本地存储不可用'}`, error: true })
+      return
+    }
+    setSnapshotName('')
+    setSnapshotStatus({
+      text: dropped
+        ? `已保存「${name}」；上限 ${MAX_SNAPSHOTS} 条，最旧的「${dropped.name}」已被移除`
+        : `已保存「${name}」，可在下方「A/B 设计对比」中勾选对比`,
+      error: false,
+    })
+    // Reveal the comparison panel so the saved snapshot is immediately visible.
+    setCollapsedSections((prev) => ({ ...prev, compare: false }))
   }
 
   const handleReset = () => {
@@ -1659,40 +1702,74 @@ export default function Designer() {
 
               {/* Save Design & Compare */}
               <div className={cardClass}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <GitCompare className="w-5 h-5 text-primary-light" />
                     <h2 className="text-lg font-semibold text-text-primary">设计快照</h2>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        const name = prompt('保存设计名称:', `设计 ${new Date().toLocaleTimeString()}`)
-                        if (name && calculated) {
-                          saveDesignSnapshot(name, form, {
-                            n: calculated.n,
-                            fr: calculated.fr,
-                            lr: calculated.lr,
-                            cr: calculated.cr,
-                            lm: calculated.lm,
-                            q: calculated.q,
-                            k: calculated.k,
-                            mMax: calculated.mMax,
-                            mRequired: calculated.gMax,
-                            zvsMargin: calculated.zvsMargin,
-                            ipRms: calculated.ipRms,
-                            isRms: calculated.isRms,
-                          })
-                          alert(`已保存到本地: ${name}`)
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-light text-white text-sm rounded-lg transition-colors"
-                    >
-                      <Save className="w-3.5 h-3.5" />
-                      保存到本地
-                    </button>
-                  </div>
+                  <span className="text-xs font-mono text-text-muted">
+                    已保存 {snapshots.length} / {MAX_SNAPSHOTS}
+                  </span>
                 </div>
+
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="text"
+                    value={snapshotName}
+                    onChange={(e) => setSnapshotName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveSnapshot()
+                    }}
+                    placeholder="快照名称（留空则自动命名）"
+                    className="flex-1 px-3 py-1.5 text-sm rounded-lg bg-surface-elevated border border-border text-text-primary placeholder:text-text-muted focus:border-primary-light focus:outline-none"
+                  />
+                  <button
+                    onClick={handleSaveSnapshot}
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary-light text-white text-sm rounded-lg transition-colors"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    保存到本地
+                  </button>
+                </div>
+
+                {snapshotStatus && (
+                  <p className={`mt-2 text-xs ${snapshotStatus.error ? 'text-red-400' : 'text-primary-light'}`}>
+                    {snapshotStatus.text}
+                  </p>
+                )}
+
+                {snapshots.length > 0 ? (
+                  <ul className="mt-3 space-y-1.5">
+                    {snapshots.map((s) => (
+                      <li
+                        key={s.id}
+                        className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-surface-elevated border border-border"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm text-text-primary truncate">{s.name}</p>
+                          <p className="text-xs font-mono text-text-muted truncate">
+                            {s.params.vinNom}V→{s.params.vout}V · {s.params.pout}W · fr {(s.results.fr / 1000).toFixed(1)}kHz · Q {s.results.q.toFixed(2)} · k {s.results.k.toFixed(2)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeSnapshot(s.id)}
+                          title="删除该快照"
+                          className="shrink-0 p-1 text-text-muted hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-xs text-text-muted">
+                    还没有快照。点击「保存到本地」把当前计算结果存下来，之后可在下方「A/B 设计对比」中勾选对比。
+                  </p>
+                )}
+
+                <p className="mt-3 text-xs text-text-muted">
+                  快照保存在浏览器本地存储，仅当前设备与浏览器可见；换设备或清理浏览器数据会丢失。需要留档请用「A/B 设计对比」中的「导出 JSON」。
+                </p>
               </div>
 
               {/* Compensation Design */}

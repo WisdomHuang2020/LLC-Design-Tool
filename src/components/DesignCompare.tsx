@@ -1,4 +1,11 @@
-import { useState, useMemo } from 'react'
+import { useMemo, useState, useSyncExternalStore } from 'react'
+import {
+  subscribeSnapshots,
+  getSnapshots,
+  removeSnapshot,
+  clearSnapshots,
+  type DesignSnapshot,
+} from '../lib/designSnapshots'
 import {
   ResponsiveContainer,
   LineChart,
@@ -14,55 +21,6 @@ import {
 } from 'recharts'
 import { Save, Trash2, BarChart3, TrendingUp, Award, AlertTriangle, CheckCircle } from 'lucide-react'
 
-interface DesignSnapshot {
-  id: string
-  name: string
-  timestamp: number
-  params: {
-    vinMin: number
-    vinMax: number
-    vinNom: number
-    vout: number
-    pout: number
-    efficiency: number
-    fsw: number
-    topology: string
-    rectifier: string
-    loadMin: number
-    loadMax: number
-  }
-  results: {
-    n: number
-    fr: number
-    lr: number
-    cr: number
-    lm: number
-    q: number
-    k: number
-    mMax: number
-    mRequired: number
-    zvsMargin: boolean
-    ipRms: number
-    isRms: number
-  }
-}
-
-const STORAGE_KEY = 'llc_design_compare'
-
-function loadDesigns(): DesignSnapshot[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) return JSON.parse(raw)
-  } catch {
-    // ignore
-  }
-  return []
-}
-
-function saveDesigns(designs: DesignSnapshot[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(designs))
-}
-
 function calcGain(fn: number, k: number, q: number): number {
   const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
   const b = q * (fn - 1 / fn)
@@ -70,7 +28,7 @@ function calcGain(fn: number, k: number, q: number): number {
 }
 
 export default function DesignCompare() {
-  const [designs, setDesigns] = useState<DesignSnapshot[]>(loadDesigns)
+  const designs = useSyncExternalStore(subscribeSnapshots, getSnapshots)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [showGainChart, setShowGainChart] = useState(true)
   const [showEffChart, setShowEffChart] = useState(true)
@@ -110,16 +68,13 @@ export default function DesignCompare() {
   }
 
   const handleDelete = (id: string) => {
-    const next = designs.filter((d) => d.id !== id)
-    setDesigns(next)
-    saveDesigns(next)
+    removeSnapshot(id)
     setSelectedIds((prev) => prev.filter((x) => x !== id))
   }
 
   const handleClearAll = () => {
     if (!confirm('确定要清空所有保存的设计吗？')) return
-    setDesigns([])
-    saveDesigns([])
+    clearSnapshots()
     setSelectedIds([])
   }
 
@@ -201,7 +156,7 @@ export default function DesignCompare() {
       {designs.length === 0 ? (
         <div className="text-center py-8 text-text-muted">
           <Save className="w-10 h-10 mx-auto mb-3 opacity-50" />
-          <p>暂无保存的设计。请在Designer页面点击“保存当前设计”按钮。</p>
+          <p>暂无保存的设计。请在上方「设计快照」卡片中输入名称后点击「保存到本地」。</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -455,28 +410,6 @@ export default function DesignCompare() {
   )
 }
 
-export function saveDesignSnapshot(
-  name: string,
-  params: DesignSnapshot['params'],
-  results: DesignSnapshot['results']
-) {
-  const designs = loadDesigns()
-  const snapshot: DesignSnapshot = {
-    id: `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-    name,
-    timestamp: Date.now(),
-    params,
-    results,
-  }
-  // Limit to 8 designs
-  if (designs.length >= 8) {
-    designs.shift()
-  }
-  designs.push(snapshot)
-  saveDesigns(designs)
-  return designs
-}
-
-export function getSavedDesigns(): DesignSnapshot[] {
-  return loadDesigns()
-}
+// Snapshot persistence lives in src/lib/designSnapshots.ts so that every view
+// stays in sync. Import saveDesignSnapshot / removeSnapshot / clearSnapshots
+// from there.
