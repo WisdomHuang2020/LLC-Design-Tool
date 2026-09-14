@@ -91,9 +91,9 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                   : 'good'
             }
           />
-          <ResultItem label="Qmax1 (增益)" value={calculated.qmax1.toFixed(3)} unit="" formula="峰值增益约束" />
-          <ResultItem label="Qmax2 (ZVS)" value={calculated.qmax2.toFixed(3)} unit="" formula="死区时间约束" />
-          <ResultItem label="Qmax3 (Coss)" value={calculated.qmax3.toFixed(3)} unit="" formula="寄生电容约束" />
+          <ResultItem label="Qmax1 (增益)" value={Number.isFinite(calculated.qmax1) ? calculated.qmax1.toFixed(3) : '—'} unit="" formula="峰值增益约束" />
+          <ResultItem label="Qmax2 (ZVS)" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区时间约束" />
+          <ResultItem label="Qmax3 (Coss)" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="寄生电容约束" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>
 

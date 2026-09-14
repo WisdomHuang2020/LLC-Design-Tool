@@ -802,8 +802,8 @@ export default function Fundamentals() {
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">导通损耗</td>
-                  <td className="py-3 px-4">相当（2 管导通，每管电流大）</td>
-                  <td className="py-3 px-4">相当（4 管导通，每管电流小，总损耗相近）</td>
+                  <td className="py-3 px-4">较高（2 管导通，单管电流为全桥的 2 倍）</td>
+                  <td className="py-3 px-4">较低（4 管导通，单管电流减半，总损耗约为半桥的 1/2）</td>
                 </tr>
                 <tr className="border-b border-border/50">
                   <td className="py-3 px-4 font-medium text-text-primary">整流拓扑灵活性</td>

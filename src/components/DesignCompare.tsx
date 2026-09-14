@@ -91,15 +91,11 @@ export default function DesignCompare() {
   const scoreDesign = (d: DesignSnapshot) => {
     // Efficiency score: linear up to 97%
     const effScore = Math.min(d.params.efficiency / 97, 1) * 40
-    // Frequency range score: narrow range is better
-    // Approximate fmax/fmin from gain curve: at mRequired, find fn
-    // Simplified: use Q and k to estimate
-    const q = d.results.q
-    const k = d.results.k
-    const freqRangeScore = Math.max(0, 1 - (q * 0.5 + k)) * 30
     // ZVS margin score
     const zvsScore = d.results.zvsMargin ? 30 : 0
-    return effScore + freqRangeScore + zvsScore
+    // 可达满分原为 70 分（效率 40 + ZVS 30）。此处线性归一到 100，
+    // 使显示数值与「/ 100」标签自洽；该变换为单调线性，排序结果不变。
+    return ((effScore + zvsScore) / 70) * 100
   }
 
   const rankedDesigns = useMemo(() => {
@@ -285,7 +281,7 @@ export default function DesignCompare() {
                 <h3 className="text-sm font-semibold text-text-primary">设计推荐</h3>
               </div>
               <p className="text-sm text-text-secondary">
-                综合评分（效率40% + 频率范围30% + ZVS裕量30%）最高的是{' '}
+                综合评分（效率 40 分 + ZVS 裕量 30 分，归一到 100）最高的是{' '}
                 <span className="text-primary-light font-semibold">{bestDesign.name}</span>
                 ，评分 {scoreDesign(bestDesign).toFixed(1)} / 100。
               </p>

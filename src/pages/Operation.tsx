@@ -149,14 +149,14 @@ function GainCurveSVG() {
         opacity="0.9"
       />
       <path
-        d="M 20 200 Q 60 185 100 125 Q 115 95 120 82 L 210 120 Q 250 132 290 142 Q 340 156 400 168"
+        d="M 20 200 Q 60 190 100 152 Q 115 145 120 142 L 210 120 Q 250 130 290 140 Q 340 152 400 164"
         fill="none"
         stroke="#14b8a6"
         strokeWidth="2.5"
         opacity="0.9"
       />
       <path
-        d="M 20 200 Q 60 192 100 168 Q 115 148 120 138 L 210 120 Q 260 132 310 142 Q 350 152 400 162"
+        d="M 20 200 Q 60 197 100 191 Q 115 189 120 188 L 210 120 Q 260 128 310 136 Q 350 144 400 152"
         fill="none"
         stroke="#f5f5f5"
         strokeWidth="2"
@@ -184,6 +184,7 @@ function GainCurveSVG() {
         opacity="0.6"
       />
       <text x="255" y="185" fill="#22c55e" fontSize="9" textAnchor="middle">Region 1 &amp; 2: ZVS 区域</text>
+      <text x="400" y="232" fill="#737373" fontSize="8" textAnchor="end">示意图（非等比例）</text>
     </svg>
   )
 }
