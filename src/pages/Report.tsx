@@ -24,6 +24,7 @@ export default function Report() {
   const { params, results, suggestions } = useDesign()
   const [notes, setNotes] = useState('')
   const [copied, setCopied] = useState(false)
+  const [pdfBusy, setPdfBusy] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
 
   const dateStr = new Date().toLocaleDateString('zh-CN', {
@@ -142,13 +143,36 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
     URL.revokeObjectURL(url)
   }
 
-  const downloadPDF = () => {
+  const downloadPDF = async () => {
     if (!hasData) {
       alert('尚未完成设计计算。请先在「设计工具」页面执行计算。')
       return
     }
-    // 直接调用浏览器打印，用户可在打印对话框中选择「另存为 PDF」
-    window.print()
+    const node = reportRef.current
+    if (!node || pdfBusy) return
+    setPdfBusy(true)
+    try {
+      // 动态引入，避免把 PDF 相关依赖打进首屏包
+      const mod: any = await import('html2pdf.js')
+      const html2pdf = mod?.default ?? mod
+      await html2pdf()
+        .set({
+          margin: [8, 8, 10, 8],
+          filename: `LLC-Design-Report-${new Date().toISOString().split('T')[0]}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'] },
+        })
+        .from(node)
+        .save()
+    } catch (err) {
+      // 渲染失败时回退到浏览器打印（用户可在打印对话框中选择「另存为 PDF」）
+      console.error('PDF 导出失败，回退到打印对话框:', err)
+      window.print()
+    } finally {
+      setPdfBusy(false)
+    }
   }
 
   const printReport = () => {
@@ -218,10 +242,11 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
           </button>
           <button
             onClick={downloadPDF}
-            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+            disabled={pdfBusy}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <FileDown className="w-4 h-4" />
-            PDF
+            {pdfBusy ? '生成中…' : 'PDF'}
           </button>
           <button
             onClick={printReport}
