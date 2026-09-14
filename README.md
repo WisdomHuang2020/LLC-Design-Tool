@@ -61,18 +61,18 @@ npm run lint      # 代码检查
 src/
   pages/        7 个路由页面
   components/   布局、图表、电路符号、数学块等共享组件
-  lib/          DesignContext（跨页面共享的设计状态）、api（后端客户端）
+  lib/          DesignContext（跨页面共享的设计状态）
 docs/
   yang-papers/  LLC 理论参考资料与核心公式总结
 design/
   design.md     产品设计文档（配色、排版、页面规格、状态契约）
 research/
   audit_report.md  公式与计算逻辑审计报告
-llc-server/     可选后端服务（Express + SQLite）
 ```
 
 ## 已知事项
 
-- **`llc-server/` 在线上不可用。** 该目录是本机运行的可选后端（Express + SQLite，默认端口 3001），而线上站点托管于 GitHub Pages，仅支持静态文件。因此设计页的「保存到服务器」按钮在线上会失败，请使用「保存到本地」（存储于浏览器 localStorage）。
+- **本站为纯静态站点，不含后端。** 站点托管于 GitHub Pages，仅支持静态文件，所有设计的持久化均在浏览器本地完成（设计页「保存到本地」按钮，以及参数、结果、损耗模型的自动保存）。历史上曾存在的 `llc-server/`（Express + SQLite）与 `src/lib/api.ts` 已移除，如需查阅可在提交 `4e6b9dbe` 中取回。
+- **后端后续以 API 形式解耦接入。** 接入时建议前端从**运行时**配置读取 API 基址（例如发布产物旁的 `config.json`，或挂载到 `window` 的配置对象），而不是构建时环境变量——后者需要重新构建前端才能切换后端，与解耦目标相悖。
 - **公式审计存在遗留结论待复核。** `research/audit_report.md` 记录了 2026-06-20 的审计结果（14 项）。其中 `racMin`、`fmax` 边界、`irRms`、`imDeadtime` 四项已确认修复；`fmin` 一项（DES-02）经数值验算后确认**原代码正确、审计结论为误报**，无需修改。
 - 构建产物单个 JS chunk 超过 1 MB，如需优化可考虑 `manualChunks` 拆分。
