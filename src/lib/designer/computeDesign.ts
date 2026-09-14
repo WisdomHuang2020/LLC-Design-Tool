@@ -3,7 +3,7 @@
 // 本文件由 pages/Designer.tsx 的 handleCalculate 逐行搬移而来，数学部分未做任何改动。
 import type { DesignParameters, CalculatedResults } from '../DesignContext'
 import type { CalculatedData, LossParameters, Suggestion } from './types'
-import { gainM, peakGain, zvsPhase } from './llcMath'
+import { gainM, peakGain, zvsPhase, fullLoadGainCrossing } from './llcMath'
 import { generateSuggestions } from './suggestions'
 
 export interface DesignComputation {
@@ -133,15 +133,15 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const lm = k * lr
 
   // ─── 步骤6：验证 ───
-  // fmax/fmin：从空载增益公式精确推导
-  // fmax 对应 Region 1（fn>1），要求 gMin >= k/(k+1)
+  // fmax：从空载增益公式精确推导，对应 Region 1（fn>1），要求 gMin >= k/(k+1)
   const fmax = fmaxFeasible
     ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
     : Infinity
-  // fmin 对应 Region 2（fn < 1/√(1+k)）：空载增益 M = k·fn²/(1-(k+1)·fn²)
-  // 令 M = Gmax 解得 fn² = Gmax/(Gmax·(k+1) + k)（分母为 +k）
-  // 注：该方程在 Region 1 另有一根 fn² = Gmax/(Gmax·(k+1) - k)，对应更高频率，不是最小频率
-  const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) + k)))
+  // fmin：由**满载**增益曲线与 M=Gmax 的交点给出（取感性区一侧）。
+  // 满载 + 最低母线是调频下限的最坏情况；轻载在同一增益要求下所需频率更高，不会更低。
+  // 注：空载公式 M=Gmax 有两个根，其中 Region 2 根（fn < 1/√(1+k)）落在容性区、不可工作，
+  //     仅代空载公式会把它误当成"最低频率"，故此处改用满载曲线（峰值频率右侧的交点）。
+  const fmin = fr * fullLoadGainCrossing(k, q, gMax)
 
   // 整体设计可行性
   const designFeasible = fmaxFeasible && k <= kMax
