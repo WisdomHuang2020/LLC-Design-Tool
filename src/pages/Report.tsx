@@ -8,7 +8,6 @@ import {
   Check,
   Printer,
   FileDown,
-  ArrowLeft,
   Calendar,
   Hash,
   Zap,
@@ -16,7 +15,6 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  Waves,
   Info,
 } from 'lucide-react'
 
@@ -153,7 +151,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
     setPdfBusy(true)
     try {
       // 动态引入，避免把 PDF 相关依赖打进首屏包
-      const mod: any = await import('html2pdf.js')
+      const mod = await import('html2pdf.js')
       const html2pdf = mod?.default ?? mod
       await html2pdf()
         .set({
@@ -215,11 +213,6 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
       : (r.n * (p.vout + p.vd)) / p.vinMax
     : 0
   const gainMargin = hasData ? ((r.mMax / mReqMin - 1) * 100) : 0
-  const gainMarginText = gainMargin < 0
-    ? '⚠️ 峰值增益不足，需调整 k 或 Q。'
-    : gainMargin < 5
-    ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。`
-    : '✅ 峰值增益裕量充足，设计可行。'
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">

@@ -9,7 +9,9 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  type TooltipProps,
 } from 'recharts'
+import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
 import { Activity, Sliders, Info, CheckCircle, AlertTriangle } from 'lucide-react'
 
 interface CompensationData {
@@ -44,7 +46,6 @@ interface CompensationResult {
 }
 
 // E-Series helpers
-const E12 = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2]
 const E24 = [
   1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
 ]
@@ -126,8 +127,6 @@ function compGainPhase(
   // Gc(s) = K * (1+s/wz1) / [s * (1+s/wp1)] for Type II
   // Gc(s) = K * (1+s/wz1)(1+s/wz2) / [s * (1+s/wp1)(1+s/wp2)] for Type III
 
-  const s = { re: 0, im: w }
-
   // Numerator: K * prod(1 + s/wzi)
   let numMag = K
   let numPhase = 0
@@ -184,7 +183,6 @@ export default function CompensationSection() {
   const wpZero = useMemo(() => 1 / (ESR * 1e-3 * Cout * 1e-6), [ESR, Cout])
 
   const handleDesign = () => {
-    const wFc = 2 * Math.PI * fc
     const { gain: plantGainDb, phase: plantPhase } = plantGainPhase(fc, Kp, wpOut, wpZero, plantModel)
     const plantGainLinear = Math.pow(10, plantGainDb / 20)
 
@@ -339,14 +337,14 @@ export default function CompensationSection() {
     return data
   }, [result, Kp, wpOut, wpZero, plantModel])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (!active || !payload?.length) return null
     return (
       <div className="bg-surface border border-border rounded-lg p-3 shadow-xl">
         <p className="text-text-secondary text-sm font-mono mb-1">
           f = {Number(label).toFixed(0)} Hz
         </p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: Payload<ValueType, NameType>, index: number) => (
           <p key={index} className="text-sm font-mono" style={{ color: entry.color }}>
             {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(1) : entry.value}
           </p>
@@ -452,7 +450,7 @@ export default function CompensationSection() {
               <select
                 className={inputClass}
                 value={plantModel}
-                onChange={(e) => setPlantModel(e.target.value as any)}
+                onChange={(e) => setPlantModel(e.target.value as 'integrator' | 'pole' | 'pole-zero')}
               >
                 <option value="integrator">简化积分器 Gp = Kp/s</option>
                 <option value="pole">积分器+输出极点 Gp = Kp/[s(1+s/wp)]</option>

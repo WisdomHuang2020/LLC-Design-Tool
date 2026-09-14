@@ -16,7 +16,6 @@ import {
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
 import GainChart from '../components/GainChart'
-import { LLC_key_waveform_dark } from '../components/LLC_key_waveform_dark'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },

@@ -8,9 +8,10 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ReferenceLine,
+  type TooltipProps,
 } from 'recharts'
+import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
 import { Download, Link2, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import GainChart from '../components/GainChart'
@@ -103,20 +104,20 @@ export default function Curves() {
     }
   }, [results, setCurves])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (!active || !payload?.length) return null
     return (
       <div className="bg-surface border border-border rounded-lg p-3 shadow-xl">
         <p className="text-text-secondary text-sm font-mono mb-1">
           fn = {Number(label).toFixed(3)}
         </p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: Payload<ValueType, NameType>, index: number) => (
           <p
             key={index}
             className="text-sm font-mono"
             style={{ color: entry.color }}
           >
-            {entry.name}: {entry.value?.toFixed(3)}
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(3) : entry.value}
           </p>
         ))}
       </div>

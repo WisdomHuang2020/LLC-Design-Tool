@@ -18,8 +18,10 @@ import {
   BarChart,
   Bar,
   Cell,
+  type TooltipProps,
 } from 'recharts'
-import { Save, Trash2, BarChart3, TrendingUp, Award, AlertTriangle, CheckCircle } from 'lucide-react'
+import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
+import { Save, Trash2, BarChart3, TrendingUp, Award, CheckCircle } from 'lucide-react'
 
 function calcGain(fn: number, k: number, q: number): number {
   const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
@@ -104,14 +106,14 @@ export default function DesignCompare() {
 
   const bestDesign = rankedDesigns[0]
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (!active || !payload?.length) return null
     return (
       <div className="bg-surface border border-border rounded-lg p-3 shadow-xl">
         <p className="text-text-secondary text-sm font-mono mb-1">
           {typeof label === 'number' ? `fn = ${label.toFixed(2)}` : label}
         </p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: Payload<ValueType, NameType>, index: number) => (
           <p key={index} className="text-sm font-mono" style={{ color: entry.color }}>
             {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(3) : entry.value}
           </p>
@@ -234,8 +236,8 @@ export default function DesignCompare() {
                   ].map((row) => {
                     const values = selectedDesigns.map((d) => {
                       const val = (row.key as string) in d.results
-                        ? (d.results as any)[row.key]
-                        : (d.params as any)[row.key]
+                        ? (d.results as unknown as Record<string, unknown>)[row.key]
+                        : (d.params as unknown as Record<string, unknown>)[row.key]
                       return val
                     })
                     const numericValues = values.filter((v) => typeof v === 'number') as number[]
@@ -257,7 +259,7 @@ export default function DesignCompare() {
                                 : ''
                             }`}
                           >
-                            {row.fmt(v)}
+                            {row.fmt(v as number)}
                           </td>
                         ))}
                         {selectedDesigns.length > 1 && (

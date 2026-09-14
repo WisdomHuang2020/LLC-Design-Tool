@@ -263,7 +263,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="M(f_n, k, Q) = \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + k^2 Q^2 (f_n^2 - 1)^2}}"
+            latex="M(f_n, k, Q) = \\frac{f_n^2 k}{\\sqrt{\\left[f_n^2(k+1) - 1\\right]^2 + f_n^2 k^2 Q^2 \\left(f_n^2 - 1\\right)^2}}"
             label="FHA 增益的等价形式"
           />
 
@@ -282,8 +282,8 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">空载特性</p>
-              <MathBlock latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 - \\frac{1}{f_n^2(1 + k)}\\right|}" />
-              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益，用于评估轻载稳定性。</p>
+              <MathBlock latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right|} = \\frac{k f_n^2}{\\left|f_n^2(1 + k) - 1\\right|}" />
+              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：f_n → 1/√(1+k)（即 f_m）时趋于无穷大，f_n → ∞ 时趋向 k/(k+1)。</p>
             </div>
           </div>
 
@@ -396,9 +396,13 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="k_{min} = \\frac{1}{M_{max} - 1}, \\qquad M_{max,empty} = 1 + \\frac{1}{k}"
-            label="电感比 k 的约束"
+            latex="k_{max} = \\frac{M_{min}}{1 - M_{min}} \\; (M_{min} < 1), \\qquad M_{empty}(f_n \\to \\infty) = \\frac{k}{k + 1}"
+            label="电感比 k 的空载降压约束"
           />
+
+          <p className="text-text-secondary text-sm mt-2">
+            最高输入电压空载时须将增益降至 M<sub>min</sub>：Region 1 空载增益下限为 k/(k+1)，故要求 k/(k+1) ≤ M<sub>min</sub>，即 k ≤ k<sub>max</sub>。若 k 超过该上限，即使频率无限升高输出仍会过压，设计不可行。
+          </p>
 
           <MathBlock
             latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = 0.95 \\cdot Q_{max}"

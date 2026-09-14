@@ -30,7 +30,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const cossEr = form.cossEr * 1e-12  // pF -> F
   const cj = form.cj * 1e-12          // pF -> F
   const td = form.td * 1e-9           // ns -> s
-  const loadMin = form.loadMin
+  const loadMin = form.loadMin        // 最小负载（%），用于轻载增益曲线
 
   const voutEff = vout + vd  // 考虑二极管压降的有效输出电压
 
@@ -52,24 +52,22 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const gMin = vinNom / vinMax
   const gNom = 1.0  // 谐振频率处归一化增益为1
 
-  // 空载Region 1增益（fn>1，Q→0时增益趋向 1+1/k）
-  // 注：在Region 2（fn<1）空载增益理论上无穷大，此处给出Region 1工程参考值
-  const gmaxEmpty = 1 + 1 / k
+  // 空载Region 1增益下限（fn→∞，Q→0时增益趋向 k/(k+1)）
+  // 注：Region 2（fn<1/√(1+k)）空载增益在 fr2 处理论上趋于无穷大
+  const gmaxEmpty = k / (k + 1)
 
-  // k的最大值：满足空载增益 >= Gmax 的约束上限
-  // 空载增益 G_empty = 1 + 1/k >= Gmax  =>  1/k >= Gmax - 1  =>  k <= 1/(Gmax - 1)
-  // 因此 k_max 是 k 的上限，k 越小空载增益裕量越大
-  const kMax = 1 / Math.max(1e-6, gMax - 1)
+  // k 的上限：最高输入电压空载时必须能把增益压到 Gmin
+  // Region 1 空载增益下限 k/(k+1) ≤ Gmin  =>  k ≤ Gmin/(1-Gmin)
+  // （与 fmaxFeasible 条件等价；Gmin ≥ 1 时该约束不存在）
+  const kMax = gMin < 1 ? gMin / Math.max(1e-6, 1 - gMin) : Infinity
 
   // ─── 步骤4：计算Qmax ───
   const fr = fsw  // 设谐振频率fr = fsw
 
   // 等效AC电阻：匝比n已用Vout+Vd计算，因此Rac使用实际输出电压Vout
+  // Q = Zr/Rac 按满载定义（标准设计方法：峰值增益能力由满载最坏情况决定，
+  // 轻载 Q 减小、峰值增益自动更高，无需额外校验）
   const rac = (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
-
-  // 最小负载对应的Rac（负载越轻，等效电阻越大）
-  const pMin = pout * (loadMin / 100)
-  const racMin = rac * (pout / pMin)
 
   // Qmax1：峰值增益约束（Gmax为归一化增益，peakGain直接比较）
   function findQmax1(kVal: number, targetGain: number): number {
@@ -109,18 +107,18 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·f_r·L_m 的反推
   // 若拓扑为全桥或死区定义不同，该系数需重新推导
   const qmax2 = fmaxFeasible
-    ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossZvs * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, racMin)
+    ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossZvs * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, rac)
     : Infinity
 
   // Qmax3：ZVS 能量约束（由励磁电感储能 ≥ Coss 总能量推导出的 Q 上限）
-  // 推导：Lm = k·Lr = k·Q·Rac_min/(2π fr) 必须满足
+  // 推导：Lm = k·Lr = k·Q·Rac/(2π fr) 必须满足
   //   0.5·Lm·(Vin_min/(coeff·fmax·Lm))² ≥ 0.5·Coss_total·Vin_max²
   // 其中 coeff = 8（半桥）/ 4（全桥），与后续 ZVS 能量校验一致。
   const zvsCoeff = topology === 'half-bridge' ? 8 : 4
   const qmax3 = fmaxFeasible
     ? (2 * Math.PI * fr * vinMin * vinMin)
       / Math.max(1e-15,
-          zvsCoeff * zvsCoeff * fmaxEst * fmaxEst * k * cossTotal * vinMax * vinMax * Math.max(1e-6, racMin))
+          zvsCoeff * zvsCoeff * fmaxEst * fmaxEst * k * cossTotal * vinMax * vinMax * Math.max(1e-6, rac))
     : Infinity
 
   // 取Qmax，留95%裕量
@@ -128,7 +126,8 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const q = Math.max(0.001, qmax * 0.95)
 
   // ─── 步骤5：计算谐振参数 ───
-  const zr = q * Math.max(1e-6, racMin)
+  // Zr = Q·Rac（满载定义）
+  const zr = q * Math.max(1e-6, rac)
   const lr = zr / Math.max(1e-6, 2 * Math.PI * fr)
   const cr = 1 / Math.max(1e-15, 2 * Math.PI * fr * zr)
   const lm = k * lr
@@ -139,8 +138,10 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const fmax = fmaxFeasible
     ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
     : Infinity
-  // fmin 对应 Region 2（fn<1），分母为 -k
-  const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) - k)))
+  // fmin 对应 Region 2（fn < 1/√(1+k)）：空载增益 M = k·fn²/(1-(k+1)·fn²)
+  // 令 M = Gmax 解得 fn² = Gmax/(Gmax·(k+1) + k)（分母为 +k）
+  // 注：该方程在 Region 1 另有一根 fn² = Gmax/(Gmax·(k+1) - k)，对应更高频率，不是最小频率
+  const fmin = fr * Math.sqrt(Math.max(0.001, gMax / Math.max(1e-9, gMax * (k + 1) + k)))
 
   // 整体设计可行性
   const designFeasible = fmaxFeasible && k <= kMax
@@ -192,12 +193,18 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const ipRms = Math.sqrt(irRms * irRms + imRms * imRms)
 
   // ─── 步骤8：设计增益曲线数据 ───
-  // 生成当前设计参数的增益曲线数据
-  const gainCurveData: Array<{ fn: number; m: number }> = []
+  // 满载曲线：Q = Zr/Rac（低输入电压所需最大增益的最坏情况）
+  // 最小负载曲线：负载越轻，等效电阻越大（Rac_light = Rac·Pout/Pmin）、Q 越低、增益越高，
+  // 用于轻载/空载校核（高输入电压下增益是否可压至 Gmin）
+  const pMin = pout * (loadMin / 100)
+  const racLight = pMin > 0 ? rac * (pout / pMin) : rac
+  const qLight = zr / Math.max(1e-6, racLight)
+  const gainCurveData: Array<{ fn: number; m: number; mLight: number }> = []
   for (let fn = 0.2; fn <= 2.0; fn += 0.01) {
     gainCurveData.push({
       fn: parseFloat(fn.toFixed(2)),
       m: gainM(fn, k, q),
+      mLight: gainM(fn, k, qLight),
     })
   }
 
@@ -283,11 +290,8 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   })
 
   if (!designFeasible) {
-    const kTooLarge = k > kMax
     s.unshift({
-      text: kTooLarge
-        ? `电感比k=${k.toFixed(2)}超过空载增益约束上限k_max=${kMax.toFixed(2)}，设计不可行。空载增益裕量不足，当前设计在最低输入电压下可能无法达到额定输出。建议减小k至≤${kMax.toFixed(2)}或提高最低输入电压。`
-        : `高输入电压下所需最小增益 Gmin=${gMin.toFixed(3)} 低于 Region 1 空载极限 k/(k+1)=${region1MinGain.toFixed(3)}，当前 k 无法满足。请增大电感比 k 或缩窄输入电压上限。`,
+      text: `高输入电压空载时无法将增益降至所需值：Region 1 空载增益下限 k/(k+1)=${region1MinGain.toFixed(3)} > Gmin=${gMin.toFixed(3)}（等价于 k=${k.toFixed(2)} 超过上限 k_max=${Number.isFinite(kMax) ? kMax.toFixed(2) : '∞'}），设计不可行。请减小电感比 k 或缩窄输入电压上限。`,
       level: 'critical',
     })
   }

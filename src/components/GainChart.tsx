@@ -9,7 +9,9 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  type TooltipProps,
 } from 'recharts'
+import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
 import { Download } from 'lucide-react'
 
 const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
@@ -108,20 +110,20 @@ export default function GainChart({
       btoa(unescape(encodeURIComponent(svgData)))
   }, [k, Q])
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps<ValueType, NameType>) => {
     if (!active || !payload?.length) return null
     return (
       <div className="bg-surface border border-border rounded-lg p-3 shadow-xl">
         <p className="text-text-secondary text-sm font-mono mb-1">
           fn = {Number(label).toFixed(3)}
         </p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry: Payload<ValueType, NameType>, index: number) => (
           <p
             key={index}
             className="text-sm font-mono"
             style={{ color: entry.color }}
           >
-            {entry.name}: {entry.value?.toFixed(3)}
+            {entry.name}: {typeof entry.value === 'number' ? entry.value.toFixed(3) : entry.value}
           </p>
         ))}
       </div>

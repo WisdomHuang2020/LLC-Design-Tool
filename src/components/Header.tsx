@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, BookOpen, Activity, Calculator, FileText, Settings, PenTool } from 'lucide-react'
+import { Menu, X, Zap, BookOpen, Activity, Calculator, FileText, PenTool } from 'lucide-react'
 
 const navLinks = [
   { path: '/', label: '首页', icon: Zap },

@@ -28,7 +28,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
           <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
-          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = Zr / Racmin" />
+          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = Zr / Rac（满载）" />
           <ResultItem label="电感比 k" value={calculated.k.toFixed(2)} unit="" formula="k = Lm / Lr" />
           <ResultItem
             label="所需增益 Gmin"
@@ -45,11 +45,11 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
           />
           <ResultItem
-            label="空载峰值增益"
+            label="空载增益下限"
             value={calculated.gmaxEmpty.toFixed(3)}
             unit=""
-            formula="Gempty = 1 + 1/k"
-            highlight={calculated.gmaxEmpty >= calculated.gMax * 1.05 ? 'good' : calculated.gmaxEmpty >= calculated.gMax ? 'warn' : 'critical'}
+            formula="Gempty = k/(k+1)（Region 1 高频极限，须 ≤ Gmin）"
+            highlight={calculated.gmaxEmpty <= calculated.gMin * 0.95 ? 'good' : calculated.gmaxEmpty <= calculated.gMin ? 'warn' : 'critical'}
           />
           <ResultItem
             label="峰值增益 Mmax"
@@ -59,7 +59,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
           />
           <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]" />
-          <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)-k)]" />
+          <ResultItem label="fmin（低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="fmin = fr·√[Gmax/(Gmax·(k+1)+k)]（Region 2）" />
           <ResultItem
             label="ZVS能量裕量"
             value={calculated.zvsMargin ? '可达' : '不足'}
@@ -75,7 +75,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             highlight={calculated.zvsTimeOk ? 'good' : 'critical'}
           />
           <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = V_in1 / Rac（谐振频率处近似）" />
-          <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im = Vin/(4·f·Lm)" />
+          <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im,rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
           <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
           <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
           <ResultItem
@@ -101,7 +101,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
         <div className="mt-6 pt-4 border-t border-border">
           <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary-light" />
-            增益-频率特性曲线 (k={calculated.k.toFixed(1)}, Q={calculated.q.toFixed(3)})
+            增益-频率特性曲线（k={calculated.k.toFixed(1)}, Q满载={calculated.q.toFixed(3)}）
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -117,7 +117,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                   tick={{ fill: '#94a3b8', fontSize: 11 }}
                 />
                 <YAxis
-                  domain={[0, 2]}
+                  domain={[0, (dataMax: number) => Math.max(2, Math.ceil(dataMax * 1.1))]}
                   ticks={[0, 0.5, 1, 1.5, 2]}
                   label={{ value: 'M(fn)', angle: -90, position: 'insideLeft', offset: 5, fill: '#94a3b8', fontSize: 12 }}
                   stroke="#64748b"
@@ -126,9 +126,10 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                 <Tooltip
                   contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '6px', fontSize: '12px' }}
                   labelFormatter={(v: number) => `fn = ${v.toFixed(2)}`}
-                  formatter={(v: number) => [`M = ${v.toFixed(3)}`, '增益']}
+                  formatter={(v: number, name: string) => [`M = ${v.toFixed(3)}`, name === 'm' ? '满载' : '最小负载']}
                 />
                 <Line type="monotone" dataKey="m" stroke="#38bdf8" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="mLight" stroke="#a78bfa" strokeWidth={1.5} dot={false} strokeDasharray="6 3" />
                 {/* 参考线：Gmax, Gmin, fr */}
                 <ReferenceLine y={calculated.gMax} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmax=${calculated.gMax.toFixed(3)}`, fill: '#ef4444', fontSize: 10, position: 'right' }} />
                 <ReferenceLine y={calculated.gMin} stroke="#22c55e" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmin=${calculated.gMin.toFixed(3)}`, fill: '#22c55e', fontSize: 10, position: 'right' }} />
@@ -137,7 +138,8 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             </ResponsiveContainer>
           </div>
           <div className="flex flex-wrap gap-4 mt-2 text-xs text-text-secondary">
-            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#38bdf8]" /> 增益曲线 M(fn)</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#38bdf8]" /> 满载增益曲线</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#a78bfa]" /> 最小负载增益曲线</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#ef4444] border-dashed" /> Gmax = {calculated.gMax.toFixed(3)}</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#22c55e] border-dashed" /> Gmin = {calculated.gMin.toFixed(3)}</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#94a3b8]" /> fr (fn=1)</span>
