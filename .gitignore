@@ -1,8 +1,14 @@
 node_modules/
 dist/
 tsconfig.tsbuildinfo
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
 .DS_Store
 *.log
+build_log.txt
+*TEMPwebbridge-req-*.json
 .env.local
 .env.*.local
 .vscode/
@@ -10,3 +16,4 @@ tsconfig.tsbuildinfo
 *.swp
 *.swo
 *~
+.workbuddy/

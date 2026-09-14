@@ -48,3 +48,15 @@ git status
 ```
 
 **成功标志**：显示 `Your branch is up to date with 'origin/main'`
+
+
+
+## 首次初始化仓库（仅建仓时执行一次；本项目已完成，勿重复执行）
+
+git init
+git add .
+git commit -m "首次提交"
+git remote add origin git@github.com:WisdomHuang2020/LLC-Design-Tool.git
+git branch -M main
+git push -u origin main
+
