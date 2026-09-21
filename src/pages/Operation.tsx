@@ -952,7 +952,7 @@ export default function Operation() {
                 <h4 className="text-sm font-semibold text-text-primary">峰值增益</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                最大增益出现在 f = fr2 附近，峰值大小由 k 和 Q 共同决定。设计时必须确保峰值增益大于所需的最大增益（对应最低输入电压、最大负载）。
+                峰值大小由 k 和 Q 共同决定。设计时必须确保峰值增益大于所需的最大增益（对应最低输入电压、最大负载）。
               </p>
             </div>
           </div>
