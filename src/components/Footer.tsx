@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom'
 import { Zap, Github, BookOpen, Activity, Calculator } from 'lucide-react'
 
+// 构建时由 vite.config.ts 的 define 注入（源为 package.json 的 version）。
+// fallback 用 'dev' 而非伪造一个版本号：define 未生效时应显式暴露异常，
+// 不能显示一个看起来正常的版本，否则会误导线上版本核验。
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'
+
 export default function Footer() {
   return (
     <footer className="bg-surface border-t border-border mt-20">
@@ -48,9 +53,22 @@ export default function Footer() {
           <p className="text-text-muted text-sm">
             © 2026 LLC Design Tool. 仅供学习与研究使用。
           </p>
-          <a href="#" className="flex items-center gap-2 text-text-muted hover:text-text-secondary text-sm transition-colors">
-            <Github className="w-4 h-4" /> GitHub
-          </a>
+          <div className="flex items-center gap-5">
+            <span
+              className="text-text-muted text-sm font-mono tracking-wide"
+              title="构建版本号（源：package.json）"
+            >
+              v{APP_VERSION}
+            </span>
+            <a
+              href="https://github.com/WisdomHuang2020/LLC-Design-Tool"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-text-muted hover:text-text-secondary text-sm transition-colors"
+            >
+              <Github className="w-4 h-4" /> GitHub
+            </a>
+          </div>
         </div>
       </div>
     </footer>
