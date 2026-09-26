@@ -1,7 +1,9 @@
 name: Deploy to Tencent Lighthouse
 
 # 第二个部署目标：腾讯轻量云上的 nginx（与 deploy.yml 的 GitHub Pages **并行独立**）。
-# 正式对外域名：https://llc.power-knowledge.tech/  （服务器 150.158.164.41，web 根 /var/www/llc）
+# 正式对外域名：https://llc.power-knowledge.tech/  （服务器 43.142.148.37，web 根 /var/www/llc）
+# ⚠️ 2026-09-26 变更：部署目标由源机 150.158.164.41 迁至目标机 43.142.148.37。
+#    源机将于 2026-10-19 到期下线。需同步把 repository secret `LH_HOST` 改为 43.142.148.37。
 #
 # 本文件与姊妹项目 interleaved-pfc / ahb-flyback 的 deploy-lighthouse.yml 同构，
 # 仅站点名、域名、web 根不同，便于三站统一维护。
@@ -27,7 +29,7 @@ name: Deploy to Tencent Lighthouse
 #   真正的第一道防线是纪律：**不要重跑旧的部署 run，要重部署就 dispatch 当前 main**。
 #
 # 所需 repository secrets（与 interleaved-pfc 同名，便于记忆与批量维护）：
-#   LH_HOST     服务器地址（150.158.164.41）
+#   LH_HOST     服务器地址（43.142.148.37）
 #   LH_USER     登录用户名（root）
 #   LH_ROOT     网站根目录绝对路径（必须等于 nginx 的 root 指令，本站为 /var/www/llc）
 #   LH_SSH_KEY  部署私钥全文（本站专用密钥，对应已装入服务器 root 的 authorized_keys 的公钥）
