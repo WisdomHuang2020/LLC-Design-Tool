@@ -2,7 +2,12 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!--
+      favicon: 指向 public/favicon.svg。
+      修正前此处误指 /vite.svg —— 该文件在本仓库中从不存在(git 历史与 public/ 均无),
+      线上恒 404, 导致本站图标长期未生效。切勿改回。
+    -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LLC谐振变换器设计工具</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
