@@ -121,9 +121,17 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
           zvsCoeff * zvsCoeff * fmaxEst * fmaxEst * k * cossTotal * vinMax * vinMax * Math.max(1e-6, rac))
     : Infinity
 
-  // 取Qmax，留95%裕量
+  // 取 Qmax，再按用户设定的裕量系数折减，得到实际设计 Q。
+  // 裕量系数 m ∈ (0,1]：m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量都更大
+  // （Er ∝ 1/Lm ∝ 1/Q，t_ZVS ∝ Lm ∝ Q）；代价是 Zr = Q·Rac 更小 ⇒ Lr 更小、Cr 更大，
+  // 励磁环流占比与导通损耗上升。默认 m = 0.95。
+  // 注意：ZVS 死区时间约束（t_ZVS ≤ T_d）不在 qmax1~3 之内，由后续 zvsTimeOk 单独校验；
+  // 当该条报错时，正确做法是**调小** m（而非调大）。
   const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
-  const q = Math.max(0.001, qmax * 0.95)
+  const qMargin = Number.isFinite(form.qMargin)
+    ? Math.min(1, Math.max(0.05, form.qMargin))
+    : 0.95
+  const q = Math.max(0.001, qmax * qMargin)
 
   // ─── 步骤5：计算谐振参数 ───
   // Zr = Q·Rac（满载定义）
@@ -255,6 +263,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     qmax1,
     qmax2,
     qmax3,
+    qMargin,
     gMin,
     gMax,
     gNom,
@@ -278,6 +287,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     qmax1,
     qmax2,
     qmax3,
+    qMargin,
     gmaxEmpty,
     zvsMargin,
     zvsTimeOk,

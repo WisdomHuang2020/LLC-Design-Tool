@@ -20,6 +20,13 @@ export interface DesignParameters {
   vd: number
   ioMax: number
   k: number
+  /**
+   * Q 裕量系数 m ∈ (0,1]，实际设计 Q = m · Qmax（Qmax = min(Qmax1,Qmax2,Qmax3)）。
+   * m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量更大；
+   * 代价是 Zr=Q·Rac 更小 ⇒ Lr 更小、Cr 更大，励磁环流占比与导通损耗上升。
+   * 默认 0.95。
+   */
+  qMargin: number
 }
 
 export interface CalculatedResults {
@@ -88,6 +95,7 @@ const defaultParams: DesignParameters = {
   vd: 0,
   ioMax: 4.8,
   k: 4,
+  qMargin: 0.95,
 }
 
 const defaultCurves: CurvesState = { k: 4.0, q: 0.8 }

@@ -68,6 +68,8 @@ export default function Designer() {
         qmax1: calculated.qmax1,
         qmax2: calculated.qmax2,
         qmax3: calculated.qmax3,
+        // 旧存档（本地存储）可能没有该字段，兜底 0.95
+        qMargin: Number.isFinite(calculated.qMargin) ? calculated.qMargin : 0.95,
         gmaxEmpty: calculated.gmaxEmpty,
         zvsMargin: calculated.zvsMargin,
         zvsTimeOk: calculated.zvsTimeOk,

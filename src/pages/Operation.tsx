@@ -109,23 +109,29 @@ function SectionTitle({
 /* ─── Animated SVG Components ─── */
 
 function SwitchingAnimationSVG() {
+  // 时间轴：一个完整周期 t1→t7 = 450 单位，半周期 225 单位。
+  // 死区与体二极管导通窗口各取 20 单位（合计 40 单位，占半周期 17.8%、单个死区 8.9%），
+  // 对应 100 kHz 下约 445 ns 死区，与实际 300~500 ns 同量级；
+  // 不能画得与驱动高电平时间（Q1 ON = 185 单位）相当。
   const t1 = 60
-  const t2 = 180
-  const t3 = 230
-  const t4 = 280
-  const t5 = 400
-  const t6 = 450
+  const t2 = 245
+  const t3 = 265
+  const t4 = 285
+  const t5 = 470
+  const t6 = 490
   const t7 = 510
   const t8 = 630
 
+  // row: 标签行号。死区 / 体二极管导通窗口很窄（各 20 单位），标签若同排必然互相压字，
+  // 故把它们错到第二行（row=1），行 0 放 ON 窗与第一段死区。
   const phases = [
-    { start: t1, end: t2, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6' },
-    { start: t2, end: t3, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b' },
-    { start: t3, end: t4, color: 'rgba(34,197,94,0.15)', label: 'D2导通', labelColor: '#22c55e' },
-    { start: t4, end: t5, color: 'rgba(20,184,166,0.12)', label: 'Q2 ON', labelColor: '#14b8a6' },
-    { start: t5, end: t6, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b' },
-    { start: t6, end: t7, color: 'rgba(34,197,94,0.15)', label: 'D1导通', labelColor: '#22c55e' },
-    { start: t7, end: t8, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6' },
+    { start: t1, end: t2, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6', row: 0 },
+    { start: t2, end: t3, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b', row: 0 },
+    { start: t3, end: t4, color: 'rgba(34,197,94,0.15)', label: 'D2导通', labelColor: '#22c55e', row: 1 },
+    { start: t4, end: t5, color: 'rgba(20,184,166,0.12)', label: 'Q2 ON', labelColor: '#14b8a6', row: 0 },
+    { start: t5, end: t6, color: 'rgba(245,158,11,0.12)', label: '死区', labelColor: '#f59e0b', row: 0 },
+    { start: t6, end: t7, color: 'rgba(34,197,94,0.15)', label: 'D1导通', labelColor: '#22c55e', row: 1 },
+    { start: t7, end: t8, color: 'rgba(20,184,166,0.12)', label: 'Q1 ON', labelColor: '#14b8a6', row: 0 },
   ]
 
   const timeMarkers = [
@@ -139,7 +145,11 @@ function SwitchingAnimationSVG() {
     { t: t8, label: "t₂'" },
   ]
 
-  const irPath = 'M 60 30.0 L 75 26.3 L 90 22.7 L 105 19.4 L 120 16.6 L 135 14.4 L 150 12.9 L 165 12.1 L 180 12.1 L 195 12.9 L 210 14.4 L 225 16.6 L 240 19.4 L 255 22.7 L 270 26.3 L 285 30.0 L 300 33.7 L 315 37.3 L 330 40.6 L 345 43.4 L 360 45.6 L 375 47.1 L 390 47.9 L 405 47.9 L 420 47.1 L 435 45.6 L 450 43.4 L 465 40.6 L 480 37.3 L 495 33.7 L 510 30.0 L 525 26.3 L 540 22.7 L 555 19.4 L 570 16.6 L 585 14.4 L 600 12.9 L 615 12.1 L 630 12.1'
+  // 谐振电流：y = 30 − 18·sin(2π(x−75)/450)，零线 y=30，y 越小电流越正。
+  // 过零点取 75 / 300 / 525，即**滞后于驱动开通瞬间**约 15 单位（相位滞后约 54°）：
+  // Q2 开通（x=285）时电流仍为正（y≈26.3），Q1 开通（x=510）时电流仍为负（y≈33.7），
+  // 这样才体现感性、并支撑"死区内体二极管续流完成 ZVS"的叙述。
+  const irPath = 'M 60 33.7 L 75 30.0 L 90 26.3 L 105 22.7 L 120 19.4 L 135 16.6 L 150 14.4 L 165 12.9 L 180 12.1 L 195 12.1 L 210 12.9 L 225 14.4 L 240 16.6 L 255 19.4 L 270 22.7 L 285 26.3 L 300 30.0 L 315 33.7 L 330 37.3 L 345 40.6 L 360 43.4 L 375 45.6 L 390 47.1 L 405 47.9 L 420 47.9 L 435 47.1 L 450 45.6 L 465 43.4 L 480 40.6 L 495 37.3 L 510 33.7 L 525 30.0 L 540 26.3 L 555 22.7 L 570 19.4 L 585 16.6 L 600 14.4 L 615 12.9 L 630 12.1'
 
   const imPath = 'M 60 45 L 170 12 L 230 18 L 310 25 L 420 55 L 480 48 L 520 42 L 580 12'
 
@@ -172,7 +182,7 @@ function SwitchingAnimationSVG() {
 
       {/* Phase labels on strip */}
       {phases.map((p, i) => (
-        <text key={`l${i}`} x={(p.start + p.end) / 2} y="262" fill={p.labelColor} fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace" opacity="0.9">
+        <text key={`l${i}`} x={(p.start + p.end) / 2} y={p.row === 1 ? 278 : 264} fill={p.labelColor} fontSize="9" textAnchor="middle" fontFamily="JetBrains Mono, monospace" opacity="0.9">
           {p.label}
         </text>
       ))}
@@ -228,19 +238,19 @@ function SwitchingAnimationSVG() {
       </g>
 
       {/* Time axis */}
-      <line x1={t1} y1="295" x2={t8} y2="295" stroke="#525252" strokeWidth="2" markerEnd="url(#arrowTealAnim)" />
-      <text x={(t1 + t8) / 2} y="315" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
+      <line x1={t1} y1="312" x2={t8} y2="312" stroke="#525252" strokeWidth="2" markerEnd="url(#arrowTealAnim)" />
+      <text x={(t1 + t8) / 2} y="330" fill="#737373" fontSize="11" textAnchor="middle">时间 t →</text>
 
       {/* Phase markers and labels */}
       {timeMarkers.map((m, i) => (
         <g key={`pl${i}`}>
-          <line x1={m.t} y1="255" x2={m.t} y2="265" stroke="#525252" strokeWidth="1.5" />
-          <text x={m.t} y="278" fill="#a3a3a3" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">{m.label}</text>
+          <line x1={m.t} y1="255" x2={m.t} y2="262" stroke="#525252" strokeWidth="1.5" />
+          <text x={m.t} y="296" fill="#a3a3a3" fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">{m.label}</text>
         </g>
       ))}
 
       {/* Legend */}
-      <g transform="translate(80, 340)">
+      <g transform="translate(80, 356)">
         <rect x="0" y="-8" width="14" height="14" fill="rgba(20,184,166,0.15)" />
         <text x="20" y="0" fill="#a3a3a3" fontSize="10" dominantBaseline="middle">Q1/Q2 ON (能量传输)</text>
         <rect x="170" y="-8" width="14" height="14" fill="rgba(245,158,11,0.15)" />
@@ -252,8 +262,8 @@ function SwitchingAnimationSVG() {
       </g>
 
       {/* Phase description */}
-      <text x="80" y="370" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₁→t₂: Q1导通, 正半周能量传输 | t₂→t₃: 死区, Coss充放电 | t₃→t₄: Q2体二极管导通, ZVS准备</text>
-      <text x="80" y="385" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₄→t₅: Q2导通, 负半周能量传输 | t₅→t₆: 死区, Coss充放电 | t₆→t₁': Q1体二极管导通, ZVS准备</text>
+      <text x="80" y="386" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₁→t₂: Q1导通, 正半周能量传输 | t₂→t₃: 死区, Coss充放电 | t₃→t₄: Q2体二极管导通, ZVS准备</text>
+      <text x="80" y="401" fill="#a3a3a3" fontSize="10" fontFamily="JetBrains Mono, monospace">t₄→t₅: Q2导通, 负半周能量传输 | t₅→t₆: 死区, Coss充放电 | t₆→t₁': Q1体二极管导通, ZVS准备</text>
     </svg>
   )
 }
@@ -943,7 +953,7 @@ export default function Operation() {
                 <h4 className="text-sm font-semibold text-text-primary">负载影响</h4>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed">
-                轻载时（Q 小）增益曲线峰值更高，需要更大的频率调节范围；重载时（Q 大）曲线更平坦，增益变化对频率不敏感，有利于稳压精度。
+                轻载时（Q 小）增益曲线峰值更高，且 Region 1 段更平缓 —— 同样幅度的增益变化需要更大的频率调节量，轻载/空载的调压裕度最紧；重载时（Q 大）峰值虽低，但 Region 1 段更陡，增益对频率更敏感（即控制增益更高），有利于稳压精度。
               </p>
             </div>
             <div className="p-4 bg-bg/50 rounded-lg border border-border/50">
@@ -976,7 +986,7 @@ export default function Operation() {
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                更高的开关频率可以减小磁性元件和电容体积，但会带来更大的开关损耗与磁芯损耗。LLC 通过 ZVS 消除了开通损耗，但关断损耗（与 Ir 峰值相关）和磁芯损耗（与频率成正比）仍然存在。
+                更高的开关频率可以减小磁性元件和电容体积，但会带来更大的开关损耗与磁芯损耗。LLC 通过 ZVS 消除了开通损耗，但关断损耗（与关断瞬间的 Ir 相关）和磁芯损耗（与频率成正比）仍然存在。
               </p>
               <div className="flex items-center gap-2 text-xs text-text-muted">
                 <span className="inline-block w-2 h-2 rounded-full bg-success" />
@@ -1012,7 +1022,7 @@ export default function Operation() {
                 </h3>
               </div>
               <p className="text-text-secondary text-sm leading-relaxed mb-3">
-                较高的 k（Lm/Lr）意味着更大的励磁电感，可减小变压器磁芯体积，但会缩小 ZVS 范围并降低峰值增益。较低的 k 需要更大的磁芯以容纳更大的励磁电感，但有利于轻载 ZVS 与更高的峰值增益。
+                较大的 k（Lm/Lr）可减小励磁电流（环流），但峰值增益能力下降、轻载 ZVS 更难实现。需要注意 Lm = k·Lr 中的 Lr 本身随 k 变化：k 越大，按增益要求反解出的 Q 越小、Lr 越小，因此 k 与 Lm 并非简单正比，不能直接推论「k 大则磁芯小」——磁芯的磁通摆幅 ΔB 只由伏秒与 N·Ae 决定、与 Lm 无关，要得到更大的 Lm 只能在同一磁芯上增加匝数、或换用 Ae 更大的磁芯。较低的 k 峰值增益更高、轻载 ZVS 更容易，代价是励磁电流更大。
               </p>
               <div className="flex items-center gap-2 text-xs text-text-muted">
                 <span className="inline-block w-2 h-2 rounded-full bg-success" />

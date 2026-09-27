@@ -236,7 +236,7 @@ export default function Derivations() {
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>工作区域划分：</strong>当 f_n = 1 时，LLC 增益恒为 1 且与负载无关；f_n &lt; 1 时进入降压增益区（Region 2），可提供峰值增益；f_n &gt; 1 时进入降压区（Region 1），增益随频率升高而下降。
+            <strong>工作区域划分：</strong>当 f_n = 1 时，LLC 增益恒为 1 且与负载无关；f_n &lt; 1 时进入升压增益区（Region 2，增益 &gt; 1），可提供峰值增益；f_n &gt; 1 时进入降压区（Region 1，增益 &lt; 1），增益随频率升高而下降。
           </HighlightBox>
         </FormulaSection>
 
@@ -343,13 +343,27 @@ export default function Derivations() {
           <MathBlock
             latex="Z_{in} = jZ_0\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_0 k}{1 + j f_n k Q}"
             important
-            label="归一化输入阻抗"
+            label="输入阻抗（Z_0 = \\sqrt{L_r/C_r} 为特征阻抗，非归一化）"
           />
 
           <MathBlock
-            latex="\\text{Re}(Z_{in}) = Z_0 \\cdot \\frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2}, \\qquad \\text{Im}(Z_{in}) = Z_0 \\left( f_n - \\frac{1}{f_n} + \\frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \\right)"
+            latex="\\text{Re}(Z_{in}) = Z_0 \\cdot \\frac{f_n^2 k^2 Q}{1 + f_n^2 k^2 Q^2}, \\qquad \\text{Im}(Z_{in}) = Z_0 \\left( f_n - \\frac{1}{f_n} + \\frac{f_n k}{1 + f_n^2 k^2 Q^2} \\right)"
             label="输入阻抗实部与虚部"
           />
+
+          <p className="text-text-secondary text-sm mt-2">
+            对 R<sub>ac</sub> 归一化（利用 Q = Z<sub>0</sub>/R<sub>ac</sub>）后形式更简洁，也便于与感性/容性判据对照：
+          </p>
+
+          <MathBlock
+            latex="\\frac{\\text{Re}(Z_{in})}{R_{ac}} = \\frac{f_n^2 k^2 Q^2}{1 + f_n^2 k^2 Q^2}, \\qquad \\frac{\\text{Im}(Z_{in})}{R_{ac}} = Q\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{f_n k Q}{1 + f_n^2 k^2 Q^2}"
+            label="归一化输入阻抗（对 R_ac）"
+          />
+
+          <p className="text-text-secondary text-sm mt-2">
+            自检：令 f<sub>n</sub> = 1，L<sub>r</sub> 与 C<sub>r</sub> 抵消，Z<sub>in</sub> 退化为 L<sub>m</sub> ∥ R<sub>ac</sub>，
+            于是 Re(Z<sub>in</sub>)/R<sub>ac</sub> = (kQ)²/(1+(kQ)²)、Im(Z<sub>in</sub>)/R<sub>ac</sub> = kQ/(1+(kQ)²)。
+          </p>
 
           <ParamTable>
             <ParamRow symbol="Z_{in}" name="输入阻抗" unit="Ω" description="从开关网络看入谐振腔的等效阻抗" typical="-" />
@@ -375,7 +389,7 @@ export default function Derivations() {
           />
 
           <HighlightBox type="success">
-            <strong>ZVS 实现要点：</strong>① 开关频率必须高于感性边界频率；② 死区时间内励磁电感释放的能量须大于开关节点寄生电容所需的充放电能量；③ 实际设计中通常取 Q_s = 0.9 ~ 0.95 · Q<sub>max</sub> 以保留裕量。
+            <strong>ZVS 实现要点：</strong>① 开关频率必须高于感性边界频率；② 死区时间内励磁电感释放的能量须大于开关节点寄生电容所需的充放电能量；③ 死区时间须足够长，能在 t<sub>d</sub> 内完成 C<sub>oss</sub> 充放电（t<sub>ZVS</sub> ≤ t<sub>d</sub>）；④ 实际设计取 Q<sub>s</sub> = m · Q<sub>max</sub> 保留裕量，m 默认 0.95，可在设计工具页调整 —— m 越小，ZVS 能量与时间裕量越大。
           </HighlightBox>
         </FormulaSection>
 
@@ -404,10 +418,48 @@ export default function Derivations() {
             最高输入电压空载时须将增益降至 M<sub>min</sub>：Region 1 空载增益下限为 k/(k+1)，故要求 k/(k+1) ≤ M<sub>min</sub>，即 k ≤ k<sub>max</sub>。若 k 超过该上限，即使频率无限升高输出仍会过压，设计不可行。
           </p>
 
+          <p className="text-text-secondary mt-4 mb-2">
+            Q<sub>max</sub> 由三条约束取最严者得到，三条定义式如下（与本工具计算引擎的实现逐字对应）：
+          </p>
+
           <MathBlock
-            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = 0.95 \\cdot Q_{max}"
-            label="最大允许 Q 与设计 Q"
+            latex="Q_{max1}:\\ \\max_{f_n} M(f_n, k, Q) = M_{max}"
+            label="约束一 · 峰值增益能力（无闭式解，数值二分求解）"
           />
+
+          <MathBlock
+            latex="Q_{max2} = \\frac{2\\pi f_r\\,(k+1)\\,V_{in,min}^2}{16\\,f_{max}^2\\,k^2\\,C_{oss,zvs}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j"
+            label="约束二 · 原边开关管 Coss 约束（等效电容口径）"
+          />
+
+          <MathBlock
+            latex="Q_{max3} = \\frac{2\\pi f_r\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,C_{oss,total}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,total} = 2C_{oss,er} + C_j"
+            label="约束三 · ZVS 能量约束（γ = 8 半桥 / 4 全桥）"
+          />
+
+          <MathBlock
+            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = m \\cdot Q_{max}"
+            important
+            label="最大允许 Q 与设计 Q（m 为裕量系数，默认 0.95）"
+          />
+
+          <HighlightBox type="warning">
+            <strong>注意：死区时间约束不在上述三条之内。</strong>Q<sub>max2</sub> 只含 C<sub>oss</sub> 与 f<sub>max</sub>，
+            <b>不含死区时间 t<sub>d</sub></b>。死区时间内能否完成 C<sub>oss</sub> 充放电由下式单独校验；由该式反解出的
+            Q<sub>dead</sub> 供设计者手工校核：
+          </HighlightBox>
+
+          <MathBlock
+            latex="t_{ZVS} = \\frac{C_{oss,total}\\,V_{in,max}}{I_{m,off}} \\le t_d, \\qquad Q_{dead} = \\frac{2\\pi f_r\\,t_d\\,V_{in,min}}{\\gamma\\,f_{max}\\,k\\,C_{oss,total}\\,V_{in,max}\\,R_{ac}}"
+            label="死区时间约束与手工校核上限"
+          />
+
+          <p className="text-text-secondary text-sm mt-2">
+            裕量系数 m 是 ZVS 两个裕量的直接旋钮：<b>t<sub>ZVS</sub> ∝ L<sub>m</sub> ∝ Q</b>，
+            而 <b>ZVS 能量 E<sub>r</sub> ∝ 1/L<sub>m</sub> ∝ 1/Q</b>，所以调小 m（如 0.85）可同时放宽两者，
+            代价是 L<sub>r</sub> 更小、C<sub>r</sub> 更大、励磁环流占比与导通损耗上升。
+            因此当出现「ZVS 时间不足」告警时，应当<b>调小</b> m，而不是调大。
+          </p>
 
           <MathBlock
             latex="Z_0 = Q_s R_{ac}, \\quad L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}, \\quad C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}, \\quad L_m = k L_r"
@@ -418,10 +470,10 @@ export default function Derivations() {
           <ParamTable>
             <ParamRow symbol="M_{max}" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益" typical="1.1 ~ 1.4" />
             <ParamRow symbol="M_{min}" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益" typical="0.6 ~ 0.9" />
-            <ParamRow symbol="Q_{max1}" name="峰值增益约束 Q" unit="-" description="满足 M_peak(k,Q) = M_max 的最大 Q" typical="数值求解" />
-            <ParamRow symbol="Q_{max2}" name="ZVS 死区约束 Q" unit="-" description="由死区时间与寄生电容决定" typical="数值求解" />
-            <ParamRow symbol="Q_{max3}" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能决定" typical="数值求解" />
-            <ParamRow symbol="Q_s" name="设计品质因数" unit="-" description="实际取用的 Q，通常取 0.9 ~ 0.95 Q_max" typical="0.3 ~ 0.8" />
+            <ParamRow symbol="Q_{max1}" name="峰值增益约束 Q" unit="-" description="满足 M_peak(k,Q) = M_max 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
+            <ParamRow symbol="Q_{max2}" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss_eq / C_j 与最高工作频率决定，不含死区时间" typical="数值求解" />
+            <ParamRow symbol="Q_{max3}" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss_er / C_j" typical="数值求解" />
+            <ParamRow symbol="Q_s" name="设计品质因数" unit="-" description="Q_s = m · Q_max，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 
           <HighlightBox type="info">

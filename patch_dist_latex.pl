@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+# ⚠️ 已弃用（2026-09-27）：构建链第三步已改用 Node 版 `patch_dist_latex.mjs`。
+#    原因：本机沙箱 PATH 里没有 perl（perl 实际在 C:/Program Files/Git/usr/bin/perl.exe），
+#    导致"本地验证只跑前两步"，漏掉本步会产出公式静默损坏的产物。
+#    本文件保留仅作对照/回退；两者输出逐字节等价（md5 相同，已实测）。
+#    另：本 perl 版**不幂等** —— 重复执行会把反斜杠二次折半、弄坏公式；
+#    新的 mjs 版带四连守卫，重复执行是 no-op。
 use strict;
 use warnings;
 

@@ -26,6 +26,8 @@ export interface SuggestionInputs {
   qmax1: number
   qmax2: number
   qmax3: number
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)，默认 0.95 */
+  qMargin: number
   gmaxEmpty: number
   zvsMargin: boolean
   zvsTimeOk: boolean
@@ -73,6 +75,8 @@ export interface CalculatedData {
   qmax1: number
   qmax2: number
   qmax3: number
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)；旧存档可能缺此字段，用时应兜底 0.95 */
+  qMargin: number
   gMin: number
   gMax: number
   gNom: number

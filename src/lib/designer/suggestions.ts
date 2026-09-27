@@ -12,7 +12,10 @@ export function generateSuggestions(
   results: SuggestionInputs,
 ): Suggestion[] {
   const s: Suggestion[] = []
-  const { q, k, mMax, mRequired, mRequiredMin, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
+  const { q, k, mMax, mRequired, mRequiredMin, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, qMargin, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
+
+  // 裕量系数兜底：旧存档 / 旧调用点可能未提供该字段
+  const margin = Number.isFinite(qMargin) && qMargin > 0 ? qMargin : 0.95
 
   // 1. k值与空载降压约束上限 kMax
   // kMax = Gmin/(1-Gmin)（仅当 Gmin<1 时有约束）：Region 1 空载增益下限 k/(k+1)
@@ -36,7 +39,7 @@ export function generateSuggestions(
   } else if (qmax3 === qmaxMin) {
     s.push({ text: `Qmax3(Coss能量限制)=${qmax3.toFixed(3)} 为最小约束，寄生电容是设计瓶颈。建议选用低Coss MOSFET。`, level: 'warn' })
   }
-  s.push({ text: `Qmax分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)}，实际取Q=${q.toFixed(3)}(95%裕量)。`, level: 'good' })
+  s.push({ text: `Qmax分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)}，取 Qmax=${fmt(qmaxMin)}，裕量系数 m=${margin.toFixed(2)} → 设计 Q=${q.toFixed(3)}。`, level: 'good' })
 
   // 3. Q value
   if (q > 1.0) {
@@ -70,7 +73,7 @@ export function generateSuggestions(
     }
   }
   if (!zvsTimeOk) {
-    s.push({ text: `ZVS时间不足！t_ZVS=${(tZvs*1e9).toFixed(1)}ns > 死区时间Td=${(params.td).toFixed(0)}ns。需增大励磁电流Im或减小死区时间。`, level: 'critical' })
+    s.push({ text: `ZVS时间不足！t_ZVS=${(tZvs*1e9).toFixed(1)}ns > 死区时间Td=${(params.td).toFixed(0)}ns。t_ZVS ∝ Lm ∝ Q，可下调裕量系数 m（当前 ${margin.toFixed(2)}）以减小 Q，或增大死区时间、选用低 Coss 器件。`, level: 'critical' })
   } else {
     s.push({ text: `ZVS时间充裕：t_ZVS=${(tZvs*1e9).toFixed(1)}ns ≤ Td=${params.td}ns，可在死区内完成谐振腔放电。`, level: 'good' })
   }

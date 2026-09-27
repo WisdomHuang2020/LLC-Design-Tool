@@ -131,6 +131,22 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
           />
           <span className="text-xs text-text-muted mt-1 block">建议 3~10</span>
         </div>
+        <div>
+          <label className={labelClass}>Q 裕量系数 m</label>
+          <input
+            type="number"
+            className={inputClass}
+            value={form.qMargin}
+            onChange={(e) => update('qMargin', Number(e.target.value))}
+            step="0.05"
+            min="0.3"
+            max="1"
+          />
+          <span className="text-xs text-text-muted mt-1 block">Q = m · Qmax，默认 0.95</span>
+          <span className="text-xs text-text-muted mt-1 block">
+            调小 m（如 0.85）→ Q 更小 → ZVS 能量与时间裕量更大，但 Lr 更小 / Cr 更大、环流损耗上升
+          </span>
+        </div>
         <div className="sm:col-span-2">
           <label className={labelClass}>负载范围 (%)</label>
           <div className="grid grid-cols-2 gap-2">
