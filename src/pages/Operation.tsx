@@ -223,7 +223,10 @@ function SwitchingAnimationSVG() {
 
       {/* Ir */}
       <g transform="translate(0, 145)">
-        <text x="45" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
+        {/* 标签组内 y=44 → 绝对 y=189。原值 20（绝对 165）与 Vds_Q1 标签（绝对 168）
+            仅差 3 单位、字号 11，二者必然叠字；下移到 189 后：
+            与 Vds_Q1(168) 间距 21、与 Im(220) 间距 31，均大于字高。 */}
+        <text x="45" y="44" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
         <path d={irPath} fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
         <text x={t8 + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
