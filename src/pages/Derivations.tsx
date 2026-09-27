@@ -343,7 +343,7 @@ export default function Derivations() {
           <MathBlock
             latex="Z_{in} = jZ_0\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_0 k}{1 + j f_n k Q}"
             important
-            label="输入阻抗（Z_0 = \\sqrt{L_r/C_r} 为特征阻抗，非归一化）"
+            label={<>输入阻抗（<InlineMath latex="Z_0 = \\sqrt{L_r/C_r}" /> 为特征阻抗，非归一化）</>}
           />
 
           <MathBlock

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
 import katex from 'katex'
 
 interface MathBlockProps {
@@ -6,7 +7,12 @@ interface MathBlockProps {
   display?: boolean
   important?: boolean
   multiline?: boolean
-  label?: string
+  /**
+   * 公式上方的说明标签。纯文本会被原样显示（不做数学渲染），
+   * 因此标签内的数学量需显式嵌入 <InlineMath>（或使用 HTML 下标），
+   * 直接写 LaTeX 命令会原样吐出。
+   */
+  label?: ReactNode
   stepNumber?: number
 }
 
