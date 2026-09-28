@@ -2,6 +2,7 @@
   "name": "llc-design-tool",
   "private": true,
   "version": "2.10.80",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
