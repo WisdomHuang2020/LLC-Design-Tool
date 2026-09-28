@@ -16,6 +16,8 @@ import {
 } from 'lucide-react'
 import MathBlock from '../components/MathBlock'
 import GainChart from '../components/GainChart'
+import KeyWaveformsSVG from '../components/KeyWaveformsSVG'
+import { WAVEFORM_COLORS } from '../lib/waveformColors'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -25,6 +27,64 @@ const fadeUp = {
     transition: { delay: i * 0.1, duration: 0.5, ease: 'easeOut' as const },
   }),
 }
+
+/**
+ * 「关键波形」图例条目。
+ *
+ * 条目顺序 = `KeyWaveformsSVG` 中自上而下的行序；
+ * 色值**只能**取自 `lib/waveformColors`，图与图例同源，从根上杜绝「图例说 A 色、曲线画成 B 色」。
+ * 新增/改色请改那一个文件，不要在这里写死十六进制。
+ */
+const WAVE_LEGEND = [
+  {
+    row: '第 1 行',
+    chips: [
+      { color: WAVEFORM_COLORS.vgsQ1, label: 'Vgs_Q1' },
+      { color: WAVEFORM_COLORS.vgsQ2, label: 'Vgs_Q2' },
+    ],
+    title: 'Vgs — 栅极驱动',
+    desc:
+      '两个互补的方波（Vgs_Q1 / Vgs_Q2），之间留死区时间（Dead Time）。死区长度直接决定 ZVS 能否实现：太短则结电容来不及充放电，太长则励磁电流回灌、效率下降。',
+  },
+  {
+    row: '第 2 行',
+    chips: [
+      { color: WAVEFORM_COLORS.vdsQ1, label: 'Vds_Q1（实线）' },
+      { color: WAVEFORM_COLORS.vdsQ2, label: 'Vds_Q2（虚线）' },
+    ],
+    title: 'Vds — 漏极电压',
+    desc:
+      '半桥两管的 Vds 互补，任一时刻二者之和恒为 Vin。关键在于：Vds 在对应 Vgs 的上升沿之前就已被谐振电流拉到 0 —— 这就是 ZVS 的直接证据。图中为理想化情形，换流恰在死区内完成，实际设计必须留余量。',
+  },
+  {
+    row: '第 3 行',
+    chips: [{ color: WAVEFORM_COLORS.ir, label: 'Ir' }],
+    title: 'Ir — 谐振电流',
+    desc:
+      '近似正弦，滞后驱动基波约 30°（谐振腔在开关频率上略呈感性）。正因为滞后，每个开通瞬间 Ir 尚未过零，其方向恰好是让结电容在死区内完成充放电的那一侧 —— 这是 ZVS 能成立的前提。',
+  },
+  {
+    row: '第 4 行',
+    chips: [{ color: WAVEFORM_COLORS.im, label: 'Im' }],
+    title: 'Im — 励磁电流',
+    desc:
+      '加在 Lm 上的三角波，由二次侧反射过来的输出电压驱动：Q1 导通段线性上升、Q2 导通段线性下降，死区内近似保持（平台）。拐点出现在开关管关断时刻附近，此时励磁电流达到峰值。',
+  },
+  {
+    row: '第 5 行',
+    chips: [{ color: WAVEFORM_COLORS.isec, label: 'Isec' }],
+    title: 'Isec — 副边电流',
+    desc:
+      '等于 n·(Ir − Im)，因此只在 |Ir| > |Im| 时有电流流通，对应整流二极管的导通时段。图中取 Im 峰值为 Ir 峰值的一半，使 |Ir| = |Im| 恰好落在死区中点 —— 于是「二极管换流」与「死区换流」同刻发生。Region 2 下由此自然实现 ZCS。',
+  },
+  {
+    row: '第 6 行',
+    chips: [{ color: WAVEFORM_COLORS.io, label: 'Io' }],
+    title: 'Io — 输出电流',
+    desc:
+      'Isec 经整流与输出电容滤波后的结果：直流分量等于 |Isec| 的周期平均值，叠加频率为开关频率两倍的纹波。输出滤波电容主要就是滤掉这个二倍频纹波。',
+  },
+] as const
 
 function SectionCard({
   children,
@@ -146,7 +206,9 @@ function SwitchingAnimationSVG() {
   ]
 
   // 谐振电流：y = 30 − 18·sin(2π(x−75)/450)，零线 y=30，y 越小电流越正。
-  // 过零点取 75 / 300 / 525，即**滞后于驱动开通瞬间**约 15 单位（相位滞后约 54°）：
+  // 过零点取 75 / 300 / 525，即**滞后于驱动开通瞬间** 15 单位。
+  // 注意：15/450 = 3.33% 周期 ≈ **12°**（早期注释写的 54° 是错的，已订正）；
+  // 本节上一张「关键波形」图按 30° 滞后绘制，两者是不同用途的示意，不必强行取同值。
   // Q2 开通（x=285）时电流仍为正（y≈26.3），Q1 开通（x=510）时电流仍为负（y≈33.7），
   // 这样才体现感性、并支撑"死区内体二极管续流完成 ZVS"的叙述。
   const irPath = 'M 60 33.7 L 75 30.0 L 90 26.3 L 105 22.7 L 120 19.4 L 135 16.6 L 150 14.4 L 165 12.9 L 180 12.1 L 195 12.1 L 210 12.9 L 225 14.4 L 240 16.6 L 255 19.4 L 270 22.7 L 285 26.3 L 300 30.0 L 315 33.7 L 330 37.3 L 345 40.6 L 360 43.4 L 375 45.6 L 390 47.1 L 405 47.9 L 420 47.9 L 435 47.1 L 450 45.6 L 465 43.4 L 480 40.6 L 495 37.3 L 510 33.7 L 525 30.0 L 540 26.3 L 555 22.7 L 570 19.4 L 585 16.6 L 600 14.4 L 615 12.9 L 630 12.1'
@@ -196,24 +258,24 @@ function SwitchingAnimationSVG() {
       <g>
         <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q1</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t1} 15 L ${t2} 15 L ${t2} 40 L ${t7} 40 L ${t7} 15 L ${t8} 15 L ${t8} 40`} fill="none" stroke="#14b8a6" strokeWidth="2" />
-        <text x={(t1 + t2) / 2} y="12" fill="#14b8a6" fontSize="8" textAnchor="middle">Q1 ON</text>
-        <text x={(t7 + t8) / 2} y="12" fill="#14b8a6" fontSize="8" textAnchor="middle">Q1 ON</text>
+        <path d={`M ${t1} 40 L ${t1} 15 L ${t2} 15 L ${t2} 40 L ${t7} 40 L ${t7} 15 L ${t8} 15 L ${t8} 40`} fill="none" stroke={WAVEFORM_COLORS.vgsQ1} strokeWidth="2" />
+        <text x={(t1 + t2) / 2} y="12" fill={WAVEFORM_COLORS.vgsQ1} fontSize="8" textAnchor="middle">Q1 ON</text>
+        <text x={(t7 + t8) / 2} y="12" fill={WAVEFORM_COLORS.vgsQ1} fontSize="8" textAnchor="middle">Q1 ON</text>
       </g>
 
       {/* Vgs Q2 */}
       <g transform="translate(0, 45)">
         <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vgs_Q2</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t4} 40 L ${t4} 15 L ${t5} 15 L ${t5} 40 L ${t8} 40`} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 2" />
-        <text x={(t4 + t5) / 2} y="12" fill="#f59e0b" fontSize="8" textAnchor="middle">Q2 ON</text>
+        <path d={`M ${t1} 40 L ${t4} 40 L ${t4} 15 L ${t5} 15 L ${t5} 40 L ${t8} 40`} fill="none" stroke={WAVEFORM_COLORS.vgsQ2} strokeWidth="2" strokeDasharray="4 2" />
+        <text x={(t4 + t5) / 2} y="12" fill={WAVEFORM_COLORS.vgsQ2} fontSize="8" textAnchor="middle">Q2 ON</text>
       </g>
 
       {/* Vds Q1 */}
       <g transform="translate(0, 140)">
         <text x="45" y="28" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Vds_Q1</text>
         <line x1={t1} y1="40" x2={t8} y2="40" stroke="#525252" strokeWidth="1" />
-        <path d={`M ${t1} 40 L ${t2} 40 L ${t3} 10 L ${t5} 10 L ${t6} 40 L ${t7} 40 L ${t8} 40`} fill="none" stroke="#ef4444" strokeWidth="2" />
+        <path d={`M ${t1} 40 L ${t2} 40 L ${t3} 10 L ${t5} 10 L ${t6} 40 L ${t7} 40 L ${t8} 40`} fill="none" stroke={WAVEFORM_COLORS.vdsQ1} strokeWidth="2" />
         <line x1={t5} y1="10" x2={t6} y2="40" stroke="url(#vdsFallGrad)" strokeWidth="2" />
         <rect x={t6} y="8" width={t7 - t6} height="36" fill="rgba(34,197,94,0.15)" stroke="#22c55e" strokeWidth="1" strokeDasharray="3 2" />
         <text x={(t6 + t7) / 2} y="56" fill="#22c55e" fontSize="9" textAnchor="middle">ZVS</text>
@@ -228,16 +290,16 @@ function SwitchingAnimationSVG() {
             与 Vds_Q1(168) 间距 21、与 Im(220) 间距 31，均大于字高。 */}
         <text x="45" y="44" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Ir</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
-        <path d={irPath} fill="none" stroke="#14b8a6" strokeWidth="2" className="dash-flow" />
-        <text x={t8 + 12} y="28" fill="#14b8a6" fontSize="11" dominantBaseline="middle">谐振电流</text>
+        <path d={irPath} fill="none" stroke={WAVEFORM_COLORS.ir} strokeWidth="2" className="dash-flow" />
+        <text x={t8 + 12} y="28" fill={WAVEFORM_COLORS.ir} fontSize="11" dominantBaseline="middle">谐振电流</text>
       </g>
 
       {/* Im */}
       <g transform="translate(0, 200)">
         <text x="45" y="20" fill="#a3a3a3" fontSize="11" textAnchor="end" dominantBaseline="middle" fontFamily="JetBrains Mono, monospace">Im</text>
         <line x1={t1} y1="30" x2={t8} y2="30" stroke="#525252" strokeWidth="1" />
-        <path d={imPath} fill="none" stroke="#22c55e" strokeWidth="2" className="dash-flow-slow" />
-        <text x={t8 + 12} y="28" fill="#22c55e" fontSize="11" dominantBaseline="middle">励磁电流（三角波）</text>
+        <path d={imPath} fill="none" stroke={WAVEFORM_COLORS.im} strokeWidth="2" className="dash-flow-slow" />
+        <text x={t8 + 12} y="28" fill={WAVEFORM_COLORS.im} fontSize="11" dominantBaseline="middle">励磁电流</text>
       </g>
 
       {/* Time axis */}
@@ -728,76 +790,58 @@ export default function Operation() {
             subtitle="稳态运行时的电压与电流波形特征"
           />}>
 
-          <div className="bg-bg/50 rounded-lg p-4">
-            <img
-              src="./LLC_key_waveform.svg"
-              className="w-full max-w-3xl mx-auto invert brightness-90"
-              alt="LLC 关键波形"
-            />
-          </div>
+          <KeyWaveformsSVG />
+
+          <p className="text-text-secondary text-sm mt-4 leading-relaxed">
+            上图为一个开关周期内六组信号的时间关系（自绘矢量图，不依赖任何图片素材）。
+            图中时间刻度 <code className="font-mono text-text-primary">t₁ … t₁′</code> 与下一节「开关过程动画」共用同一套命名，
+            两张图可对照阅读；下方说明按图中自上而下的行序排列，色点与曲线一一对应。
+          </p>
 
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Vgs — 栅极驱动（第1~2行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-primary-light" />
-                <h4 className="text-sm font-semibold text-text-primary">Vgs — 栅极驱动</h4>
+            {WAVE_LEGEND.map((item) => (
+              <div
+                key={item.title}
+                className="p-4 bg-bg/50 rounded-lg border-l-2"
+                style={{ borderLeftColor: item.chips[0].color }}
+              >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
+                  {item.chips.map((c) => (
+                    <span key={c.label} className="inline-flex items-center gap-1.5 text-[11px] font-mono text-text-secondary">
+                      <span className="w-3 h-3 rounded-full inline-block shrink-0" style={{ backgroundColor: c.color }} />
+                      {c.label}
+                    </span>
+                  ))}
+                  <span className="ml-auto text-[10px] text-text-muted">{item.row}</span>
+                </div>
+                <h4 className="text-sm font-semibold text-text-primary mb-1">{item.title}</h4>
+                <p className="text-text-secondary text-sm leading-relaxed">{item.desc}</p>
               </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                两个互补的方波信号（Vgs_Q1 与 Vgs_Q2），之间存在死区时间（Dead Time）。死区时间长度直接影响 ZVS 能否成功实现。
-              </p>
-            </div>
-            {/* Ir — 谐振电流（第3行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-primary-light" />
-                <h4 className="text-sm font-semibold text-text-primary">Ir — 谐振电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                近似正弦的交流电流，包含 Lr 与 Cr 谐振分量。Ir 在死区时间内的方向决定结电容的充放电方向。
-              </p>
-            </div>
-            {/* Im — 励磁电流（第4行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-success" />
-                <h4 className="text-sm font-semibold text-text-primary">Im — 励磁电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                三角波或近似三角波，由输出电压反射到原边后加在 Lm 上产生。Im 峰值在谐振电流过零时达到最大。
-              </p>
-            </div>
-            {/* Vds — 漏极电压（第5行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-danger" />
-                <h4 className="text-sm font-semibold text-text-primary">Vds — 漏极电压</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                在死区时间内，通过谐振电流对结电容充放电，Vds 在 Vgs 升高之前降至零。这是 ZVS 的关键特征。
-              </p>
-            </div>
-            {/* Isec — 副边电流（第6行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-[#8b5cf6]" />
-                <h4 className="text-sm font-semibold text-text-primary">Isec — 副边电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                仅在谐振电流绝对值大于励磁电流时流通，对应整流二极管导通时段。在 Region 2 时自然实现 ZCS。
-              </p>
-            </div>
-            {/* Io — 输出电流（第7行波形） */}
-            <div className="p-4 bg-bg/50 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 rounded-full bg-accent" />
-                <h4 className="text-sm font-semibold text-text-primary">Io — 输出电流</h4>
-              </div>
-              <p className="text-text-secondary text-sm leading-relaxed">
-                经整流后的脉动直流，频率为开关频率的两倍。输出滤波电容主要滤除此二倍频纹波。
-              </p>
-            </div>
+            ))}
           </div>
+
+          <figure className="mt-8">
+            <div className="bg-bg/50 rounded-lg p-4">
+              <img
+                src="./LLC_key_waveform.svg"
+                className="w-full max-w-3xl mx-auto invert brightness-90"
+                alt="PLECS 仿真实测波形：输出侧、MOSFET 侧与二极管侧共 8 个测量量的示波器拼图"
+              />
+            </div>
+            <figcaption className="mt-3 text-xs text-text-muted leading-relaxed">
+              <span className="text-text-secondary font-medium">附图 · PLECS 仿真实测</span>
+              （4 行 × 2 列共 8 个测量量，与上图那六组信号不是同一套测量量）。
+              左列自上而下为 <code className="font-mono">Vo</code>、<code className="font-mono">Io</code>、
+              <code className="font-mono">&lt;MOSFET current&gt;</code>、<code className="font-mono">&lt;MOSFET voltage&gt;</code>；
+              右列为 <code className="font-mono">ILm</code>、<code className="font-mono">ILr</code>、
+              <code className="font-mono">&lt;Diode current&gt;</code>、<code className="font-mono">&lt;Diode voltage&gt;</code>。
+              注意 PLECS 是<b>按测量组上色</b>的（MOSFET 侧红、二极管侧蓝、辅助量黑），
+              本页为适配深色主题对该图整体反色，于是红→青、蓝→黄、黑→近白，
+              <b>8 条曲线只剩 3 种显示色</b>，同组之间无法区分。
+              因此这张图只用来看真实仿真下的波形形态与相位关系，
+              要逐条区分信号请以上方的自绘矢量图为准。
+            </figcaption>
+          </figure>
         </SectionCard>
 
         {/* Section 2.5: Animated Switching Process */}
