@@ -50,9 +50,20 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-sm">
-            © 2026 LLC Design Tool. 仅供学习与研究使用。
-          </p>
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <p className="text-text-muted text-sm">
+              © 2026 LLC Design Tool. 仅供学习与研究使用。
+            </p>
+            {/* ICP 备案号：工信部要求网站底部展示并链接至 beian.miit.gov.cn */}
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-muted hover:text-text-secondary text-sm transition-colors"
+            >
+              苏ICP备2026073104号
+            </a>
+          </div>
           <div className="flex items-center gap-5">
             <span
               className="text-text-muted text-sm font-mono tracking-wide"
