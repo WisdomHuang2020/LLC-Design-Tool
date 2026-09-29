@@ -250,31 +250,31 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 导通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCond.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCond / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pcond = Ip²·Rds(on)·kT（每管半周；kT 为温度修正系数）</td>
+                <td className="py-2 text-text-secondary">Pcond = 0.5·Ip²·Rds(on)·kT·Nsw（每管半周；Nsw = 半桥2 / 全桥4）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pon = 0.5·Vin·Ip·tr·fsw（ZVS下≈0）</td>
+                <td className="py-2 text-text-secondary">Pon = 0.5·Vin·Ip·tr·fsw·Nsw（ZVS下≈0）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Im,off·tf·fsw（关断瞬间为励磁电流峰值）</td>
+                <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Im,off·tf·fsw·Nsw（关断瞬间为励磁电流峰值）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)，ZVS 下≈0</td>
+                <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)·fsw·Nsw，ZVS 下≈0</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetDiode.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetDiode / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pdiode = Vsd·Im,off·(td−tZVS)·fsw（净放电时间）</td>
+                <td className="py-2 text-text-secondary">Pdiode = Vsd·Im,off·(td−tZVS)·fsw·Nsw（净放电时间）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">磁芯损耗</td>
@@ -296,7 +296,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">整流损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.rectLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.rectLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'P = Is²·Rds(on)' : 'P = Vf·Io'}</td>
+                <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'P = Nrect·Is,sw²·Rds(on)' : 'P = Ndiode·Vf·(Io/2)'}</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">谐振元件损耗</td>

@@ -76,18 +76,37 @@ export function fullLoadGainCrossing(k: number, q: number, target: number): numb
   return (lo + hi) / 2
 }
 
+/**
+ * 谐振腔输入阻抗（以特征阻抗 Zr 归一化）：Zin / Zr
+ *
+ *   Zin/Zr = j(fn − 1/fn) + j·fn·k / (1 + j·fn·k·Q)
+ *   ⇒ Re(Zin)/Zr = fn²k²Q / (1 + fn²k²Q²)
+ *     Im(Zin)/Zr = (fn − 1/fn) + fn·k / (1 + fn²k²Q²)
+ *
+ * 与「公式推导」页 `Derivations.tsx` 的 Zin 三式逐字对应；
+ * 曲线页「|Zin| / Zr」与「相位」两张图都以本函数为**唯一来源**。
+ *
+ * ⚠️ 历史缺陷（v2.10.94 修正）：曲线页曾把分母写成 `Q² + fn²k²`（相当于把 Q 取了倒数），
+ *    与自身 Y 轴标签「|Zin| / Zr」不符；相位在 fn=1 处偏 4.01°、fn=0.8 处偏 11.83°，
+ *    感性/容性分界因此由正确的 fn≈0.804 偏移到 ≈0.895。
+ */
+export function inputImpedanceNorm(
+  fn: number,
+  k: number,
+  q: number,
+): { re: number; im: number; mag: number; phase: number } {
+  const d = 1 + fn * fn * k * k * q * q
+  const re = (fn * fn * k * k * q) / d
+  const im = fn - 1 / fn + (fn * k) / d
+  return { re, im, mag: Math.sqrt(re * re + im * im), phase: (Math.atan2(im, re) * 180) / Math.PI }
+}
+
 // ZVS phase check at fsw (fn = 1 since fr = fsw in our design)
 export function zvsPhase(k: number, q: number): number {
-  // At fn=1, the real part of Zin is (ωLm)²Rac / (Rac² + (ωLm)²)
-  // Imag part is ωLmRac² / (Rac² + (ωLm)²)
-  // Since at fn=1, Lr and Cr cancel, Zin = jωLm || Rac
-  // Let x = ωLm / Rac = 1 / (q * k) ... wait
-  // Actually, Zr = q * Rac, and ωLm = Zr * k / (1) since at fr, ωLr = Zr and Lm = k*Lr, so ωLm = k*Zr = k*q*Rac
-  // So ωLm / Rac = k * q
-  const x = k * q
-  const real = (x * x) / (1 + x * x)
-  const imag = x / (1 + x * x)
-  return Math.atan2(imag, real) * (180 / Math.PI)
+  // 原实现用 x = k·q、real = x²/(1+x²)、imag = x/(1+x²)，即 Re/Rac 与 Im/Rac 的归一化形式。
+  // 它与「以 Zr 归一化」的 inputImpedanceNorm(1,k,q) 只差一个常数因子 Q，**相位完全相同**
+  // （两者等价于 atan2(1, k·q)），故直接复用后者，避免同一套数学写两遍。
+  return inputImpedanceNorm(1, k, q).phase
 }
 
 // ─── 教材对照式（仅供页面并列展示，不参与本站设计计算）───

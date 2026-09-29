@@ -15,13 +15,13 @@ import type { NameType, ValueType, Payload } from 'recharts/types/component/Defa
 import { Download, Link2, RotateCcw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import GainChart from '../components/GainChart'
+import { inputImpedanceNorm } from '../lib/designer/llcMath'
 
+// Zin 以特征阻抗 Zr 归一化（与 Derivations 页 Zin 三式同源，见 lib/designer/llcMath）。
+// ⚠️ v2.10.94 修正：本函数原先分母写成 Q²+fn²k²（等于把 Q 取了倒数），
+//    与图表自身的 Y 轴标签「|Zin| / Zr」不符，相位偏差最大 11.8°、感性/容性分界整体偏移。
 function calcImpedance(fn: number, k: number, Q: number) {
-  const denom = Q * Q + fn * fn * k * k
-  const re = (Q * fn * fn * k * k) / denom
-  const im = (fn - 1 / fn) + (Q * Q * fn * k) / denom
-  const mag = Math.sqrt(re * re + im * im)
-  const phase = Math.atan2(im, re) * (180 / Math.PI)
+  const { mag, phase } = inputImpedanceNorm(fn, k, Q)
   return { mag, phase }
 }
 

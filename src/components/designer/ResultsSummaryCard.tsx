@@ -39,7 +39,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
           <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
-          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = Zr / Rac（满载）" />
+          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1~3)）；等价定义 Q = Zr / Rac" />
           <ResultItem label="电感比 k" value={calculated.k.toFixed(2)} unit="" formula="k = Lm / Lr" />
           <ResultItem
             label="所需增益 Gmin"
@@ -85,7 +85,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             formula={`tZVS=${(calculated.tZvs * 1e9).toFixed(1)}ns / Td=${td}ns`}
             highlight={calculated.zvsTimeOk ? 'good' : 'critical'}
           />
-          <ResultItem label="谐振电流 Ir,rms（负载支路分量）" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir,rms = Vin1/Rac（FHA 等效负载支路分量）；与 Im,rms 方和根 = 原边总电流" />
+          <ResultItem label="谐振电流 Ir,rms（负载支路分量）" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir,rms = VFHA,rms / Rac（基波有效值；FHA 等效负载支路分量）；与 Im,rms 方和根 = 原边总电流" />
           <ResultItem label="励磁电流 Im,rms（有效值）" value={calculated.imRms.toFixed(2)} unit="A" formula="Im,rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
           <ResultItem label="励磁电流 Im,off（关断峰值）" value={Number.isFinite(calculated.imOff) ? calculated.imOff.toFixed(3) : '—'} unit={Number.isFinite(calculated.imOff) ? 'A' : ''} formula="Im,off = Vin,min/(8·fmax·Lm)（半桥；全桥系数 4），ZVS 能量判据用此值" />
           <ResultItem label="原边总电流 Ip,rms" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip,rms = √(Ir,rms² + Im,rms²)，即流过 Lr、Cr 与变压器原边绕组的电流" />
@@ -137,8 +137,8 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
               </div>
             }
           />
-          <ResultItem label="Qmax2 (ZVS)" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区时间约束" />
-          <ResultItem label="Qmax3 (Coss)" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="寄生电容约束" />
+          <ResultItem label="Qmax2（Coss,eq 约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="由原边 Coss,eq / Cj 与 fmax 决定；不含死区时间（死区由「ZVS时间裕量」单独校验）" />
+          <ResultItem label="Qmax3（ZVS 能量约束）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量，用 Coss,er / Cj 口径" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>
 
