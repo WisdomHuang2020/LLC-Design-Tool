@@ -87,6 +87,12 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const bPeakMt = bPeak * 1000
 
   // 6. Winding loss (DC + skin effect)
+  // ⚠️ 电流必须用原边**总电流有效值** ipRms = √(Ir² + Im²)，**不可**用励磁电流 imRms。
+  //    依据 MMF 平衡 Np·ip = Ns·is + Np·im：原边绕组这一个导体上，**负载折算分量与励磁分量
+  //    同时流过**（负载电流经磁耦合折算回原边，并非"只在副边流"）；二者近似正交，
+  //    故有效值按平方和相加。默认参数下 ipRms=0.70A、imRms=0.22A，误用后者会把铜损
+  //    低估约 10 倍（0.049W → 0.005W），进而严重低估温升、导致变压器欠设计。
+  //    （2026-09-29 审核结论：此项曾被外部意见列为"应改用 Im"，实为误报。）
   const rdc = lp.windingRdc / 1000
   const freqRatio = fsw / 1000 / lp.skinF0
   const racFactor = 1 + freqRatio * freqRatio

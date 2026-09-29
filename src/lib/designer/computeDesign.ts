@@ -242,6 +242,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     ipRms,
     irRms,
     imRms,
+    imOff: imDeadtime,
     bPeak,
     isRms,
     vinNom,

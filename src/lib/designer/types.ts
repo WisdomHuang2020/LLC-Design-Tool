@@ -87,6 +87,12 @@ export interface CalculatedData {
   tZvs: number
   irRms: number
   imRms: number
+  /**
+   * 关断时刻励磁电流峰值 Im,off（A）。
+   * 即 ZVS 能量判据中参与换流的励磁电流，亦为关断损耗与死区体二极管损耗的正确电流取值。
+   * ⚠️ 旧存档（本地存储）可能缺此字段，渲染时须兜底。
+   */
+  imOff: number
   bPeak: number
   gainCurveData: Array<{ fn: number; m: number; mLight: number }>
 }

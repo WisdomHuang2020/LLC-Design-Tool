@@ -1,4 +1,5 @@
 // 单个计算结果的展示条目：标签 + 数值 + 单位 + 公式出处。
+import type { ReactNode } from 'react'
 import { Info } from 'lucide-react'
 
 interface ResultItemProps {
@@ -7,14 +8,16 @@ interface ResultItemProps {
   unit: string
   formula: string
   highlight?: 'good' | 'warn' | 'critical'
+  /** 可选的右上角自定义控件（用于切换口径等）；不传则显示信息图标 */
+  action?: ReactNode
 }
 
-export default function ResultItem({ label, value, unit, formula, highlight }: ResultItemProps) {
+export default function ResultItem({ label, value, unit, formula, highlight, action }: ResultItemProps) {
   return (
     <div className="bg-surface-elevated rounded-lg p-3 border border-border hover:border-border-light transition-colors">
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between gap-2 mb-1">
         <span className="text-xs text-text-secondary">{label}</span>
-        <Info className="w-3.5 h-3.5 text-text-muted" />
+        {action ?? <Info className="w-3.5 h-3.5 text-text-muted shrink-0" />}
       </div>
       <div className="flex items-baseline gap-1">
         <span

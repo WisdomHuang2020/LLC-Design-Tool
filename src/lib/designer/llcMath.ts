@@ -89,3 +89,38 @@ export function zvsPhase(k: number, q: number): number {
   const imag = x / (1 + x * x)
   return Math.atan2(imag, real) * (180 / Math.PI)
 }
+
+// ─── 教材对照式（仅供页面并列展示，不参与本站设计计算）───
+
+/**
+ * 教材/常用资料给出的「Q 上限」闭式解（DTU 等资料同式）：
+ *
+ *   Qmax = 1/(k·Gmax) · √( k + Gmax²/(Gmax² − 1) )
+ *
+ * ⚠️ 该式是**近似式**：并不保证代入后增益曲线的峰值恰为 Gmax。
+ * 实测（k=4, Gmax=1.0526）峰值增益 = 1.05434 > Gmax，**偏保守**（留了额外余量）；
+ * 参数越极端偏差越大（k=8, Gmax=1.35 时约 −5.4%）。
+ * 本站默认用数值二分求**精确解**（`computeDesign.findQmax1` 令峰值增益恰为 Gmax）。
+ * 保留此式仅为与教材结果对照。
+ */
+export function qmax1Textbook(k: number, gMax: number): number {
+  const denom = gMax * gMax - 1
+  if (!(k > 0) || !(denom > 0)) return NaN
+  return (1 / (k * gMax)) * Math.sqrt(k + (gMax * gMax) / denom)
+}
+
+/**
+ * 教材/常用资料给出的「最低工作频率」闭式解（忽略 Q 项的近似）：
+ *
+ *   fn,min = 1 / √( 1 + k(1 − 1/Gmax²) )    ⇒    fmin = fr / √(1 + k(1 − 1/Gmax²))
+ *
+ * ⚠️ 定义与本站不同：本站 fmin 取**满载增益曲线 M=Gmax 的交点**
+ * （`fullLoadGainCrossing`，满载 + 最低母线的最坏工况，更保守）；
+ * 本式是把增益式分母第一项单独置为 1/Gmax 得到的解析近似，**忽略 Q 项**。
+ * 二者均成立、数值略有差异（默认参数下 84.8 kHz vs 86.7 kHz），页面并列展示供对照。
+ */
+export function fminTextbook(fr: number, k: number, gMax: number): number {
+  const g2 = gMax * gMax
+  if (!(g2 > 0)) return NaN
+  return fr / Math.sqrt(1 + k * (1 - 1 / g2))
+}
