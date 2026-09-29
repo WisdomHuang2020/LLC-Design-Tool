@@ -23,6 +23,20 @@ export const defaultLossParams: LossParameters = {
   syncRectRdsOn: 5,
   lrDcr: 30,
   crEsr: 20,
+
+  // 磁芯损耗：默认走手册 P_cv 法（PC95 @100℃/100kHz/0.2T ≈ 290 mW/cm³）
+  coreLossMode: 'pcv',
+  corePcv: 290,
+  coreWaveK: 1.25,
+
+  // 谐振电感铁损：默认 0（需按 Lr 实际磁芯填 P_cv 与 Ve，否则该项不参与计算）
+  lrCorePcv: 0,
+  lrCoreVe: 0,
+
+  // 谐振电容：默认由 1kHz 损耗角正切 + 频率修正折算等效 ESR
+  crEsrMode: 'df',
+  crDf1k: 0.001,
+  crDfK: 2.0,
 }
 
 export interface LossResult {
@@ -32,10 +46,22 @@ export interface LossResult {
   mosfetCoss: number
   mosfetDiode: number
   coreLoss: number
+  /** 磁芯损耗对照值：Steinmetz 拟合式（无论当前模式都计算，供并列展示） */
+  coreLossSteinmetz: number
+  /** 磁芯损耗对照值：手册 P_cv 法 */
+  coreLossPcv: number
   bPeak: number
   windingLoss: number
   rectLoss: number
   resonantLoss: number
+  /** 谐振电感铜损 */
+  lrCopperLoss: number
+  /** 谐振电感铁损 */
+  lrCoreLoss: number
+  /** 谐振电容等效 ESR（Ω） */
+  crEsrEff: number
+  /** 谐振电容损耗 */
+  crLoss: number
   totalLoss: number
   efficiency: number
   breakdown: LossBreakdown[]
@@ -95,17 +121,22 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const tDiode = Math.max(0, td - (Number.isFinite(calc.tZvs) ? calc.tZvs : 0))
   const diodeLoss = lp.mosfetVsd * imOff * tDiode * fsw * nSwitches
 
-  // 5. Transformer core loss (Steinmetz)
-  // 公式: P_core = C_m * fsw^α * B_peak^β * V_e
-  // 注意: C_m 的单位基于 kHz、mT、cm³，计算结果为 mW，需 /1000 转为 W:
-  //   - fsw 需要 /1000 转换为 kHz
-  //   - B_peak 需要 *1000 转换为 mT
-  //   - V_e 单位为 cm³
-  //   - 最终结果需 /1000 转换为 W
+  // 5. Transformer core loss —— 两条口径并列计算，按 coreLossMode 选用，另一条作对照
+  //  (a) 手册 P_cv 法（默认，推荐）：P = P_cv × Ve × k_wave / 1000
+  //      P_cv 是手册给出的损耗密度（mW/cm³），在目标温度/频率/B 下直接查得，比拟合式更贴近实际；
+  //      k_wave 修正「手册曲线按正弦标定、而 LLC 变压器为方波励磁」的差异（典型 1.25）。
+  //  (b) Steinmetz 拟合式：P = Cm · f^α · B^β · Ve
+  //      单位约定：f 用 kHz、B 用 mT、Ve 用 cm³ ⇒ 结果 mW，再 /1000 得 W。
+  //      ⚠️ Cm/α/β 来自**正弦**激励拟合，方波励磁下本就有偏差，故不再作为默认口径。
   const aeM2 = lp.coreAe * 1e-6
   const bPeak = (vin / (calc.topology === 'half-bridge' ? 2 : 1)) / (4 * fsw * lp.primaryTurns * aeM2)
-  const coreLoss = lp.coreK * Math.pow(fsw / 1e3, lp.coreAlpha) * Math.pow(bPeak * 1000, lp.coreBeta) * lp.coreVe / 1000
   const bPeakMt = bPeak * 1000
+
+  const coreWaveK = Number.isFinite(lp.coreWaveK) && lp.coreWaveK > 0 ? lp.coreWaveK : 1
+  const coreLossSteinmetz =
+    (lp.coreK * Math.pow(fsw / 1e3, lp.coreAlpha) * Math.pow(bPeak * 1000, lp.coreBeta) * lp.coreVe) / 1000
+  const coreLossPcv = (lp.corePcv * lp.coreVe * coreWaveK) / 1000
+  const coreLoss = lp.coreLossMode === 'steinmetz' ? coreLossSteinmetz : coreLossPcv
 
   // 6. Winding loss (DC + skin effect)
   // ⚠️ 电流必须用原边**总电流有效值** ipRms = √(Ir² + Im²)，**不可**用励磁电流 imRms。
@@ -133,8 +164,21 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   }
 
   // 8. Resonant element loss
-  const lrLoss = ipRms * ipRms * (lp.lrDcr / 1000)
-  const crLoss = ipRms * ipRms * (lp.crEsr / 1000)
+  //  · 谐振电感：铜损 + 铁损（铁损默认 0，须按 Lr 实际磁芯填 P_cv / Ve 才计入）
+  //  · 谐振电容：等效 ESR 两种口径 ——
+  //      'esr'：直接给 ESR（mΩ）；
+  //      'df' ：规格书一般只给 1kHz 损耗角正切，需按频率折算：
+  //             ESR(f) = tanδ(f) / (2π·f·Cr)，其中 tanδ(f) = DF_1k × k
+  const lrCopperLoss = ipRms * ipRms * (lp.lrDcr / 1000)
+  const lrCoreLoss = (lp.lrCorePcv * lp.lrCoreVe * coreWaveK) / 1000
+  const lrLoss = lrCopperLoss + lrCoreLoss
+
+  const crEsrEff =
+    lp.crEsrMode === 'esr'
+      ? lp.crEsr / 1000
+      : (lp.crDf1k * lp.crDfK) / Math.max(1e-15, 2 * Math.PI * fsw * calc.cr)
+  const crLoss = ipRms * ipRms * crEsrEff
+
   const resonantLoss = lrLoss + crLoss
 
   const totalLoss = mosfetCond + switchOn + switchOff + cossLoss + diodeLoss + coreLoss + windingLoss + rectLoss + resonantLoss
@@ -159,10 +203,16 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     mosfetCoss: cossLoss,
     mosfetDiode: diodeLoss,
     coreLoss,
+    coreLossSteinmetz,
+    coreLossPcv,
     bPeak: bPeakMt,
     windingLoss,
     rectLoss,
     resonantLoss,
+    lrCopperLoss,
+    lrCoreLoss,
+    crEsrEff,
+    crLoss,
     totalLoss,
     efficiency,
     breakdown,

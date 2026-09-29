@@ -118,8 +118,56 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.lrDcr} onChange={(e) => update('lrDcr', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>Cr ESR (mΩ)</label>
-            <input type="number" className={inputClass} value={params.crEsr} onChange={(e) => update('crEsr', Number(e.target.value))} />
+            <label className={labelClass}>Cr 等效电阻取法</label>
+            <select className={inputClass} value={params.crEsrMode} onChange={(e) => update('crEsrMode', e.target.value as LossParameters['crEsrMode'])}>
+              <option value="df">由损耗角正切推算</option>
+              <option value="esr">直接给 ESR</option>
+            </select>
+          </div>
+          {params.crEsrMode === 'esr' ? (
+            <div>
+              <label className={labelClass}>Cr ESR (mΩ)</label>
+              <input type="number" className={inputClass} value={params.crEsr} onChange={(e) => update('crEsr', Number(e.target.value))} />
+            </div>
+          ) : (
+            <>
+              <div>
+                <label className={labelClass}>Cr 1kHz 损耗角正切</label>
+                <input type="number" step="0.0001" className={inputClass} value={params.crDf1k} onChange={(e) => update('crDf1k', Number(e.target.value))} />
+                <div className="text-[10px] text-text-muted mt-0.5">规格书惯例值（如 0.001）</div>
+              </div>
+              <div>
+                <label className={labelClass}>Cr DF 频率修正倍数</label>
+                <input type="number" step="0.1" className={inputClass} value={params.crDfK} onChange={(e) => update('crDfK', Number(e.target.value))} />
+                <div className="text-[10px] text-text-muted mt-0.5">1kHz → fsw 的 tanδ 倍数</div>
+              </div>
+            </>
+          )}
+          <div>
+            <label className={labelClass}>磁芯损耗算法</label>
+            <select className={inputClass} value={params.coreLossMode} onChange={(e) => update('coreLossMode', e.target.value as LossParameters['coreLossMode'])}>
+              <option value="pcv">手册 P_cv 法</option>
+              <option value="steinmetz">Steinmetz 拟合</option>
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>P_cv (mW/cm³)</label>
+            <input type="number" className={inputClass} value={params.corePcv} onChange={(e) => update('corePcv', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">目标温度/频率/B 下查手册</div>
+          </div>
+          <div>
+            <label className={labelClass}>波形修正 k_wave</label>
+            <input type="number" step="0.05" className={inputClass} value={params.coreWaveK} onChange={(e) => update('coreWaveK', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">方波励磁相对正弦，默认 1.25</div>
+          </div>
+          <div>
+            <label className={labelClass}>Lr 磁芯 P_cv (mW/cm³)</label>
+            <input type="number" className={inputClass} value={params.lrCorePcv} onChange={(e) => update('lrCorePcv', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">填 0 则不计算铁损</div>
+          </div>
+          <div>
+            <label className={labelClass}>Lr 磁芯 Ve (cm³)</label>
+            <input type="number" step="0.1" className={inputClass} value={params.lrCoreVe} onChange={(e) => update('lrCoreVe', Number(e.target.value))} />
           </div>
         </div>
 
@@ -232,7 +280,11 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">磁芯损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.coreLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.coreLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pcore = k·f^α·B^β·Ve</td>
+                <td className="py-2 text-text-secondary">
+                  {params.coreLossMode === 'pcv'
+                    ? `Pcore = P_cv·Ve·k_wave（手册法）｜Steinmetz 拟合估算 ${losses.coreLossSteinmetz.toFixed(3)} W`
+                    : `Pcore = Cm·f^α·B^β·Ve（拟合）｜手册法估算 ${losses.coreLossPcv.toFixed(3)} W`}
+                </td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">绕组损耗</td>
@@ -250,7 +302,9 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">谐振元件损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.resonantLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.resonantLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P = Ip²·(DCR+ESR)</td>
+                <td className="py-2 text-text-secondary">
+                  {`P = Ip²·DCR(${losses.lrCopperLoss.toFixed(3)}) + Lr铁损(${losses.lrCoreLoss.toFixed(3)}) + Ip²·ESR(${losses.crLoss.toFixed(3)}, ESR_eff=${(losses.crEsrEff * 1000).toFixed(1)} mΩ)`}
+                </td>
               </tr>
               <tr className="bg-surface-elevated">
                 <td className="py-2 pr-4 font-bold text-primary-light">总损耗</td>

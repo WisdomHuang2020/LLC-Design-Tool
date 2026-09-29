@@ -129,7 +129,29 @@ export interface LossParameters {
   rectVf: number // V
   syncRectRdsOn: number // mΩ
   lrDcr: number // mΩ
-  crEsr: number // mΩ
+  crEsr: number // mΩ（仅 crEsrMode='esr' 时使用）
+
+  // ── 磁芯损耗：手册 P_cv 法 vs Steinmetz 拟合（v2.10.92 起 P_cv 为默认口径）──
+  /** 'pcv'：按手册损耗密度 × 体积 × 波形系数算（推荐）；'steinmetz'：按拟合式算 */
+  coreLossMode: 'pcv' | 'steinmetz'
+  /** 手册磁芯损耗密度 P_cv（mW/cm³）—— 在目标温度/频率/B 工况下查手册得到 */
+  corePcv: number
+  /** 波形修正系数：LLC 变压器为方波励磁，而手册曲线多为正弦标定 → 默认 1.25 */
+  coreWaveK: number
+
+  // ── 谐振电感铁损（两项默认 0 ⇒ 不计算该分项）──
+  /** 谐振电感磁芯损耗密度（mW/cm³），查 Lr 磁芯手册 */
+  lrCorePcv: number
+  /** 谐振电感磁芯有效体积（cm³） */
+  lrCoreVe: number
+
+  // ── 谐振电容：损耗角正切法 vs 直接给 ESR ──
+  /** 'df'：由损耗角正切推算等效 ESR（推荐，规格书一般只给 DF）；'esr'：直接给 ESR */
+  crEsrMode: 'df' | 'esr'
+  /** Cr 在 1 kHz 下的损耗角正切（规格书常给值，如 0.001） */
+  crDf1k: number
+  /** 损耗角正切由 1 kHz 折算到开关频率的修正倍数（100 kHz 常见 ≈2） */
+  crDfK: number
 }
 
 /** 损耗分项（用于饼图 / 横向柱图） */
