@@ -238,6 +238,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     zvsMargin,
     zvsTimeOk,
     tZvs,
+    td,
     zvsPhase: zvsPhaseDeg,
     ipRms,
     irRms,

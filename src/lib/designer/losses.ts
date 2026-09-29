@@ -10,7 +10,6 @@ export const defaultLossParams: LossParameters = {
   mosfetTf: 10,
   mosfetCoss: 150,
   mosfetVsd: 1.2,
-  deadTime: 200,
   primaryTurns: 30,
   coreMaterial: 'PC95',
   coreVe: 5.0,
@@ -90,9 +89,10 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // 死区内分两段：前段 tZVS 内电流用于给 Coss 充/放电，体二极管**尚未导通**；
   // 电压完成翻转后的剩余时间 (td − tZVS) 电流才经体二极管续流。
   // 故导通时间取「净放电时间」而非整个死区，电流取励磁电流峰值 Im,off。
-  // ⚠️ lp.deadTime 是损耗面板自己的输入（默认 200 ns），与设计参数的 td 相互独立；
-  //    两者不一致时（如设计 td=300 而此处 200）本项会被算成 0 —— 建议把两者对齐。
-  const tDiode = Math.max(0, lp.deadTime / 1e9 - (Number.isFinite(calc.tZvs) ? calc.tZvs : 0))
+  // ⚠️ 死区时间取自**设计参数**（calc.td），不再由损耗面板单独输入（v2.10.91 起单一来源）：
+  //    此前两处各自取值，会出现「损耗模型说体二极管导通 0 ns、而 zvsTimeOk 判定死区充裕」这种自相矛盾。
+  const td = Number.isFinite(calc.td) && calc.td > 0 ? calc.td : 0
+  const tDiode = Math.max(0, td - (Number.isFinite(calc.tZvs) ? calc.tZvs : 0))
   const diodeLoss = lp.mosfetVsd * imOff * tDiode * fsw * nSwitches
 
   // 5. Transformer core loss (Steinmetz)

@@ -85,6 +85,13 @@ export interface CalculatedData {
   // 新增字段
   zvsTimeOk: boolean
   tZvs: number
+  /**
+   * 设计死区时间 Td（秒）。
+   * v2.10.91 起作为**单一来源**：ZVS 换流窗口与损耗模型的体二极管导通窗口都以它为准，
+   * 不再由损耗面板单独输入（此前两处独立取值会导致互相矛盾的结论）。
+   * ⚠️ 旧存档（本地存储）可能缺此字段，使用时须兜底。
+   */
+  td: number
   irRms: number
   imRms: number
   /**
@@ -110,7 +117,6 @@ export interface LossParameters {
   mosfetTf: number // ns
   mosfetCoss: number // pF @ 0V
   mosfetVsd: number // V body diode
-  deadTime: number // ns
   primaryTurns: number
   coreMaterial: string
   coreVe: number // cm³

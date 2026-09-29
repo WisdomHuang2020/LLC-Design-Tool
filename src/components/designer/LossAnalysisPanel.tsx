@@ -23,6 +23,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   }
 
   const effDiff = losses.efficiency - calc.efficiency
+  const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
 
   return (
     <CollapsibleCard
@@ -60,8 +61,11 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.mosfetVsd} onChange={(e) => update('mosfetVsd', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>死区时间 (ns，应与设计参数一致)</label>
-            <input type="number" className={inputClass} value={params.deadTime} onChange={(e) => update('deadTime', Number(e.target.value))} />
+            <label className={labelClass}>死区时间 (ns)</label>
+            <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
+              <span className="font-mono text-sm text-text-primary">{tdNs}</span>
+              <span className="text-[10px] text-text-muted">取自设计参数</span>
+            </div>
           </div>
           <div>
             <label className={labelClass}>原边匝数 Np</label>
