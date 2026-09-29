@@ -23,7 +23,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
     >
       <div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-          <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vin_nom/(2·(Vout+Vd)) 或 Vin_nom/(Vout+Vd)" />
+          <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vinnom/(2·(Vo+Vf)) 或 Vinnom/(Vo+Vf)" />
           <ResultItem label="谐振频率 fr" value={(calculated.fr / 1000).toFixed(1)} unit="kHz" formula="fr = 1/(2π√(Lr·Cr))" />
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
@@ -34,14 +34,14 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="所需增益 Gmin"
             value={calculated.gMin.toFixed(3)}
             unit=""
-            formula="Gmin = Vin_nom/Vin_max"
+            formula="Gmin = Vinnom/Vinmax"
             highlight="good"
           />
           <ResultItem
             label="所需增益 Gmax"
             value={calculated.gMax.toFixed(3)}
             unit=""
-            formula="Gmax = Vin_nom/Vin_min"
+            formula="Gmax = Vinnom/Vinmin"
             highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
           />
           <ResultItem
@@ -71,11 +71,11 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="ZVS时间裕量"
             value={calculated.zvsTimeOk ? '充裕' : '不足'}
             unit=""
-            formula={`t_ZVS=${(calculated.tZvs * 1e9).toFixed(1)}ns / Td=${td}ns`}
+            formula={`tZVS=${(calculated.tZvs * 1e9).toFixed(1)}ns / Td=${td}ns`}
             highlight={calculated.zvsTimeOk ? 'good' : 'critical'}
           />
-          <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = V_in1 / Rac（谐振频率处近似）" />
-          <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im,rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
+          <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = Vin1 / Rac（谐振频率处近似）" />
+          <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Imrms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
           <ResultItem label="原边电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
           <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
           <ResultItem

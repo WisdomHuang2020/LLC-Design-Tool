@@ -61,7 +61,7 @@ export default function Report() {
 
 | 参数 | 公式 | 数值 |
 |------|------|------|
-| 匝比 n | ${p.topology === 'half-bridge' ? 'Vin_nom / (2·(Vout+Vd))' : 'Vin_nom / (Vout+Vd)'}（基于额定输入，谐振频率处 M=1） | ${r.n.toFixed(3)} |
+| 匝比 n | ${p.topology === 'half-bridge' ? 'Vinnom / (2·(Vo+Vf))' : 'Vinnom / (Vo+Vf)'}（基于额定输入，谐振频率处 M=1） | ${r.n.toFixed(3)} |
 | 等效负载 Rac | 8n²Vout² / (π²·Pout) | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout)).toFixed(2)} Ω |
 | 特征阻抗 Zr | Rac / Q | ${((8 * r.n * r.n * p.vout * p.vout) / (Math.PI * Math.PI * p.pout) / r.q).toFixed(2)} Ω |
 | 谐振频率 fr | 1 / (2π·√(Lr·Cr)) | ${(r.fr / 1000).toFixed(1)} kHz |
@@ -78,9 +78,9 @@ export default function Report() {
 
 ## 4. 增益分析（FHA 方法）
 
-- **所需增益**（Vin_min 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
-- **所需增益**（Vin_max 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMax : (r.n * (p.vout + p.vd)) / p.vinMax).toFixed(3)}
-- **峰值增益 M_max**: ${r.mMax.toFixed(3)}
+- **所需增益**（Vinmin 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
+- **所需增益**（Vinmax 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMax : (r.n * (p.vout + p.vd)) / p.vinMax).toFixed(3)}
+- **峰值增益 Mmax**: ${r.mMax.toFixed(3)}
 - **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
 ${gainMargin < 0 ? '⚠️ 峰值增益不足，需调整 k 或 Q。' : gainMargin < 5 ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。` : '✅ 峰值增益裕量充足，设计可行。'}
@@ -300,7 +300,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text-secondary">Vout</span>
+                <span className="text-text-secondary">Vo</span>
                 <span className="text-text-primary font-medium">{p.vout} V</span>
               </div>
               <div className="flex justify-between">
@@ -570,7 +570,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         <tr className="border-b border-border/50 print:border-gray-200">
                           <td className="px-3 py-2">匝比 n</td>
                           <td className="px-3 py-2 font-mono text-text-secondary print:text-gray-600">
-                            {p.topology === 'half-bridge' ? 'Vin_nom / (2·Vout)' : 'Vin_nom / Vout'}
+                            {p.topology === 'half-bridge' ? 'Vinnom / (2·Vo)' : 'Vinnom / Vo'}
                           </td>
                           <td className="px-3 py-2 font-mono">{hasData ? r.n.toFixed(3) : '—'}</td>
                         </tr>
@@ -647,19 +647,19 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                   <div className="bg-surface-elevated print:bg-gray-50 rounded-lg p-4 border border-border print:border-gray-300 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">所需增益 (Vin_min)</div>
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">所需增益 (Vinmin)</div>
                         <div className="text-xl font-mono font-semibold text-text-primary print:text-black">
                           {hasData ? mReqMin.toFixed(3) : '—'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">所需增益 (Vin_max)</div>
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">所需增益 (Vinmax)</div>
                         <div className="text-xl font-mono font-semibold text-text-primary print:text-black">
                           {hasData ? mReqMax.toFixed(3) : '—'}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">峰值增益 M_max</div>
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">峰值增益 Mmax</div>
                         <div className="text-xl font-mono font-semibold text-text-primary print:text-black">
                           {hasData ? r.mMax.toFixed(3) : '—'}
                         </div>

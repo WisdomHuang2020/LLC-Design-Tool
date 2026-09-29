@@ -185,7 +185,7 @@ export default function DesignCompare() {
                     </button>
                   </div>
                   <div className="text-xs text-text-secondary space-y-0.5 font-mono">
-                    <p>Vin: {d.params.vinNom}V, Vout: {d.params.vout}V</p>
+                    <p>Vin: {d.params.vinNom}V, Vo: {d.params.vout}V</p>
                     <p>fr: {(d.results.fr / 1000).toFixed(1)}kHz, Q: {d.results.q.toFixed(2)}</p>
                     <p>η: {d.params.efficiency}%</p>
                   </div>
@@ -219,8 +219,8 @@ export default function DesignCompare() {
                 </thead>
                 <tbody className="text-text-primary">
                   {[
-                    { key: 'vinNom', label: 'Vin_nom (V)', fmt: (v: number) => v.toFixed(0) },
-                    { key: 'vout', label: 'Vout (V)', fmt: (v: number) => v.toFixed(1) },
+                    { key: 'vinNom', label: 'Vinnom (V)', fmt: (v: number) => v.toFixed(0) },
+                    { key: 'vout', label: 'Vo (V)', fmt: (v: number) => v.toFixed(1) },
                     { key: 'pout', label: 'Pout (W)', fmt: (v: number) => v.toFixed(0) },
                     { key: 'fsw', label: 'fsw (kHz)', fmt: (v: number) => v.toFixed(0) },
                     { key: 'fr', label: 'fr (kHz)', fmt: (v: number) => (v / 1000).toFixed(1) },
@@ -230,8 +230,8 @@ export default function DesignCompare() {
                     { key: 'q', label: 'Q', fmt: (v: number) => v.toFixed(2) },
                     { key: 'k', label: 'k', fmt: (v: number) => v.toFixed(2) },
                     { key: 'efficiency', label: 'η (%)', fmt: (v: number) => v.toFixed(1) },
-                    { key: 'mMax', label: 'M_max', fmt: (v: number) => v.toFixed(3) },
-                    { key: 'mRequired', label: 'M_req', fmt: (v: number) => v.toFixed(3) },
+                    { key: 'mMax', label: 'Mmax', fmt: (v: number) => v.toFixed(3) },
+                    { key: 'mRequired', label: 'Mreq', fmt: (v: number) => v.toFixed(3) },
                     { key: 'zvsMargin', label: 'ZVS', fmt: (v: boolean | number) => (v ? '可达' : '不足') },
                   ].map((row) => {
                     const values = selectedDesigns.map((d) => {

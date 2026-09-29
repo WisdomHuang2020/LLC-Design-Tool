@@ -81,7 +81,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.coreAe} onChange={(e) => update('coreAe', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>Steinmetz C_m (mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ)</label>
+            <label className={labelClass}>Steinmetz Cm (mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ)</label>
             <input type="number" step="any" className={inputClass} value={params.coreK} onChange={(e) => update('coreK', Number(e.target.value))} />
           </div>
           <div>

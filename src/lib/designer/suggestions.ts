@@ -23,11 +23,11 @@ export function generateSuggestions(
   if (!Number.isFinite(kMax)) {
     s.push({ text: `Gmin=${mRequiredMin.toFixed(3)}≥1，空载降压约束不存在，k 取值不受高输入电压限制。`, level: 'good' })
   } else if (k > kMax) {
-    s.push({ text: `电感比k=${k.toFixed(2)}超过空载降压约束上限k_max=${kMax.toFixed(2)}：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} > Gmin=${mRequiredMin.toFixed(3)}，最高输入电压空载时无法将增益降至所需值，输出过压。建议减小k至≤${kMax.toFixed(2)}或缩窄输入电压上限。`, level: 'critical' })
+    s.push({ text: `电感比k=${k.toFixed(2)}超过空载降压约束上限kmax=${kMax.toFixed(2)}：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} > Gmin=${mRequiredMin.toFixed(3)}，最高输入电压空载时无法将增益降至所需值，输出过压。建议减小k至≤${kMax.toFixed(2)}或缩窄输入电压上限。`, level: 'critical' })
   } else if (k > kMax * 0.8) {
-    s.push({ text: `电感比k=${k.toFixed(2)}接近空载降压约束上限k_max=${kMax.toFixed(2)}（裕量<20%）。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的空载降压裕量。`, level: 'warn' })
+    s.push({ text: `电感比k=${k.toFixed(2)}接近空载降压约束上限kmax=${kMax.toFixed(2)}（裕量<20%）。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的空载降压裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${k.toFixed(2)}满足空载降压约束（k_max=${kMax.toFixed(2)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(2)}满足空载降压约束（kmax=${kMax.toFixed(2)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
   }
 
   // 2. Qmax对比分析
@@ -54,11 +54,11 @@ export function generateSuggestions(
 
   // 4. Peak gain vs required
   if (mMax < mRequired) {
-    s.push({ text: `峰值增益不足（M_max=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
+    s.push({ text: `峰值增益不足（Mmax=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
   } else if (mMax < mRequired * 1.05) {
     s.push({ text: `峰值增益裕量较小（${((mMax/mRequired - 1)*100).toFixed(1)}%），建议留至少5%裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `峰值增益裕量充足（M_max=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
+    s.push({ text: `峰值增益裕量充足（Mmax=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
   }
 
   // 5. ZVS分析
@@ -73,9 +73,9 @@ export function generateSuggestions(
     }
   }
   if (!zvsTimeOk) {
-    s.push({ text: `ZVS时间不足！t_ZVS=${(tZvs*1e9).toFixed(1)}ns > 死区时间Td=${(params.td).toFixed(0)}ns。t_ZVS ∝ Lm ∝ Q，可下调裕量系数 m（当前 ${margin.toFixed(2)}）以减小 Q，或增大死区时间、选用低 Coss 器件。`, level: 'critical' })
+    s.push({ text: `ZVS时间不足！tZVS=${(tZvs*1e9).toFixed(1)}ns > 死区时间Td=${(params.td).toFixed(0)}ns。tZVS ∝ Lm ∝ Q，可下调裕量系数 m（当前 ${margin.toFixed(2)}）以减小 Q，或增大死区时间、选用低 Coss 器件。`, level: 'critical' })
   } else {
-    s.push({ text: `ZVS时间充裕：t_ZVS=${(tZvs*1e9).toFixed(1)}ns ≤ Td=${params.td}ns，可在死区内完成谐振腔放电。`, level: 'good' })
+    s.push({ text: `ZVS时间充裕：tZVS=${(tZvs*1e9).toFixed(1)}ns ≤ Td=${params.td}ns，可在死区内完成谐振腔放电。`, level: 'good' })
   }
 
   // 6. 频率范围
@@ -83,7 +83,7 @@ export function generateSuggestions(
   const fminKHz = fmin / 1000
   const frKHz = fsw / 1000
   // fmax 非有限 = 设计不可行（Gmin < k/(k+1)），此时不给频率范围建议，
-  // 否则会渲染出 "fmax=InfinitykHz" 这类无意义文本；原因已由上方 k_max 告警说明。
+  // 否则会渲染出 "fmax=InfinitykHz" 这类无意义文本；原因已由上方 kmax 告警说明。
   if (Number.isFinite(fmax)) {
     if (fmaxKHz > frKHz * 2.0) {
       s.push({ text: `频率调节范围过宽（fmax=${fmaxKHz.toFixed(1)}kHz >> fr=${frKHz.toFixed(1)}kHz），磁性元件设计困难。`, level: 'critical' })

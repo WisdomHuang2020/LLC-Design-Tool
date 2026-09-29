@@ -224,19 +224,19 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="L_r" name="谐振电感" unit="H" description="与谐振电容共同决定串联谐振频率，通常为变压器漏感或外接电感" typical="数十 μH ~ 数百 μH" />
-            <ParamRow symbol="C_r" name="谐振电容" unit="F" description="谐振腔串联电容，承受谐振电流交流分量" typical="nF ~ 数十 nF" />
-            <ParamRow symbol="L_m" name="励磁电感" unit="H" description="变压器励磁电感，参与第二谐振频率并影响 ZVS 能量" typical="数百 μH ~ 数 mH" />
-            <ParamRow symbol="fr1" name="第一谐振频率" unit="Hz" description="L_r 与 C_r 的串联谐振频率，也是负载独立点" typical="100 kHz ~ 500 kHz" />
-            <ParamRow symbol="fr2" name="第二谐振频率" unit="Hz" description="(L_r + L_m) 与 C_r 的谐振频率，fr2 = fr1 / √(1+k)" typical="0.3 fr1 ~ 0.5 fr1" />
-            <ParamRow symbol="k" name="电感比" unit="-" description="L_m / L_r，决定两个谐振频率间距与峰值增益能力" typical="3 ~ 10（常用 5 ~ 7）" />
-            <ParamRow symbol="Z_r" name="特征阻抗" unit="Ω" description="谐振腔阻抗尺度，Z_r = √(L_r/C_r)" typical="数十 Ω ~ 数百 Ω" />
-            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Z_r / Rac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
-            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="开关频率相对谐振频率的比值 fsw / fr1" typical="0.5 ~ 1.5" />
+            <ParamRow symbol="Lr" name="谐振电感" unit="H" description="与谐振电容共同决定串联谐振频率，通常为变压器漏感或外接电感" typical="数十 μH ~ 数百 μH" />
+            <ParamRow symbol="Cr" name="谐振电容" unit="F" description="谐振腔串联电容，承受谐振电流交流分量" typical="nF ~ 数十 nF" />
+            <ParamRow symbol="Lm" name="励磁电感" unit="H" description="变压器励磁电感，参与第二谐振频率并影响 ZVS 能量" typical="数百 μH ~ 数 mH" />
+            <ParamRow symbol="fr1" name="第一谐振频率" unit="Hz" description="Lr 与 Cr 的串联谐振频率，也是负载独立点" typical="100 kHz ~ 500 kHz" />
+            <ParamRow symbol="fr2" name="第二谐振频率" unit="Hz" description="(Lr + Lm) 与 Cr 的谐振频率，fr2 = fr1 / √(1+k)" typical="0.3 fr1 ~ 0.5 fr1" />
+            <ParamRow symbol="k" name="电感比" unit="-" description="Lm / Lr，决定两个谐振频率间距与峰值增益能力" typical="3 ~ 10（常用 5 ~ 7）" />
+            <ParamRow symbol="Zr" name="特征阻抗" unit="Ω" description="谐振腔阻抗尺度，Zr = √(Lr/Cr)" typical="数十 Ω ~ 数百 Ω" />
+            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Zr / Rac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
+            <ParamRow symbol="fn" name="归一化频率" unit="-" description="开关频率相对谐振频率的比值 fsw / fr1" typical="0.5 ~ 1.5" />
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>工作区域划分：</strong>当 f_n = 1 时，LLC 增益恒为 1 且与负载无关；f_n &lt; 1 时进入升压增益区（Region 2，增益 &gt; 1），可提供峰值增益；f_n &gt; 1 时进入降压区（Region 1，增益 &lt; 1），增益随频率升高而下降。
+            <strong>工作区域划分：</strong>当 fn = 1 时，LLC 增益恒为 1 且与负载无关；fn &lt; 1 时进入升压增益区（Region 2，增益 &gt; 1），可提供峰值增益；fn &gt; 1 时进入降压区（Region 1，增益 &lt; 1），增益随频率升高而下降。
           </HighlightBox>
         </FormulaSection>
 
@@ -269,8 +269,8 @@ export default function Derivations() {
 
           <ParamTable>
             <ParamRow symbol="M" name="电压增益" unit="-" description="输出电压折算值与输入电压基波分量的比值" typical="0.5 ~ 1.5" />
-            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="fsw / fr1，调频控制的核心变量" typical="0.5 ~ 1.5" />
-            <ParamRow symbol="k" name="电感比" unit="-" description="L_m / L_r，影响峰值增益与增益曲线斜率" typical="3 ~ 10" />
+            <ParamRow symbol="fn" name="归一化频率" unit="-" description="fsw / fr1，调频控制的核心变量" typical="0.5 ~ 1.5" />
+            <ParamRow symbol="k" name="电感比" unit="-" description="Lm / Lr，影响峰值增益与增益曲线斜率" typical="3 ~ 10" />
             <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载情况，Q 越大增益曲线越陡峭" typical="0.3 ~ 1.0" />
           </ParamTable>
 
@@ -283,12 +283,12 @@ export default function Derivations() {
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">空载特性</p>
               <MathBlock latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right|} = \\frac{k f_n^2}{\\left|f_n^2(1 + k) - 1\\right|}" />
-              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：f_n → 1/√(1+k)（即 fr2）时趋于无穷大，f_n → ∞ 时趋向 k/(k+1)。</p>
+              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：fn → 1/√(1+k)（即 fr2）时趋于无穷大，fn → ∞ 时趋向 k/(k+1)。</p>
             </div>
           </div>
 
           <HighlightBox type="warning">
-            <strong>FHA 适用范围：</strong>仅当开关频率接近谐振频率且谐振腔 Q 值较高时精度较好。当 f_n 远离 1 或波形畸变严重时，需使用时域仿真或高次谐波修正模型。
+            <strong>FHA 适用范围：</strong>仅当开关频率接近谐振频率且谐振腔 Q 值较高时精度较好。当 fn 远离 1 或波形畸变严重时，需使用时域仿真或高次谐波修正模型。
           </HighlightBox>
         </FormulaSection>
 
@@ -317,15 +317,15 @@ export default function Derivations() {
 
           <ParamTable>
             <ParamRow symbol="n" name="变压器匝比" unit="-" description="原边匝数与副边匝数之比（中心抽头按半绕组计算）" typical="按输入输出电压设计" />
-            <ParamRow symbol="V_{in,nom}" name="额定输入电压" unit="V" description="变换器标称直流输入电压" typical="380 V / 400 Vdc" />
-            <ParamRow symbol="V_o" name="输出电压" unit="V" description="额定输出直流电压" typical="12 V / 24 V / 48 V" />
-            <ParamRow symbol="V_f" name="整流管压降" unit="V" description="二极管或同步整流管的导通压降" typical="0.3 ~ 0.7 V（二极管）" />
-            <ParamRow symbol="R_L" name="直流负载电阻" unit="Ω" description="R_L = V_o² / P_o" typical="随输出功率变化" />
-            <ParamRow symbol="R_{ac}" name="等效交流电阻" unit="Ω" description="折算到原边的交流负载，用于 FHA 等效电路" typical="数十 Ω ~ 数百 Ω" />
+            <ParamRow symbol="Vin,nom" name="额定输入电压" unit="V" description="变换器标称直流输入电压" typical="380 V / 400 Vdc" />
+            <ParamRow symbol="Vo" name="输出电压" unit="V" description="额定输出直流电压" typical="12 V / 24 V / 48 V" />
+            <ParamRow symbol="Vf" name="整流管压降" unit="V" description="二极管或同步整流管的导通压降" typical="0.3 ~ 0.7 V（二极管）" />
+            <ParamRow symbol="RL" name="直流负载电阻" unit="Ω" description="RL = Vo² / Po" typical="随输出功率变化" />
+            <ParamRow symbol="Rac" name="等效交流电阻" unit="Ω" description="折算到原边的交流负载，用于 FHA 等效电路" typical="数十 Ω ~ 数百 Ω" />
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>折算关系：</strong>副边基波电压有效值 V<sub>sec,1</sub> = (2√2/π) · V_o，基波电流有效值 I<sub>sec,1</sub> = (π/2√2) · I_o。折算到原边后得到 R<sub>ac</sub> = 8n²R_L / π²。
+            <strong>折算关系：</strong>副边基波电压有效值 V<sub>sec,1</sub> = (2√2/π) · Vo，基波电流有效值 I<sub>sec,1</sub> = (π/2√2) · Io。折算到原边后得到 R<sub>ac</sub> = 8n²RL / π²。
           </HighlightBox>
         </FormulaSection>
 
@@ -366,9 +366,9 @@ export default function Derivations() {
           </p>
 
           <ParamTable>
-            <ParamRow symbol="Z_{in}" name="输入阻抗" unit="Ω" description="从开关网络看入谐振腔的等效阻抗" typical="-" />
-            <ParamRow symbol="Re(Z_in)" name="输入阻抗实部" unit="Ω" description="有功分量，决定基波电流同相分量" typical="-" />
-            <ParamRow symbol="Im(Z_in)" name="输入阻抗虚部" unit="Ω" description="无功分量；大于 0 表示感性，小于 0 表示容性" typical="-" />
+            <ParamRow symbol="Zin" name="输入阻抗" unit="Ω" description="从开关网络看入谐振腔的等效阻抗" typical="-" />
+            <ParamRow symbol="Re(Zin)" name="输入阻抗实部" unit="Ω" description="有功分量，决定基波电流同相分量" typical="-" />
+            <ParamRow symbol="Im(Zin)" name="输入阻抗虚部" unit="Ω" description="无功分量；大于 0 表示感性，小于 0 表示容性" typical="-" />
             <ParamRow symbol="φ" name="阻抗相位角" unit="°" description="φ = arctan(Im/Re)；感性区 φ &gt; 0" typical="10° ~ 60°" />
           </ParamTable>
 
@@ -468,12 +468,12 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="M_{max}" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益" typical="1.1 ~ 1.4" />
-            <ParamRow symbol="M_{min}" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益" typical="0.6 ~ 0.9" />
-            <ParamRow symbol="Q_{max1}" name="峰值增益约束 Q" unit="-" description="满足 M_peak(k,Q) = M_max 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
-            <ParamRow symbol="Q_{max2}" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / C_j 与最高工作频率决定，不含死区时间" typical="数值求解" />
-            <ParamRow symbol="Q_{max3}" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / C_j" typical="数值求解" />
-            <ParamRow symbol="Q_s" name="设计品质因数" unit="-" description="Q_s = m · Q_max，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
+            <ParamRow symbol="Mmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益" typical="1.1 ~ 1.4" />
+            <ParamRow symbol="Mmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益" typical="0.6 ~ 0.9" />
+            <ParamRow symbol="Qmax1" name="峰值增益约束 Q" unit="-" description="满足 Mpeak(k,Q) = Mmax 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
+            <ParamRow symbol="Qmax2" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / Cj 与最高工作频率决定，不含死区时间" typical="数值求解" />
+            <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
+            <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 
           <HighlightBox type="info">
@@ -513,12 +513,12 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="V_{ds,max}" name="MOSFET 耐压" unit="V" description="关断时承受的最大漏源电压" typical="等于输入电压最大值" />
-            <ParamRow symbol="I_{p,rms}" name="原边总电流有效值" unit="A" description="谐振电流与励磁电流的方和根" typical="-" />
-            <ParamRow symbol="I_{r,rms}" name="谐振电流有效值" unit="A" description="流过 L_r、C_r 和变压器原边的电流" typical="-" />
-            <ParamRow symbol="I_{m,rms}" name="励磁电流有效值" unit="A" description="仅流过变压器励磁电感的电流" typical="-" />
-            <ParamRow symbol="V_{RRM}" name="整流管反向耐压" unit="V" description="二极管/同步整流管关断时承受的反向电压" typical="2V_o 或 V_o" />
-            <ParamRow symbol="I_{sec,rms}" name="副边电流有效值" unit="A" description="每个副边绕组或整流支路的电流" typical="0.785 I_o 或 1.11 I_o" />
+            <ParamRow symbol="Vds,max" name="MOSFET 耐压" unit="V" description="关断时承受的最大漏源电压" typical="等于输入电压最大值" />
+            <ParamRow symbol="Ip,rms" name="原边总电流有效值" unit="A" description="谐振电流与励磁电流的方和根" typical="-" />
+            <ParamRow symbol="Ir,rms" name="谐振电流有效值" unit="A" description="流过 Lr、Cr 和变压器原边的电流" typical="-" />
+            <ParamRow symbol="Im,rms" name="励磁电流有效值" unit="A" description="仅流过变压器励磁电感的电流" typical="-" />
+            <ParamRow symbol="VRRM" name="整流管反向耐压" unit="V" description="二极管/同步整流管关断时承受的反向电压" typical="2Vo 或 Vo" />
+            <ParamRow symbol="Isec,rms" name="副边电流有效值" unit="A" description="每个副边绕组或整流支路的电流" typical="0.785 Io 或 1.11 Io" />
           </ParamTable>
 
           <HighlightBox type="warning">
@@ -562,17 +562,17 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="R_{ds(on)}" name="MOSFET 导通电阻" unit="Ω" description="结温下的导通电阻" typical="mΩ 级" />
-            <ParamRow symbol="Q_g" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
-            <ParamRow symbol="V_f" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
-            <ParamRow symbol="C_m, α, β" name="Steinmetz 系数" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="磁芯材料损耗拟合系数，C_m 典型值约 10⁻⁶ 量级" typical="查磁芯 datasheet" />
-            <ParamRow symbol="B_{peak}" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，B_{peak} = V_p / (4 N_p A_e f_{sw})" typical="0.1 ~ 0.3 T" />
-            <ParamRow symbol="N_p" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 A_e 与 B 设计" />
-            <ParamRow symbol="A_e" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
+            <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="Ω" description="结温下的导通电阻" typical="mΩ 级" />
+            <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
+            <ParamRow symbol="Vf" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
+            <ParamRow symbol="Cm, α, β" name="Steinmetz 系数" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="磁芯材料损耗拟合系数，Cm 典型值约 10⁻⁶ 量级" typical="查磁芯 datasheet" />
+            <ParamRow symbol="Bpeak" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，Bpeak = Vp / (4 Np Ae fsw)" typical="0.1 ~ 0.3 T" />
+            <ParamRow symbol="Np" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 Ae 与 B 设计" />
+            <ParamRow symbol="Ae" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>效率估算：</strong>总损耗为各部分损耗之和，η = P_o / (P_o + P_loss,total) × 100%。实际工程中建议结合热仿真和样机测试进行校准。
+            <strong>效率估算：</strong>总损耗为各部分损耗之和，η = Po / (Po + Ploss,total) × 100%。实际工程中建议结合热仿真和样机测试进行校准。
           </HighlightBox>
         </FormulaSection>
 

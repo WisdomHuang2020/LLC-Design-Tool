@@ -89,7 +89,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const qmax1 = findQmax1(k, gMax)
 
   // Qmax2：ZVS条件（死区时间），基于能量守恒推导
-  // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·fr1·L_m 的反推
+  // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·fr1·Lm 的反推
   // 若拓扑为全桥或死区定义不同，该系数需重新推导
   // fmax估计：基于空载增益公式 fn² = G/(G*(k+1)-k)，仅当 gMin >= k/(k+1) 时可行
   const region1MinGain = k / (k + 1)
@@ -104,7 +104,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const cossTotal = Math.max(1e-12, 2 * cossEr + cj)
 
   // Qmax2：ZVS条件（死区时间），基于能量守恒推导
-  // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·fr1·L_m 的反推
+  // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·fr1·Lm 的反推
   // 若拓扑为全桥或死区定义不同，该系数需重新推导
   const qmax2 = fmaxFeasible
     ? ((k + 1) * vinMin * vinMin / Math.max(1e-15, 16 * fmaxEst * fmaxEst * k * k * cossZvs * vinMax * vinMax)) * (2 * Math.PI * fr) / Math.max(1e-6, rac)
@@ -112,7 +112,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   // Qmax3：ZVS 能量约束（由励磁电感储能 ≥ Coss 总能量推导出的 Q 上限）
   // 推导：Lm = k·Lr = k·Q·Rac/(2π fr) 必须满足
-  //   0.5·Lm·(Vin_min/(coeff·fmax·Lm))² ≥ 0.5·Coss,total·Vin_max²
+  //   0.5·Lm·(Vinmin/(coeff·fmax·Lm))² ≥ 0.5·Coss,total·Vin_max²
   // 其中 coeff = 8（半桥）/ 4（全桥），与后续 ZVS 能量校验一致。
   const zvsCoeff = topology === 'half-bridge' ? 8 : 4
   const qmax3 = fmaxFeasible
@@ -123,9 +123,9 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   // 取 Qmax，再按用户设定的裕量系数折减，得到实际设计 Q。
   // 裕量系数 m ∈ (0,1]：m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量都更大
-  // （Er ∝ 1/Lm ∝ 1/Q，t_ZVS ∝ Lm ∝ Q）；代价是 Zr = Q·Rac 更小 ⇒ Lr 更小、Cr 更大，
+  // （Er ∝ 1/Lm ∝ 1/Q，tZVS ∝ Lm ∝ Q）；代价是 Zr = Q·Rac 更小 ⇒ Lr 更小、Cr 更大，
   // 励磁环流占比与导通损耗上升。默认 m = 0.95。
-  // 注意：ZVS 死区时间约束（t_ZVS ≤ T_d）不在 qmax1~3 之内，由后续 zvsTimeOk 单独校验；
+  // 注意：ZVS 死区时间约束（tZVS ≤ T_d）不在 qmax1~3 之内，由后续 zvsTimeOk 单独校验；
   // 当该条报错时，正确做法是**调小** m（而非调大）。
   const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
   const qMargin = Number.isFinite(form.qMargin)
@@ -301,7 +301,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   if (!designFeasible) {
     s.unshift({
-      text: `高输入电压空载时无法将增益降至所需值：Region 1 空载增益下限 k/(k+1)=${region1MinGain.toFixed(3)} > Gmin=${gMin.toFixed(3)}（等价于 k=${k.toFixed(2)} 超过上限 k_max=${Number.isFinite(kMax) ? kMax.toFixed(2) : '∞'}），设计不可行。请减小电感比 k 或缩窄输入电压上限。`,
+      text: `高输入电压空载时无法将增益降至所需值：Region 1 空载增益下限 k/(k+1)=${region1MinGain.toFixed(3)} > Gmin=${gMin.toFixed(3)}（等价于 k=${k.toFixed(2)} 超过上限 kmax=${Number.isFinite(kMax) ? kMax.toFixed(2) : '∞'}），设计不可行。请减小电感比 k 或缩窄输入电压上限。`,
       level: 'critical',
     })
   }

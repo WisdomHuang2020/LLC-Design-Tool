@@ -473,11 +473,11 @@ export default function Fundamentals() {
                   <td className="py-3 px-4 font-mono text-primary-light">M</td>
                   <td className="py-3 px-4">
                     <code className="text-xs bg-bg px-2 py-1 rounded">
-                      n·Vout / Vin (全桥)
+                      n·Vo / Vin (全桥)
                     </code>
                     <br />
                     <code className="text-xs bg-bg px-2 py-1 rounded mt-1 inline-block">
-                      2n·Vout / Vin (半桥)
+                      2n·Vo / Vin (半桥)
                     </code>
                   </td>
                   <td className="py-3 px-4">反映变换器的电压变换能力</td>

@@ -33,7 +33,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
                 onChange={(e) => update('vinMin', Number(e.target.value))}
                 placeholder="Min"
               />
-              <span className="text-xs text-text-muted mt-1 block">Vin_min</span>
+              <span className="text-xs text-text-muted mt-1 block">Vinmin</span>
             </div>
             <div>
               <input
@@ -43,7 +43,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
                 onChange={(e) => update('vinNom', Number(e.target.value))}
                 placeholder="Nom"
               />
-              <span className="text-xs text-text-muted mt-1 block">Vin_nom</span>
+              <span className="text-xs text-text-muted mt-1 block">Vinnom</span>
             </div>
             <div>
               <input
@@ -53,13 +53,13 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
                 onChange={(e) => update('vinMax', Number(e.target.value))}
                 placeholder="Max"
               />
-              <span className="text-xs text-text-muted mt-1 block">Vin_max</span>
+              <span className="text-xs text-text-muted mt-1 block">Vinmax</span>
             </div>
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>输出电压 Vout (V)</label>
+          <label className={labelClass}>输出电压 Vo (V)</label>
           <input
             type="number"
             className={inputClass}
@@ -224,7 +224,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             <span className="text-xs text-text-muted mt-1 block">驱动死区</span>
           </div>
           <div>
-            <label className={labelClass}>二极管压降 Vd (V)</label>
+            <label className={labelClass}>二极管压降 Vf (V)</label>
             <input
               type="number"
               className={inputClass}
