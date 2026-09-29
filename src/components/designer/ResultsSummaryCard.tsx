@@ -76,7 +76,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           />
           <ResultItem label="谐振电流 Ir" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir = V_in1 / Rac（谐振频率处近似）" />
           <ResultItem label="励磁电流 Im" value={calculated.imRms.toFixed(2)} unit="A" formula="Im,rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
-          <ResultItem label="初级电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
+          <ResultItem label="原边电流 RMS" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip = √(Ir² + Im²)" />
           <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
           <ResultItem
             label="峰值磁密 Bpeak"

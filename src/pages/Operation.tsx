@@ -68,7 +68,7 @@ const WAVE_LEGEND = [
     chips: [{ color: WAVEFORM_COLORS.im, label: 'Im' }],
     title: 'Im — 励磁电流',
     desc:
-      '加在 Lm 上的三角波，由二次侧反射过来的输出电压驱动：Q1 导通段线性上升、Q2 导通段线性下降，死区内近似保持（平台）。拐点出现在开关管关断时刻附近，此时励磁电流达到峰值。',
+      '加在 Lm 上的三角波，由副边反射过来的输出电压驱动：Q1 导通段线性上升、Q2 导通段线性下降，死区内近似保持（平台）。拐点出现在开关管关断时刻附近，此时励磁电流达到峰值。',
   },
   {
     row: '第 5 行',
@@ -927,7 +927,7 @@ export default function Operation() {
                   important
                 />
                 <p className="text-text-secondary text-xs mt-1">
-                  其中 Lp 为等效初级电感，Ip 为死区开始时电流峰值，Coss 为 MOSFET 输出电容。
+                  其中 Lp 为等效原边电感，Ip 为死区开始时电流峰值，Coss 为 MOSFET 输出电容。
                 </p>
               </div>
             </div>
@@ -968,7 +968,7 @@ export default function Operation() {
                 LLC 谐振变换器的电压增益定义为输出反射电压与输入电压之比（半桥取 2nVout/Vin，全桥取 nVout/Vin）：
               </p>
               <MathBlock
-                latex="M = \\frac{n V_{out}}{V_{in}} \\;(\\text{全桥}) \\quad M = \\frac{2n V_{out}}{V_{in}} \\;(\\text{半桥})"
+                latex="M = \\frac{n V_o}{V_{in}} \\;(\\text{全桥}) \\quad M = \\frac{2n V_o}{V_{in}} \\;(\\text{半桥})"
                 important
               />
               <p className="text-text-secondary text-sm leading-relaxed">

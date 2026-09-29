@@ -75,7 +75,7 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const diodeLoss = lp.mosfetVsd * idiode * (lp.deadTime / 1e9) * fsw * nSwitches
 
   // 5. Transformer core loss (Steinmetz)
-  // 公式: P_core = C_m * f_sw^α * B_peak^β * V_e
+  // 公式: P_core = C_m * fsw^α * B_peak^β * V_e
   // 注意: C_m 的单位基于 kHz、mT、cm³，计算结果为 mW，需 /1000 转为 W:
   //   - fsw 需要 /1000 转换为 kHz
   //   - B_peak 需要 *1000 转换为 mT

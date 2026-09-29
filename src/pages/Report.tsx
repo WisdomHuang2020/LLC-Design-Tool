@@ -91,7 +91,7 @@ ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下�
 
 | 参数 | 数值 | 说明 |
 |------|------|------|
-| 初级电流 RMS | ${r.ipRms.toFixed(2)} A | 谐振腔电流，含励磁分量 |
+| 原边电流 RMS | ${r.ipRms.toFixed(2)} A | 谐振腔电流，含励磁分量 |
 | 次级电流 RMS | ${r.isRms.toFixed(2)} A | ${p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped' ? '中心抽头整流：每个绕组半波导通' : '全波整流：方波等效'} |
 | 输出电流 Io | ${(p.pout / p.vout).toFixed(2)} A | 直流输出电流 |
 
@@ -104,7 +104,7 @@ ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下�
 
 | 器件 | 电压应力 | 电流应力 |
 |------|----------|----------|
-| 初级 MOSFET | ${Math.ceil(p.topology === 'half-bridge' ? p.vinMax : p.vinMax * 1.2)} V (耐压建议) | ${(r.ipRms * 2.5).toFixed(1)} A (RMS × 2.5) |
+| 原边 MOSFET | ${Math.ceil(p.topology === 'half-bridge' ? p.vinMax : p.vinMax * 1.2)} V (耐压建议) | ${(r.ipRms * 2.5).toFixed(1)} A (RMS × 2.5) |
 | 次级整流 | ${Math.ceil(p.vout * (p.rectifier === 'center-tapped' || p.rectifier === 'sync-center-tapped' ? 2.5 : 2))} V (耐压建议) | ${(r.isRms * 1.5).toFixed(1)} A (RMS × 1.5) |
 | 谐振电容 Cr | ${(p.vinMax * (p.topology === 'half-bridge' ? 0.5 : 1)).toFixed(0)} V (峰值，近似值) | ${r.ipRms.toFixed(2)} A (RMS) |
 | 谐振电感 Lr | — | ${r.ipRms.toFixed(2)} A (RMS) |
@@ -701,7 +701,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       </thead>
                       <tbody className="text-text-primary print:text-black">
                         <tr className="border-b border-border/50 print:border-gray-200">
-                          <td className="px-3 py-2">初级电流 RMS</td>
+                          <td className="px-3 py-2">原边电流 RMS</td>
                           <td className="px-3 py-2 font-mono">{hasData ? r.ipRms.toFixed(2) : '—'} A</td>
                           <td className="px-3 py-2 text-text-secondary print:text-gray-600">谐振腔电流，含励磁分量</td>
                         </tr>
@@ -787,7 +787,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       </thead>
                       <tbody className="text-text-primary print:text-black">
                         <tr className="border-b border-border/50 print:border-gray-200">
-                          <td className="px-3 py-2">初级 MOSFET</td>
+                          <td className="px-3 py-2">原边 MOSFET</td>
                           <td className="px-3 py-2 font-mono">
                             {Math.ceil(p.topology === 'half-bridge' ? p.vinMax : p.vinMax * 1.2)} V
                           </td>

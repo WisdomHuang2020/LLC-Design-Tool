@@ -173,11 +173,11 @@ export default function Fundamentals() {
               串联 LC 谐振电路的谐振频率与角频率：
             </p>
             <MathBlock
-              latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
+              latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}"
               important
             />
             <MathBlock
-              latex="\\omega_r = 2\\pi f_r = \\frac{1}{\\sqrt{L_r C_r}}"
+              latex="\\omega_r = 2\\pi f_{r1} = \\frac{1}{\\sqrt{L_r C_r}}"
             />
             <p className="text-text-secondary text-sm mt-3 leading-relaxed">
               在谐振频率处，电感感抗
@@ -263,7 +263,7 @@ export default function Fundamentals() {
                 时的频率范围：
               </p>
               <MathBlock
-                latex="BW = \\frac{f_r}{Q} = f_2 - f_1"
+                latex="BW = \\frac{f_{r1}}{Q} = f_2 - f_1"
                 important
               />
               <p className="text-text-secondary text-sm mt-2">
@@ -378,10 +378,10 @@ export default function Fundamentals() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MathBlock
-                latex="M = \\frac{n \\cdot V_{out}}{V_{in}} \\quad (全桥)"
+                latex="M = \\frac{n \\cdot V_o}{V_{in}} \\quad (全桥)"
               />
               <MathBlock
-                latex="M = \\frac{2n \\cdot V_{out}}{V_{in}} \\quad (半桥)"
+                latex="M = \\frac{2n \\cdot V_o}{V_{in}} \\quad (半桥)"
               />
             </div>
             <p className="text-text-secondary text-sm mt-3 leading-relaxed">

@@ -218,7 +218,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_m = \\frac{f_r}{\\sqrt{1 + k}}, \\quad k = \\frac{L_m}{L_r}, \\quad Z_r = \\sqrt{\\frac{L_r}{C_r}}, \\quad Q = \\frac{Z_r}{R_{ac}}, \\quad f_n = \\frac{f_s}{f_r}"
+            latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_{r2} = \\frac{f_{r1}}{\\sqrt{1 + k}}, \\quad k = \\frac{L_m}{L_r}, \\quad Z_r = \\sqrt{\\frac{L_r}{C_r}}, \\quad Q = \\frac{Z_r}{R_{ac}}, \\quad f_n = \\frac{f_{sw}}{f_{r1}}"
             important
             label="LLC 核心参数定义"
           />
@@ -227,12 +227,12 @@ export default function Derivations() {
             <ParamRow symbol="L_r" name="谐振电感" unit="H" description="与谐振电容共同决定串联谐振频率，通常为变压器漏感或外接电感" typical="数十 μH ~ 数百 μH" />
             <ParamRow symbol="C_r" name="谐振电容" unit="F" description="谐振腔串联电容，承受谐振电流交流分量" typical="nF ~ 数十 nF" />
             <ParamRow symbol="L_m" name="励磁电感" unit="H" description="变压器励磁电感，参与第二谐振频率并影响 ZVS 能量" typical="数百 μH ~ 数 mH" />
-            <ParamRow symbol="f_r" name="第一谐振频率" unit="Hz" description="L_r 与 C_r 的串联谐振频率，也是负载独立点" typical="100 kHz ~ 500 kHz" />
-            <ParamRow symbol="f_m" name="第二谐振频率" unit="Hz" description="(L_r + L_m) 与 C_r 的谐振频率，f_m = f_r / √(1+k)" typical="0.3 f_r ~ 0.5 f_r" />
+            <ParamRow symbol="fr1" name="第一谐振频率" unit="Hz" description="L_r 与 C_r 的串联谐振频率，也是负载独立点" typical="100 kHz ~ 500 kHz" />
+            <ParamRow symbol="fr2" name="第二谐振频率" unit="Hz" description="(L_r + L_m) 与 C_r 的谐振频率，fr2 = fr1 / √(1+k)" typical="0.3 fr1 ~ 0.5 fr1" />
             <ParamRow symbol="k" name="电感比" unit="-" description="L_m / L_r，决定两个谐振频率间距与峰值增益能力" typical="3 ~ 10（常用 5 ~ 7）" />
             <ParamRow symbol="Z_r" name="特征阻抗" unit="Ω" description="谐振腔阻抗尺度，Z_r = √(L_r/C_r)" typical="数十 Ω ~ 数百 Ω" />
-            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Z_r / R_ac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
-            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="开关频率相对谐振频率的比值 f_s / f_r" typical="0.5 ~ 1.5" />
+            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Z_r / Rac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
+            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="开关频率相对谐振频率的比值 fsw / fr1" typical="0.5 ~ 1.5" />
           </ParamTable>
 
           <HighlightBox type="info">
@@ -269,7 +269,7 @@ export default function Derivations() {
 
           <ParamTable>
             <ParamRow symbol="M" name="电压增益" unit="-" description="输出电压折算值与输入电压基波分量的比值" typical="0.5 ~ 1.5" />
-            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="f_s / f_r，调频控制的核心变量" typical="0.5 ~ 1.5" />
+            <ParamRow symbol="f_n" name="归一化频率" unit="-" description="fsw / fr1，调频控制的核心变量" typical="0.5 ~ 1.5" />
             <ParamRow symbol="k" name="电感比" unit="-" description="L_m / L_r，影响峰值增益与增益曲线斜率" typical="3 ~ 10" />
             <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载情况，Q 越大增益曲线越陡峭" typical="0.3 ~ 1.0" />
           </ParamTable>
@@ -283,7 +283,7 @@ export default function Derivations() {
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">空载特性</p>
               <MathBlock latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right|} = \\frac{k f_n^2}{\\left|f_n^2(1 + k) - 1\\right|}" />
-              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：f_n → 1/√(1+k)（即 f_m）时趋于无穷大，f_n → ∞ 时趋向 k/(k+1)。</p>
+              <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：f_n → 1/√(1+k)（即 fr2）时趋于无穷大，f_n → ∞ 时趋向 k/(k+1)。</p>
             </div>
           </div>
 
@@ -357,7 +357,7 @@ export default function Derivations() {
 
           <MathBlock
             latex="\\frac{\\text{Re}(Z_{in})}{R_{ac}} = \\frac{f_n^2 k^2 Q^2}{1 + f_n^2 k^2 Q^2}, \\qquad \\frac{\\text{Im}(Z_{in})}{R_{ac}} = Q\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{f_n k Q}{1 + f_n^2 k^2 Q^2}"
-            label="归一化输入阻抗（对 R_ac）"
+            label="归一化输入阻抗（对 Rac）"
           />
 
           <p className="text-text-secondary text-sm mt-2">
@@ -428,12 +428,12 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="Q_{max2} = \\frac{2\\pi f_r\\,(k+1)\\,V_{in,min}^2}{16\\,f_{max}^2\\,k^2\\,C_{oss,zvs}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j"
+            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,(k+1)\\,V_{in,min}^2}{16\\,f_{max}^2\\,k^2\\,C_{oss,zvs}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j"
             label="约束二 · 原边开关管 Coss 约束（等效电容口径）"
           />
 
           <MathBlock
-            latex="Q_{max3} = \\frac{2\\pi f_r\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,C_{oss,total}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,total} = 2C_{oss,er} + C_j"
+            latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,C_{oss,total}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,total} = 2C_{oss,er} + C_j"
             label="约束三 · ZVS 能量约束（γ = 8 半桥 / 4 全桥）"
           />
 
@@ -450,7 +450,7 @@ export default function Derivations() {
           </HighlightBox>
 
           <MathBlock
-            latex="t_{ZVS} = \\frac{C_{oss,total}\\,V_{in,max}}{I_{m,off}} \\le t_d, \\qquad Q_{dead} = \\frac{2\\pi f_r\\,t_d\\,V_{in,min}}{\\gamma\\,f_{max}\\,k\\,C_{oss,total}\\,V_{in,max}\\,R_{ac}}"
+            latex="t_{ZVS} = \\frac{C_{oss,total}\\,V_{in,max}}{I_{m,off}} \\le t_d, \\qquad Q_{dead} = \\frac{2\\pi f_{r1}\\,t_d\\,V_{in,min}}{\\gamma\\,f_{max}\\,k\\,C_{oss,total}\\,V_{in,max}\\,R_{ac}}"
             label="死区时间约束与手工校核上限"
           />
 
@@ -462,7 +462,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="Z_r = Q_s R_{ac}, \\quad L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}, \\quad C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}, \\quad L_m = k L_r"
+            latex="Z_r = Q_s R_{ac}, \\quad L_r = \\frac{Q_s R_{ac}}{2\\pi f_{r1}}, \\quad C_r = \\frac{1}{2\\pi f_{r1} Q_s R_{ac}}, \\quad L_m = k L_r"
             important
             label="谐振腔参数计算"
           />
@@ -471,8 +471,8 @@ export default function Derivations() {
             <ParamRow symbol="M_{max}" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益" typical="1.1 ~ 1.4" />
             <ParamRow symbol="M_{min}" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益" typical="0.6 ~ 0.9" />
             <ParamRow symbol="Q_{max1}" name="峰值增益约束 Q" unit="-" description="满足 M_peak(k,Q) = M_max 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
-            <ParamRow symbol="Q_{max2}" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss_eq / C_j 与最高工作频率决定，不含死区时间" typical="数值求解" />
-            <ParamRow symbol="Q_{max3}" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss_er / C_j" typical="数值求解" />
+            <ParamRow symbol="Q_{max2}" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / C_j 与最高工作频率决定，不含死区时间" typical="数值求解" />
+            <ParamRow symbol="Q_{max3}" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / C_j" typical="数值求解" />
             <ParamRow symbol="Q_s" name="设计品质因数" unit="-" description="Q_s = m · Q_max，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 
@@ -498,7 +498,7 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="I_{p,rms} = \\sqrt{I_{r,rms}^2 + I_{m,rms}^2}, \\qquad I_{r,rms} = \\frac{V_{FHA,rms}}{R_{ac}}, \\qquad I_{m,rms} = \\frac{V_{Lm}}{4\\sqrt{3} f_r L_m}"
+            latex="I_{p,rms} = \\sqrt{I_{r,rms}^2 + I_{m,rms}^2}, \\qquad I_{r,rms} = \\frac{V_{FHA,rms}}{R_{ac}}, \\qquad I_{m,rms} = \\frac{V_{Lm}}{4\\sqrt{3} f_{r1} L_m}"
             label="原边电流有效值"
           />
 
@@ -544,7 +544,7 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">驱动损耗</p>
-              <MathBlock latex="P_{drv} = Q_g \\cdot V_{drv} \\cdot f_s" />
+              <MathBlock latex="P_{drv} = Q_g \\cdot V_{drv} \\cdot f_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">二极管整流损耗</p>
@@ -557,7 +557,7 @@ export default function Derivations() {
           </div>
 
           <MathBlock
-            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_s}, \\qquad P_{Cu} = I_{p,rms}^2 R_{ac,pri} + I_{s,rms}^2 R_{ac,sec}"
+            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{ac,pri} + I_{s,rms}^2 R_{ac,sec}"
             label="磁密与铜损"
           />
 
@@ -566,7 +566,7 @@ export default function Derivations() {
             <ParamRow symbol="Q_g" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
             <ParamRow symbol="V_f" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
             <ParamRow symbol="C_m, α, β" name="Steinmetz 系数" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="磁芯材料损耗拟合系数，C_m 典型值约 10⁻⁶ 量级" typical="查磁芯 datasheet" />
-            <ParamRow symbol="B_{peak}" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，B_{peak} = V_p / (4 N_p A_e f_s)" typical="0.1 ~ 0.3 T" />
+            <ParamRow symbol="B_{peak}" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，B_{peak} = V_p / (4 N_p A_e f_{sw})" typical="0.1 ~ 0.3 T" />
             <ParamRow symbol="N_p" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 A_e 与 B 设计" />
             <ParamRow symbol="A_e" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
           </ParamTable>
@@ -600,12 +600,12 @@ export default function Derivations() {
               <tbody className="divide-y divide-border text-text-secondary">
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振频率</td>
-                  <td className="px-4 py-3"><InlineMath latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="f_{r1} = \\frac{1}{2\\pi\\sqrt{L_r C_r}}" /></td>
                   <td className="px-4 py-3">串联谐振频率</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">第二谐振</td>
-                  <td className="px-4 py-3"><InlineMath latex="f_m = \\frac{f_r}{\\sqrt{1 + k}}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="f_{r2} = \\frac{f_{r1}}{\\sqrt{1 + k}}" /></td>
                   <td className="px-4 py-3">含励磁电感的谐振频率</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
@@ -640,12 +640,12 @@ export default function Derivations() {
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振电感</td>
-                  <td className="px-4 py-3"><InlineMath latex="L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="L_r = \\frac{Q_s R_{ac}}{2\\pi f_{r1}}" /></td>
                   <td className="px-4 py-3">由 Q 反推</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">谐振电容</td>
-                  <td className="px-4 py-3"><InlineMath latex="C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="C_r = \\frac{1}{2\\pi f_{r1} Q_s R_{ac}}" /></td>
                   <td className="px-4 py-3">由 Q 反推</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">

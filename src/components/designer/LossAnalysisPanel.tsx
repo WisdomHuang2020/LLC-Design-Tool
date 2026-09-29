@@ -59,7 +59,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.deadTime} onChange={(e) => update('deadTime', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>初级匝数 Np</label>
+            <label className={labelClass}>原边匝数 Np</label>
             <input type="number" className={inputClass} value={params.primaryTurns} onChange={(e) => update('primaryTurns', Number(e.target.value))} />
           </div>
           <div>

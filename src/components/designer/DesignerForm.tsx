@@ -180,7 +180,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>MOSFET Coss_eq (pF)</label>
+            <label className={labelClass}>MOSFET Coss,eq (pF)</label>
             <input
               type="number"
               className={inputClass}
@@ -191,7 +191,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             <span className="text-xs text-text-muted mt-1 block">等效Coss（谐振腔）</span>
           </div>
           <div>
-            <label className={labelClass}>MOSFET Coss_er (pF)</label>
+            <label className={labelClass}>MOSFET Coss,er (pF)</label>
             <input
               type="number"
               className={inputClass}
