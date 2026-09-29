@@ -6,8 +6,11 @@
       favicon: 指向 public/favicon.svg。
       修正前此处误指 /vite.svg —— 该文件在本仓库中从不存在(git 历史与 public/ 均无),
       线上恒 404, 导致本站图标长期未生效。切勿改回。
+      路径用相对写法 ./favicon.svg 而非 /favicon.svg: vite base 为 './',
+      同一份 dist 需同时服务自有域名根路径与 GitHub Pages 子路径(/llc-design-tool/),
+      绝对路径会让 Pages 侧 404。
     -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LLC谐振变换器设计工具</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -1,12 +1,12 @@
 {
   "name": "llc-design-tool",
   "private": true,
-  "version": "2.10.82",
+  "version": "2.10.83",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && node patch_dist_latex.mjs",
+    "build": "tsc -b && vite build && node patch_dist_latex.mjs && node scripts/stamp-favicon.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
