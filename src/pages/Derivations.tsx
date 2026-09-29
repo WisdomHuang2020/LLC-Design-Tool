@@ -542,8 +542,8 @@ export default function Derivations() {
 
           <ParamTable>
             <ParamRow symbol="Vds,max" name="MOSFET 耐压" unit="V" description="关断时承受的最大漏源电压" typical="等于输入电压最大值" />
-            <ParamRow symbol="Ip,rms" name="原边总电流有效值" unit="A" description="谐振电流与励磁电流的方和根" typical="-" />
-            <ParamRow symbol="Ir,rms" name="谐振电流有效值" unit="A" description="流过 Lr、Cr 和变压器原边的电流" typical="-" />
+            <ParamRow symbol="Ip,rms" name="原边总电流有效值" unit="A" description="流过 Lr、Cr 与变压器原边绕组的电流（Ir,rms 与 Im,rms 的方和根）" typical="-" />
+            <ParamRow symbol="Ir,rms" name="谐振电流有效值" unit="A" description="FHA 等效模型中流入负载支路（Rac）的电流分量；非 Lr/Cr 支路的实际电流" typical="-" />
             <ParamRow symbol="Im,rms" name="励磁电流有效值" unit="A" description="仅流过变压器励磁电感的电流" typical="-" />
             <ParamRow symbol="VRRM" name="整流管反向耐压" unit="V" description="二极管/同步整流管关断时承受的反向电压" typical="2Vo 或 Vo" />
             <ParamRow symbol="Isec,rms" name="副边电流有效值" unit="A" description="每个副边绕组或整流支路的电流" typical="0.785 Io 或 1.11 Io" />
