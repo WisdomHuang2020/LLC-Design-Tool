@@ -35,8 +35,13 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
         {/* Input parameters */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div>
-            <label className={labelClass}>MOSFET Rds(on) (mΩ)</label>
+            <label className={labelClass}>MOSFET Rds(on) (mΩ, 25℃)</label>
             <input type="number" className={inputClass} value={params.mosfetRdsOn} onChange={(e) => update('mosfetRdsOn', Number(e.target.value))} />
+          </div>
+          <div>
+            <label className={labelClass}>Rds(on) 温度修正系数 kT</label>
+            <input type="number" step="0.1" className={inputClass} value={params.rdsonTempFactor} onChange={(e) => update('rdsonTempFactor', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">×Rds(on) 得 100℃ 等效值，硅管典型 1.5~2.0</div>
           </div>
           <div>
             <label className={labelClass}>tr (ns)</label>
@@ -55,7 +60,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.mosfetVsd} onChange={(e) => update('mosfetVsd', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>死区时间 (ns)</label>
+            <label className={labelClass}>死区时间 (ns，应与设计参数一致)</label>
             <input type="number" className={inputClass} value={params.deadTime} onChange={(e) => update('deadTime', Number(e.target.value))} />
           </div>
           <div>
@@ -193,7 +198,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 导通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCond.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCond / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pcond = Ip²·Rds(on)（每管半周）</td>
+                <td className="py-2 text-text-secondary">Pcond = Ip²·Rds(on)·kT（每管半周；kT 为温度修正系数）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
@@ -205,7 +210,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Ip·tf·fsw</td>
+                <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Im,off·tf·fsw（关断瞬间为励磁电流峰值）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>
@@ -217,7 +222,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetDiode.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetDiode / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pdiode = Vsd·Id·td·fsw</td>
+                <td className="py-2 text-text-secondary">Pdiode = Vsd·Im,off·(td−tZVS)·fsw（净放电时间）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">磁芯损耗</td>

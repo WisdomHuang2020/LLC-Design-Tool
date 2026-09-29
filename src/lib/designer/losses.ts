@@ -1,9 +1,11 @@
 // LLC 设计工具 —— 损耗模型
 // 由设计计算结果 + 器件/磁芯参数估算各项损耗与效率。
 import type { CalculatedData, LossParameters, LossBreakdown } from './types'
+import { magnetizingCurrentOffPeak } from './llcMath'
 
 export const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
+  rdsonTempFactor: 1.6,
   mosfetTr: 15,
   mosfetTf: 10,
   mosfetCoss: 150,
@@ -45,11 +47,25 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const fsw = calc.fsw
   const ipRms = calc.ipRms
   const ipPeak = ipRms * Math.sqrt(2)
+  // 关断时刻励磁电流峰值 I_{m,off}：关断损耗与死区体二极管损耗的正确电流取值。
+  // 优先用引擎算好的 calc.imOff；旧存档（本地存储）可能缺该字段，用同一公式兜底重算。
+  const imOff =
+    Number.isFinite(calc.imOff) && calc.imOff > 0
+      ? calc.imOff
+      : magnetizingCurrentOffPeak(
+          calc.vinMin,
+          Number.isFinite(calc.fmax) ? calc.fmax : fsw,
+          calc.lm,
+          calc.topology,
+        )
   const io = calc.pout / calc.vout
   const nSwitches = calc.topology === 'half-bridge' ? 2 : 4
 
   // 1. MOSFET conduction loss
-  const mosfetCondPer = 0.5 * ipRms * ipRms * (lp.mosfetRdsOn / 1000)
+  // Rds(on) 用 25℃ 规格书值 × 温度修正系数 kT（默认 1.6，约对应 100℃ 结温）。
+  // 若直接用 25℃ 值，导通损耗会被显著低估。
+  const kT = Number.isFinite(lp.rdsonTempFactor) && lp.rdsonTempFactor > 0 ? lp.rdsonTempFactor : 1
+  const mosfetCondPer = 0.5 * ipRms * ipRms * (lp.mosfetRdsOn / 1000) * kT
   const mosfetCond = mosfetCondPer * nSwitches
 
   // ZVS 状态下开通损耗与 Coss 损耗可忽略（谐振电流在死区完成电容充放电）
@@ -58,7 +74,9 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // 2. Switching loss (linear approximation; with ZVS Pon ideally 0)
   const switchV = vin
   const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * (lp.mosfetTr / 1e9) * fsw * nSwitches
-  const switchOff = 0.5 * switchV * ipPeak * (lp.mosfetTf / 1e9) * fsw * nSwitches
+  // 关断瞬间电流 = 励磁电流峰值 Im,off（此刻负载折算分量已归零，原边只剩励磁电流），
+  // 而非原边总电流峰值 ipPeak。
+  const switchOff = 0.5 * switchV * imOff * (lp.mosfetTf / 1e9) * fsw * nSwitches
 
   // 3. Coss loss (non-linear model, simplified)
   // 系数 2/3 考虑了 MOSFET 结电容 C_oss 随 V_ds 的非线性变化
@@ -68,11 +86,14 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const ecoss = 0.5 * cossF * vin * vin * (2 / 3)
   const cossLoss = zvsOn ? 0 : ecoss * fsw * nSwitches
 
-  // 4. Body diode conduction loss (approximate dead time current = Ip_peak * 0.7)
-  // 0.7 为经验系数，实际体二极管电流波形因死区时间、C_oss 充放电波形而异
-  // 精确估算需时域仿真或示波器实测
-  const idiode = ipPeak * 0.7
-  const diodeLoss = lp.mosfetVsd * idiode * (lp.deadTime / 1e9) * fsw * nSwitches
+  // 4. Body diode conduction loss
+  // 死区内分两段：前段 tZVS 内电流用于给 Coss 充/放电，体二极管**尚未导通**；
+  // 电压完成翻转后的剩余时间 (td − tZVS) 电流才经体二极管续流。
+  // 故导通时间取「净放电时间」而非整个死区，电流取励磁电流峰值 Im,off。
+  // ⚠️ lp.deadTime 是损耗面板自己的输入（默认 200 ns），与设计参数的 td 相互独立；
+  //    两者不一致时（如设计 td=300 而此处 200）本项会被算成 0 —— 建议把两者对齐。
+  const tDiode = Math.max(0, lp.deadTime / 1e9 - (Number.isFinite(calc.tZvs) ? calc.tZvs : 0))
+  const diodeLoss = lp.mosfetVsd * imOff * tDiode * fsw * nSwitches
 
   // 5. Transformer core loss (Steinmetz)
   // 公式: P_core = C_m * fsw^α * B_peak^β * V_e

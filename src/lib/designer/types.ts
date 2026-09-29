@@ -99,7 +99,13 @@ export interface CalculatedData {
 
 /** 损耗模型输入参数 */
 export interface LossParameters {
-  mosfetRdsOn: number // mΩ
+  mosfetRdsOn: number // mΩ @25℃（规格书值）
+  /**
+   * Rds(on) 温度修正系数：导通损耗 = Ip²·Rds(on)·k_T。
+   * 硅 MOSFET 的 Rds(on) 随结温正相关，100℃ 时典型为 25℃ 值的 1.5~2.0 倍。
+   * 默认 1.6（约对应 100℃ 工况）。若按 25℃ 值直接算会低估导通损耗。
+   */
+  rdsonTempFactor: number
   mosfetTr: number // ns
   mosfetTf: number // ns
   mosfetCoss: number // pF @ 0V

@@ -3,7 +3,7 @@
 // 本文件由 pages/Designer.tsx 的 handleCalculate 逐行搬移而来，数学部分未做任何改动。
 import type { DesignParameters, CalculatedResults } from '../DesignContext'
 import type { CalculatedData, LossParameters, Suggestion } from './types'
-import { gainM, peakGain, zvsPhase, fullLoadGainCrossing } from './llcMath'
+import { gainM, peakGain, zvsPhase, fullLoadGainCrossing, magnetizingCurrentOffPeak } from './llcMath'
 import { generateSuggestions } from './suggestions'
 
 export interface DesignComputation {
@@ -158,7 +158,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 只有励磁电感 Lm 中的储能参与ZVS，Lr 在死区时间内与 Cr 谐振，不贡献ZVS能量
   // 半桥谐振腔电压幅值为 Vin/2，因此分母为 8*f*Lm；全桥为 4*f*Lm
   const fmaxZvs = Number.isFinite(fmax) ? fmax : fr
-  const imDeadtime = vinMin / Math.max(1e-9, (topology === 'half-bridge' ? 8 : 4) * fmaxZvs * lm)
+  const imDeadtime = magnetizingCurrentOffPeak(vinMin, fmaxZvs, lm, topology)
   const er = 0.5 * lm * imDeadtime * imDeadtime
   const ec = 0.5 * cossTotal * vinMax * vinMax
   const zvsMargin = er >= ec

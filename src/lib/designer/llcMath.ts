@@ -124,3 +124,27 @@ export function fminTextbook(fr: number, k: number, gMax: number): number {
   if (!(g2 > 0)) return NaN
   return fr / Math.sqrt(1 + k * (1 - 1 / g2))
 }
+
+/**
+ * 关断时刻励磁电流峰值 I_{m,off}（A）—— ZVS 换流与关断损耗所依据的电流。
+ *
+ *   I_{m,off} = Vin,min / (coeff · fmax · Lm)，  半桥 coeff = 8，全桥 coeff = 4
+ *
+ * 物理含义：MOSFET 在半个周期结束时关断，此刻负载折算分量恰好归零
+ * （次级整流管换流），原边电流只剩励磁分量，故关断瞬间的电流即 I_{m,off}。
+ * 该值是「死区内给 Coss 充放电」的唯一能量来源，也是关断损耗的正确电流取值。
+ *
+ * 单一来源：引擎（computeDesign）与损耗模型（losses）都从这里取，避免两处各写一遍。
+ * 对非有限 fmax（设计不可行）返回 0，调用方需自行兜底。
+ */
+export function magnetizingCurrentOffPeak(
+  vinMin: number,
+  fmax: number,
+  lm: number,
+  topology: string,
+): number {
+  const coeff = topology === 'half-bridge' ? 8 : 4
+  const f = Number.isFinite(fmax) && fmax > 0 ? fmax : 0
+  if (!(f > 0) || !(lm > 0) || !(vinMin > 0)) return 0
+  return vinMin / (coeff * f * lm)
+}
