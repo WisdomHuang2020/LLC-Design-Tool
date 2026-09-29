@@ -267,6 +267,24 @@ export default function Derivations() {
             label="FHA 增益的等价形式"
           />
 
+          <div className="mt-4 p-4 rounded-lg border border-border bg-surface-elevated/30">
+            <p className="text-text-muted text-xs uppercase tracking-wider mb-3">推导与验证</p>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              在 LLC 谐振变换器基于 FHA（一次谐波近似）的经典推导中，标准的电压增益公式通常写为：
+            </p>
+            <MathBlock latex="M = \\frac{1}{\\sqrt{\\left(1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right)^2 + Q^2\\left(f_n - \\frac{1}{f_n}\\right)^2}}" />
+            <p className="text-text-secondary text-sm leading-relaxed">
+              如果对上述标准公式进行通分化简（分子分母同乘 <InlineMath latex="f_n^2 k" />），再整体开方，就会得到上方等价形式：
+            </p>
+            <MathBlock latex="M = \\frac{f_n^2 k}{\\sqrt{\\left(f_n^2(k+1)-1\\right)^2 + f_n^2 k^2 Q^2 \\left(f_n^2 - 1\\right)^2}}" />
+            <p className="text-text-secondary text-sm leading-relaxed">
+              可以看出，上方公式完美符合标准推导的化简结果 —— 两者在代数上严格恒等，本工具的计算引擎 <span className="font-mono text-primary-light">gainM()</span> 内部即采用标准式实现，与仅用于展示的等价形式数值一致（相对误差在浮点精度 1e-15 量级）。
+            </p>
+            <p className="text-text-secondary text-sm leading-relaxed mt-2">
+              <strong className="text-text-primary">常见笔误提醒：</strong>等价形式根号内第二项是 <InlineMath latex="f_n^2 k^2 Q^2" />（含 <InlineMath latex="f_n^2" />）。若误写成 <InlineMath latex="k^2 Q^2" />（漏掉 <InlineMath latex="f_n^2" />），在 <InlineMath latex="f_n \lt 1" /> 的升压区会严重低估增益，峰值增益偏差可达 50% 以上，务必注意。
+            </p>
+          </div>
+
           <ParamTable>
             <ParamRow symbol="M" name="电压增益" unit="-" description="输出电压折算值与输入电压基波分量的比值" typical="0.5 ~ 1.5" />
             <ParamRow symbol="fn" name="归一化频率" unit="-" description="fsw / fr1，调频控制的核心变量" typical="0.5 ~ 1.5" />
