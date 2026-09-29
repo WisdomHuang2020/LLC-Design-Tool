@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Zap, Github, BookOpen, Activity, Calculator } from 'lucide-react'
+import { Github, BookOpen, Activity, Calculator } from 'lucide-react'
+import BrandMark from './BrandMark'
 
 // 构建时由 vite.config.ts 的 define 注入（源为 package.json 的 version）。
 // fallback 用 'dev' 而非伪造一个版本号：define 未生效时应显式暴露异常，
@@ -13,7 +14,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Zap className="w-5 h-5 text-primary-light" />
+              <BrandMark className="w-5 h-5" />
               <span className="font-bold text-text-primary">LLC Design Tool</span>
             </div>
             <p className="text-text-secondary text-sm leading-relaxed">

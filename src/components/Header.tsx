@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Zap, BookOpen, Activity, Calculator, FileText, PenTool } from 'lucide-react'
+import BrandMark from './BrandMark'
 
 const navLinks = [
   { path: '/', label: '首页', icon: Zap },
@@ -20,7 +21,7 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-surface border-b border-border">
       <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-text-primary hover:text-primary-light transition-colors">
-          <Activity className="w-6 h-6 text-primary-light" />
+          <BrandMark className="w-6 h-6" />
           <span className="font-bold text-lg tracking-tight">LLC Design</span>
         </Link>
 
