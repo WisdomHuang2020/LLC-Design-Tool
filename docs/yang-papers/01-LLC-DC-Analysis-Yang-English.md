@@ -547,7 +547,7 @@ n
 ω : Normalized switching frequency
 n
 Lr
-Zo:
+Zr:
 Cr
 Lm
 Q: : Ratio of two resonant inductance
@@ -555,7 +555,7 @@ l Lr
 8
 R : Equivalent Load Resistance Ro⋅n2
 AC π2
-Zo
+Zr
 Q:
 s Ro
 For this method, there are some limitations. Because this method is a

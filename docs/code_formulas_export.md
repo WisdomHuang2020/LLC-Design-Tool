@@ -752,19 +752,19 @@ $$
 **特征阻抗：**
 
 $$
-Z_0 = \sqrt{\frac{L_r}{C_r}} = \omega_r L_r = \frac{1}{\omega_r C_r}
+Z_r = \sqrt{\frac{L_r}{C_r}} = \omega_r L_r = \frac{1}{\omega_r C_r}
 $$
 
 **品质因数：**
 
 $$
-Q = \frac{Z_0}{R_{ac}} = \frac{\sqrt{L_r / C_r}}{R_{ac}}
+Q = \frac{Z_r}{R_{ac}} = \frac{\sqrt{L_r / C_r}}{R_{ac}}
 $$
 
 **最终公式：**
 
 $$
-f_r = \frac{1}{2\pi\sqrt{L_r C_r}}, \quad f_m = \frac{f_r}{\sqrt{1 + k}}, \quad Z_0 = \sqrt{\frac{L_r}{C_r}}, \quad Q = \frac{Z_0}{R_{ac}}
+f_r = \frac{1}{2\pi\sqrt{L_r C_r}}, \quad f_m = \frac{f_r}{\sqrt{1 + k}}, \quad Z_r = \sqrt{\frac{L_r}{C_r}}, \quad Q = \frac{Z_r}{R_{ac}}
 $$
 
 ### 6.4 第 4 节 — 峰值增益与边界条件
@@ -795,7 +795,7 @@ $$
 
 $$
 \begin{aligned}
-\text{Re}(Z_{in}) &= Z_0 \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2} \\ \text{Im}(Z_{in}) &= Z_0 \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)
+\text{Re}(Z_{in}) &= Z_r \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2} \\ \text{Im}(Z_{in}) &= Z_r \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)
 \end{aligned}
 $$
 
@@ -816,7 +816,7 @@ $$
 $$
 \begin{aligned}
 \text{令 } x &= kQ \\
-\frac{\text{Im}(Z_{in})}{Z_0} &= \frac{x}{1 + x^2}, \quad \frac{\text{Re}(Z_{in})}{Z_0} = \frac{x^2}{1 + x^2} \\
+\frac{\text{Im}(Z_{in})}{Z_r} &= \frac{x}{1 + x^2}, \quad \frac{\text{Re}(Z_{in})}{Z_r} = \frac{x^2}{1 + x^2} \\
 \frac{\text{Im}}{\text{Re}} &= \frac{x}{x^2} = \frac{1}{x} = \frac{1}{kQ} \\
 \varphi &= \arctan\left(\frac{1}{kQ}\right) \cdot \frac{180}{\pi}
 \end{aligned}
@@ -825,7 +825,7 @@ $$
 **最终公式：**
 
 $$
-Z_{in} = jZ_0\left(f_n - \frac{1}{f_n}\right) + \frac{j f_n Z_0 k}{1 + j f_n k Q}
+Z_{in} = jZ_r\left(f_n - \frac{1}{f_n}\right) + \frac{j f_n Z_r k}{1 + j f_n k Q}
 $$
 
 ### 6.6 第 6 节 — 功率器件应力计算
@@ -839,7 +839,7 @@ $$
 **MOSFET 峰值电流：**
 
 $$
-I_{pk} = \frac{2n(V_o + V_f)}{\pi Z_0 Q} + \frac{n(V_o + V_f)}{2 f_s L_m}
+I_{pk} = \frac{2n(V_o + V_f)}{\pi Z_r Q} + \frac{n(V_o + V_f)}{2 f_s L_m}
 $$
 
 **MOSFET RMS 电流：**
@@ -975,15 +975,15 @@ $$
 **谐振腔参数：**
 
 $$
-Z_0 = Q_s \cdot R_{ac}
+Z_r = Q_s \cdot R_{ac}
 $$
 
 $$
-C_r = \frac{1}{2\pi f_r Z_0} = \frac{1}{2\pi f_r Q_s R_{ac}}
+C_r = \frac{1}{2\pi f_r Z_r} = \frac{1}{2\pi f_r Q_s R_{ac}}
 $$
 
 $$
-L_r = \frac{Z_0}{2\pi f_r} = \frac{Q_s R_{ac}}{2\pi f_r}
+L_r = \frac{Z_r}{2\pi f_r} = \frac{Q_s R_{ac}}{2\pi f_r}
 $$
 
 $$

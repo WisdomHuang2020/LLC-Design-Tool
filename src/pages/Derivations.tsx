@@ -218,7 +218,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_m = \\frac{f_r}{\\sqrt{1 + k}}, \\quad k = \\frac{L_m}{L_r}, \\quad Z_0 = \\sqrt{\\frac{L_r}{C_r}}, \\quad Q = \\frac{Z_0}{R_{ac}}, \\quad f_n = \\frac{f_s}{f_r}"
+            latex="f_r = \\frac{1}{2\\pi\\sqrt{L_r C_r}}, \\quad f_m = \\frac{f_r}{\\sqrt{1 + k}}, \\quad k = \\frac{L_m}{L_r}, \\quad Z_r = \\sqrt{\\frac{L_r}{C_r}}, \\quad Q = \\frac{Z_r}{R_{ac}}, \\quad f_n = \\frac{f_s}{f_r}"
             important
             label="LLC 核心参数定义"
           />
@@ -230,8 +230,8 @@ export default function Derivations() {
             <ParamRow symbol="f_r" name="第一谐振频率" unit="Hz" description="L_r 与 C_r 的串联谐振频率，也是负载独立点" typical="100 kHz ~ 500 kHz" />
             <ParamRow symbol="f_m" name="第二谐振频率" unit="Hz" description="(L_r + L_m) 与 C_r 的谐振频率，f_m = f_r / √(1+k)" typical="0.3 f_r ~ 0.5 f_r" />
             <ParamRow symbol="k" name="电感比" unit="-" description="L_m / L_r，决定两个谐振频率间距与峰值增益能力" typical="3 ~ 10（常用 5 ~ 7）" />
-            <ParamRow symbol="Z_0" name="特征阻抗" unit="Ω" description="谐振腔阻抗尺度，Z_0 = √(L_r/C_r)" typical="数十 Ω ~ 数百 Ω" />
-            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Z_0 / R_ac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
+            <ParamRow symbol="Z_r" name="特征阻抗" unit="Ω" description="谐振腔阻抗尺度，Z_r = √(L_r/C_r)" typical="数十 Ω ~ 数百 Ω" />
+            <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载轻重，Q = Z_r / R_ac；负载越重 Q 越大" typical="0.3 ~ 1.0" />
             <ParamRow symbol="f_n" name="归一化频率" unit="-" description="开关频率相对谐振频率的比值 f_s / f_r" typical="0.5 ~ 1.5" />
           </ParamTable>
 
@@ -341,18 +341,18 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="Z_{in} = jZ_0\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_0 k}{1 + j f_n k Q}"
+            latex="Z_{in} = jZ_r\\left(f_n - \\frac{1}{f_n}\\right) + \\frac{j f_n Z_r k}{1 + j f_n k Q}"
             important
-            label={<>输入阻抗（<InlineMath latex="Z_0 = \\sqrt{L_r/C_r}" /> 为特征阻抗，非归一化）</>}
+            label={<>输入阻抗（<InlineMath latex="Z_r = \\sqrt{L_r/C_r}" /> 为特征阻抗，非归一化）</>}
           />
 
           <MathBlock
-            latex="\\text{Re}(Z_{in}) = Z_0 \\cdot \\frac{f_n^2 k^2 Q}{1 + f_n^2 k^2 Q^2}, \\qquad \\text{Im}(Z_{in}) = Z_0 \\left( f_n - \\frac{1}{f_n} + \\frac{f_n k}{1 + f_n^2 k^2 Q^2} \\right)"
+            latex="\\text{Re}(Z_{in}) = Z_r \\cdot \\frac{f_n^2 k^2 Q}{1 + f_n^2 k^2 Q^2}, \\qquad \\text{Im}(Z_{in}) = Z_r \\left( f_n - \\frac{1}{f_n} + \\frac{f_n k}{1 + f_n^2 k^2 Q^2} \\right)"
             label="输入阻抗实部与虚部"
           />
 
           <p className="text-text-secondary text-sm mt-2">
-            对 R<sub>ac</sub> 归一化（利用 Q = Z<sub>0</sub>/R<sub>ac</sub>）后形式更简洁，也便于与感性/容性判据对照：
+            对 R<sub>ac</sub> 归一化（利用 Q = Z<sub>r</sub>/R<sub>ac</sub>）后形式更简洁，也便于与感性/容性判据对照：
           </p>
 
           <MathBlock
@@ -462,7 +462,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="Z_0 = Q_s R_{ac}, \\quad L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}, \\quad C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}, \\quad L_m = k L_r"
+            latex="Z_r = Q_s R_{ac}, \\quad L_r = \\frac{Q_s R_{ac}}{2\\pi f_r}, \\quad C_r = \\frac{1}{2\\pi f_r Q_s R_{ac}}, \\quad L_m = k L_r"
             important
             label="谐振腔参数计算"
           />
@@ -615,12 +615,12 @@ export default function Derivations() {
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">特征阻抗</td>
-                  <td className="px-4 py-3"><InlineMath latex="Z_0 = \\sqrt{\\frac{L_r}{C_r}}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="Z_r = \\sqrt{\\frac{L_r}{C_r}}" /></td>
                   <td className="px-4 py-3">谐振腔阻抗尺度</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">品质因数</td>
-                  <td className="px-4 py-3"><InlineMath latex="Q = \\frac{Z_0}{R_{ac}}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="Q = \\frac{Z_r}{R_{ac}}" /></td>
                   <td className="px-4 py-3">负载越重 Q 越大</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">

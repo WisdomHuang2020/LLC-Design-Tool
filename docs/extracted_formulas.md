@@ -22,11 +22,11 @@ $$k = \frac{L_m}{L_r}$$
 
 ### 1.4 特征阻抗
 
-$$Z_r = Z_0 = \sqrt{\frac{L_r}{C_r}}$$
+$$Z_r = \sqrt{\frac{L_r}{C_r}}$$
 
 ### 1.5 品质因数
 
-$$Q = \frac{Z_0}{R_{ac}} = \frac{\sqrt{L_r / C_r}}{R_{ac}}$$
+$$Q = \frac{Z_r}{R_{ac}} = \frac{\sqrt{L_r / C_r}}{R_{ac}}$$
 
 ### 1.6 归一化频率
 
@@ -222,11 +222,11 @@ $$Q = 0.95 \cdot Q_{max}$$
 
 ### 5.5 由 Q 反推元件值
 
-$$Z_0 = Q \cdot R_{ac,min}$$
+$$Z_r = Q \cdot R_{ac,min}$$
 
-$$L_r = \frac{Z_0}{2\pi f_r}$$
+$$L_r = \frac{Z_r}{2\pi f_r}$$
 
-$$C_r = \frac{1}{2\pi f_r Z_0}$$
+$$C_r = \frac{1}{2\pi f_r Z_r}$$
 
 $$L_m = k \cdot L_r$$
 
@@ -278,7 +278,7 @@ $$t_{ZVS} \le T_d$$
 
 令 $x = kQ$，则归一化输入阻抗：
 
-$$\frac{\text{Re}(Z_{in})}{Z_0} = \frac{x^2}{1 + x^2}, \quad \frac{\text{Im}(Z_{in})}{Z_0} = \frac{x}{1 + x^2}$$
+$$\frac{\text{Re}(Z_{in})}{Z_r} = \frac{x^2}{1 + x^2}, \quad \frac{\text{Im}(Z_{in})}{Z_r} = \frac{x}{1 + x^2}$$
 
 $$\varphi = \arctan\left(\frac{1}{x}\right) \cdot \frac{180}{\pi} = \arctan\left(\frac{1}{kQ}\right) \cdot \frac{180}{\pi}$$
 
@@ -333,7 +333,7 @@ $$I_{p,rms} = \sqrt{I_{r,rms}^2 + I_{m,rms}^2}$$
 
 ### 7.6 峰值电流估算（推导页面）
 
-$$I_{pk} = \frac{2n(V_o + V_f)}{\pi Z_0 Q} + \frac{n(V_o + V_f)}{2 f_s L_m}$$
+$$I_{pk} = \frac{2n(V_o + V_f)}{\pi Z_r Q} + \frac{n(V_o + V_f)}{2 f_s L_m}$$
 
 $$I_{rms} = \frac{I_{pk}}{\sqrt{2}}$$
 
@@ -354,9 +354,9 @@ function calcImpedance(fn: number, k: number, Q: number) {
 
 对应：
 
-$$\text{Re}(Z_{in}) = Z_0 \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2}$$
+$$\text{Re}(Z_{in}) = Z_r \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2}$$
 
-$$\text{Im}(Z_{in}) = Z_0 \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)$$
+$$\text{Im}(Z_{in}) = Z_r \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)$$
 
 $$|Z_{in}| = \sqrt{\text{Re}^2 + \text{Im}^2}$$
 
@@ -488,13 +488,13 @@ $$\frac{dM}{df_n} = 0 \quad \text{at} \quad f_n = f_{n,peak}$$
 
 $$Z_{in} = j\omega_s L_r + \frac{1}{j\omega_s C_r} + \left(j\omega_s L_m \parallel R_{ac}\right)$$
 
-$$Z_{in} = jZ_0\left(f_n - \frac{1}{f_n}\right) + \frac{j f_n Z_0 k}{1 + j f_n k Q}$$
+$$Z_{in} = jZ_r\left(f_n - \frac{1}{f_n}\right) + \frac{j f_n Z_r k}{1 + j f_n k Q}$$
 
 实部与虚部：
 
-$$\text{Re}(Z_{in}) = Z_0 \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2}$$
+$$\text{Re}(Z_{in}) = Z_r \cdot \frac{f_n^2 k^2 Q}{Q^2 + f_n^2 k^2}$$
 
-$$\text{Im}(Z_{in}) = Z_0 \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)$$
+$$\text{Im}(Z_{in}) = Z_r \left( f_n - \frac{1}{f_n} + \frac{f_n k Q^2}{Q^2 + f_n^2 k^2} \right)$$
 
 ### 10.7 ZVS 能量条件
 
@@ -586,11 +586,11 @@ $$Q_{max} = \min(Q_{max1}, Q_{max2})$$
 
 - 特征阻抗与元件值：
 
-$$Z_0 = Q_s R_{ac}$$
+$$Z_r = Q_s R_{ac}$$
 
-$$C_r = \frac{1}{2\pi f_r Z_0} = \frac{1}{2\pi f_r Q_s R_{ac}}$$
+$$C_r = \frac{1}{2\pi f_r Z_r} = \frac{1}{2\pi f_r Q_s R_{ac}}$$
 
-$$L_r = \frac{Z_0}{2\pi f_r} = \frac{Q_s R_{ac}}{2\pi f_r}$$
+$$L_r = \frac{Z_r}{2\pi f_r} = \frac{Q_s R_{ac}}{2\pi f_r}$$
 
 $$L_m = k L_r = \frac{k Q_s R_{ac}}{2\pi f_r}$$
 
