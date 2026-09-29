@@ -52,7 +52,7 @@ export default function Footer() {
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center md:items-start gap-1">
             <p className="text-text-muted text-sm">
-              © 2026 LLC Design Tool. 仅供学习与研究使用。
+              © 2026 LLC Design Tool. 结果仅供工程估算与学习参考。
             </p>
             {/* ICP 备案号：工信部要求网站底部展示并链接至 beian.miit.gov.cn */}
             <a
