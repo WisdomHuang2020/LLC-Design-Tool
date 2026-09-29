@@ -397,6 +397,16 @@ export default function Derivations() {
             label="ZVS 能量判据"
           />
 
+          <p className="text-text-secondary mt-2 mb-2 text-sm leading-relaxed">
+            判据左侧为死区内励磁电感释放的能量，右侧为开关节点电容需被充/放电的能量。
+            <strong className="text-text-primary">半桥拓扑</strong>下，
+            C<sub>oss,total</sub> = 2·C<sub>oss</sub>（上下两个开关管输出电容之和）+
+            C<sub>j</sub>（变压器原边等效寄生结电容），即
+            <InlineMath latex="C_{oss,total} = 2C_{oss,er} + C_j" />；
+            全桥拓扑同理为四个管子的输出电容折算值。电压取 V<sub>in,max</sub>（最恶劣工况）。
+            <span className="text-primary-light">本节判据与本站「工作原理」页的 ZVS 能量条件一致。</span>
+          </p>
+
           <p className="text-text-secondary mt-4 mb-2">
             其中关断时刻励磁电流峰值 I<sub>m,off</sub> 与最高工作频率 f<sub>max</sub> 相关：
           </p>

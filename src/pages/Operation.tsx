@@ -923,11 +923,15 @@ export default function Operation() {
                   ZVS 能量条件（半桥）：
                 </p>
                 <MathBlock
-                  latex="\\frac{1}{2} L_p I_p^2 \\geq \\frac{1}{2} C_{oss} V_{in}^2 \\cdot 2"
+                  latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss,total} V_{in,max}^2"
                   important
                 />
-                <p className="text-text-secondary text-xs mt-1">
-                  其中 Lp 为等效原边电感，Ip 为死区开始时电流峰值，Coss 为 MOSFET 输出电容。
+                <p className="text-text-secondary text-xs mt-1 leading-relaxed">
+                  其中 Lm 为励磁电感，I<sub>m,off</sub> 为关断时刻的励磁电流峰值，
+                  V<sub>in,max</sub> 为最高输入电压（最恶劣工况）；C<sub>oss,total</sub> 为开关节点等效总输出电容
+                  —— 半桥时 C<sub>oss,total</sub> = 2·C<sub>oss</sub>（上下两个开关管的输出电容之和，
+                  即死区内需被充/放电的电容），<span className="text-primary-light">这与本站「公式推导」页的 ZVS 能量判据完全一致</span>。
+                  关断时刻励磁电流峰值 I<sub>m,off</sub> = V<sub>in,min</sub> / (8 f<sub>max</sub> Lm)（半桥）。
                 </p>
               </div>
             </div>
