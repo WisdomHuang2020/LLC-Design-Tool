@@ -2,7 +2,7 @@
 // 由设计计算结果 + 器件/磁芯参数估算各项损耗与效率。
 import type { CalculatedData, LossParameters, LossBreakdown } from './types'
 import { magnetizingCurrentOffPeak } from './llcMath'
-import { coreMaterialById, steinmetzCm } from './coreMaterials'
+import { coreMaterialById, steinmetzCm, lrCorePcvFrom } from './coreMaterials'
 
 // 默认磁芯材料（PC95）。下面的 coreK / coreAlpha / coreBeta / corePcv **一律取自材料库**，不另写数值：
 // 界面用 `materialPresetMatches()` 逐项比对（coreK 的容差只有 1e-15），默认值只要与预设差一点，
@@ -42,12 +42,13 @@ export const defaultLossParams: LossParameters = {
   coreWaveK: 1.25,
 
   // 谐振电感铁损：默认给出有依据的量级值，而不是留 0
-  //  · P_cv = 179 mW/cm³ —— 由 PC95 参考点（100 ℃/100 kHz、B=0.2 T 时 290 mW/cm³）按 B^β 折算（β=2.5）
-  //    到 B_Lr ≈ 0.165 T：290×(0.165/0.2)^2.5 ≈ 179
+  //  · P_cv,Lr = **随所选牌号折算**（lrCorePcvFrom）：P_cv,ref × (B_Lr / 0.2 T)^β，取 B_Lr ≈ 0.165 T。
+  //    默认牌号 PC95（290 @0.2 T、β=2.5）⇒ 290×(0.165/0.2)^2.5 ≈ 179 mW/cm³。
+  //    ⚠️ 它在 applyCoreMaterial() 里会随「磁芯材料」下拉一起重算 —— 换牌号时 Lr 损耗必须跟着变。
   //  · Ve   = 1.25 cm³   —— 取变压器 Ve（默认 5.0 cm³）的 1/4（谐振电感体积通常为变压器的 1/5~1/4）
   //  ⚠️ 这只是「典型量级」假设（默认 179×1.25/1000 ≈ 0.22 W）；实际必须按 Lr 所用磁芯的牌号、Ae、
   //     匝数与实测 B 重查，给默认值不等于免责 —— 换成实际磁芯数据后须重算。
-  lrCorePcv: 179,
+  lrCorePcv: lrCorePcvFrom(defaultCoreMaterial),
   lrCoreVe: 1.25,
 
   // 谐振电容：默认由 1kHz 损耗角正切 + 频率修正折算等效 ESR

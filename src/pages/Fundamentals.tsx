@@ -45,6 +45,7 @@ function SectionCard({
       viewport={{ once: true, margin: '-50px' }}
       variants={fadeUp}
       custom={index}
+      data-section-index={index > 0 ? index : undefined}
       className={`card-surface overflow-hidden ${className}`}
     >
       <button

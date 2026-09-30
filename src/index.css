@@ -43,7 +43,9 @@
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    padding: 1.5rem;
+    /* 标签行（含右侧公式编号）恒渲染 ⇒ 这里直接用「有标签行」的上下留白，
+       使有/无说明文字的公式块高度一致。 */
+    padding: 0.5rem 1.5rem 1.5rem;
     overflow: auto;
     font-family: var(--font-mono);
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
@@ -70,14 +72,31 @@
   }
   .math-block.important:hover {
   }
-  .math-block.has-label {
-    padding: 0.5rem 1.5rem 1.5rem;
-  }
   .math-block-label {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
+    min-height: 1.25rem;
     margin-bottom: 0.5rem;
     padding-top: 0.5rem;
+  }
+  .math-block-label-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+  /* 公式编号（2.3）：由 <FormulaNumbering/> 渲染后写入纯文本，便于「见公式 (2.3)」式索引 */
+  .math-block-number {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    user-select: all;
   }
   .math-block-label .step-number {
     font-size: 0.75rem;

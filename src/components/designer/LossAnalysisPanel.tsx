@@ -7,7 +7,7 @@ import CollapsibleCard from './CollapsibleCard'
 import { calculateLosses } from '../../lib/designer/losses'
 import type { CalculatedData, LossParameters } from '../../lib/designer/types'
 import { loadLossNotesHidden, saveLossNotesHidden } from '../../lib/designer/persistence'
-import { CORE_MATERIALS, applyCoreMaterial, coreMaterialById, materialPresetMatches, steinmetzCm } from '../../lib/designer/coreMaterials'
+import { CORE_MATERIALS, applyCoreMaterial, coreMaterialById, materialPresetMatches, steinmetzCm, lrCorePcvFrom } from '../../lib/designer/coreMaterials'
 
 interface LossAnalysisPanelProps {
   calc: CalculatedData
@@ -329,7 +329,22 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>Lr 磁芯 P_cv (mW/cm³)</label>
             <input type="number" className={inputClass} value={params.lrCorePcv} onChange={(e) => update('lrCorePcv', Number(e.target.value))} />
-            <Note hidden={notesHidden}>默认按 B_Lr≈0.15 T 查 PC95 手册；须按实际磁芯重查（填 0 则不计）</Note>
+            <Note hidden={notesHidden}>
+              {(() => {
+                const m = coreMaterialById(params.coreMaterial)
+                if (!m || m.id === 'custom') return '按 Lr 实际磁芯的牌号与 B_Lr 查手册；填 0 则不计'
+                const preset = lrCorePcvFrom(m)
+                const edited = Math.abs(params.lrCorePcv - preset) > 1e-9
+                return (
+                  <>
+                    随「磁芯材料」自动折算：<b>{m.name}</b> 的 {m.pcvRef} mW/cm³ × (B_Lr / 0.2 T)<sup>{m.beta}</sup>，
+                    取 B_Lr≈0.165 T ⇒ <b>{preset}</b>
+                    {edited ? <>（当前 {params.lrCorePcv} 已手工修改，未随牌号变化）</> : ''}。
+                    须按 Lr 实际磁芯重查；填 0 则不计
+                  </>
+                )
+              })()}
+            </Note>
           </div>
           <div>
             <label className={labelClass}>Lr 磁芯 Ve (cm³)</label>

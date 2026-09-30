@@ -83,16 +83,20 @@ export default function MathBlock({
 
   return (
     <div
-      className={`math-block ${important ? 'important' : ''} ${multiline ? 'multiline' : ''} ${label || stepNumber ? 'has-label' : ''} my-4`}
+      className={`math-block ${important ? 'important' : ''} ${multiline ? 'multiline' : ''} my-4`}
     >
-      {(label || stepNumber !== undefined) && (
-        <div className="math-block-label">
+      {/* 标签行**恒渲染**：编号槽位（右侧）由 <FormulaNumbering/> 在渲染后按 DOM 顺序写入，
+          这样有标签/无标签的公式块版式一致、高度一致。
+          见 src/components/FormulaNumbering.tsx 的编号规则与幂等说明。 */}
+      <div className="math-block-label">
+        <span className="math-block-label-left">
           {stepNumber !== undefined && (
             <span className="step-number">Step {stepNumber}</span>
           )}
           {label && <span className="label-text">{label}</span>}
-        </div>
-      )}
+        </span>
+        <span className="math-block-number" />
+      </div>
       <div ref={ref} />
     </div>
   )

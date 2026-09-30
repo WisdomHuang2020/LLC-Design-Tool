@@ -98,6 +98,7 @@ function FormulaSection({
   return (
     <motion.div
       id={id}
+      data-section-index={number}
       variants={itemVariants}
       className="card-surface mb-6 overflow-hidden"
     >
@@ -539,8 +540,10 @@ export default function Derivations() {
             label="谐振腔参数计算"
           />
 
-          <ParamTable>
-                      <HighlightBox type="info">
+          {/* ⚠️ 这段整段说明必须放在 <ParamTable> **外面**：一旦作为表格的直接子元素，
+              表格布局会把它当成一个单元格挤进第一列，被压成极窄的竖长条。
+              凡是 HighlightBox / <p> / 说明性 div，都不得放进 ParamTable。 */}
+          <HighlightBox type="info">
             <strong>增益的符号体系（G 系 vs M 系）：</strong>
             <b>G 系 = 设计需求</b>（"要多少增益"）—— G<sub>max</sub> 是<em>最低</em>输入所需的增益、
             G<sub>min</sub> 是<em>最高</em>输入所需的增益、G<sub>empty</sub> 是空载增益下限；
@@ -551,6 +554,7 @@ export default function Derivations() {
             M 也沿用 LLC 文献与计算书的通用写法（M = 2n·V<sub>o</sub>/V<sub>in</sub>）。
           </HighlightBox>
 
+          <ParamTable>
 <ParamRow symbol="Gempty" name="空载增益下限" unit="-" description="空载（Q→0）时 Region 1 的增益下限 k/(k+1)；Gmin 必须 ≥ 它，否则高输入空载降压不了（对应 k ≤ kmax）" typical="≈ 0.75 ~ 0.9" />
             <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（V_in,nom / V_in,min）" typical="1.1 ~ 1.4" />
             <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
@@ -815,7 +819,7 @@ export default function Derivations() {
             <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
             <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
             <ParamRow symbol="Vf" name="整流管压降（= 设计参数值）" unit="V" description="单管压降；与匝比 n 用的是同一个数（单一来源）。二极管 0.6~1.2 V，同步整流按 Io·Rds(on) 折算后通常填 0" typical="0 / 0.6 ~ 1.2 V" />
-            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；默认 179（≈PC95 @100kHz / B_Lr≈0.165 T）。正弦激励，不乘 k_wave" typical="查手册" />
+            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；随「磁芯材料」按 P_cv,ref×(B_Lr/0.2 T)^β 自动折算（B_Lr≈0.165 T；默认牌号 PC95 ⇒ 179）。正弦激励，不乘 k_wave" typical="查手册" />
             <ParamRow symbol="Ve,Lr" name="Lr 磁芯有效体积" unit="cm³" description="默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）" typical="1 ~ 2 cm³" />
             <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25；⚠ 仅用于变压器磁芯，Lr 不用" typical="1.2 ~ 1.4" />
             <ParamRow symbol="Cm, α, β" name="Steinmetz 系数（对照口径）" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="正弦激励拟合系数，方波励磁下有偏差，仅作并列对照" typical="查磁芯 datasheet" />

@@ -69,6 +69,23 @@ export const PCV_REF_F_KHZ = 100
 export const PCV_REF_B_MT = 200
 
 /**
+ * 折算 Lr 磁芯损耗密度时假定的 **Lr 工作磁密**（T）。
+ * 谐振电感通常比变压器小一档、磁密更低，取 0.165 T 作为典型量级；
+ * 这只是量级假设 —— 实际须按 Lr 所用磁芯的 Ae、匝数与实测 B 重算。
+ */
+export const LR_CORE_B_T = 0.165
+
+/**
+ * 由某牌号的参考点损耗密度，按 B^β 折算到 Lr 工作磁密，得到 **Lr 磁芯的 P_cv**（mW/cm³）。
+ *   P_cv,Lr = P_cv,ref × (B_Lr / B_ref)^β
+ * 例：PC95（290 @0.2 T、β=2.5）⇒ 290×(0.165/0.2)^2.5 ≈ 179。
+ * ⚠️ 必须**随所选牌号**折算（β 也随牌号取），不能写死成某个牌号的值。
+ */
+export function lrCorePcvFrom(m: CoreMaterial): number {
+  return Math.round(m.pcvRef * Math.pow(LR_CORE_B_T / (PCV_REF_B_MT / 1000), m.beta))
+}
+
+/**
  * 由参考点损耗密度反推 Steinmetz 系数 Cm，使
  *   P = Cm·f^α·B^β  在 (100 kHz, 200 mT) 处恰等于 pcvRef
  * ⇒ Cm = pcvRef / (f_ref^α · B_ref^β)。单位沿用站内约定（f: kHz、B: mT、结果 mW/cm³）。
@@ -78,7 +95,7 @@ export function steinmetzCm(m: CoreMaterial): number {
 }
 
 /**
- * 切换磁材：把该牌号的预设参数写进损耗参数（P_cv 与 Steinmetz 三系数）。
+ * 切换磁材：把该牌号的预设参数写进损耗参数（P_cv 与 Steinmetz 三系数，以及 Lr 磁芯 P_cv）。
  * `'custom'` 保留用户当前数值不动 —— 便于"我知道自己在填什么"的场景。
  */
 export function applyCoreMaterial(params: LossParameters, id: string): LossParameters {
@@ -91,6 +108,8 @@ export function applyCoreMaterial(params: LossParameters, id: string): LossParam
     coreAlpha: m.alpha,
     coreBeta: m.beta,
     coreK: steinmetzCm(m),
+    // Lr 磁芯与变压器磁芯同牌号 ⇒ Lr 的 P_cv 也要跟着折算，否则换了牌号而 Lr 损耗纹丝不动
+    lrCorePcv: lrCorePcvFrom(m),
   }
 }
 
@@ -103,5 +122,6 @@ export function materialPresetMatches(params: LossParameters): boolean {
     Math.abs(params.coreAlpha - m.alpha) < 1e-9 &&
     Math.abs(params.coreBeta - m.beta) < 1e-9 &&
     Math.abs(params.coreK - steinmetzCm(m)) < 1e-15
+    // 注：**不**在这里比对 lrCorePcv —— 「已被手工修改」的提示挂在各自字段旁，
   )
 }

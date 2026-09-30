@@ -256,7 +256,12 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={calculated.gainCurveData} margin={{ top: 5, right: 20, left: 10, bottom: 25 }}>
+              {/* margin 必须给标签留位，否则 SVG（overflow:hidden）会把它们裁掉：
+                  · top  —— 两条竖直参考线的 position:'top' 标签画在绘图区上方约 15px 处；
+                  · right —— 两条水平参考线的 position:'right' 标签宽约 59px（"Gmax=1.053"）。
+                  实测 top:5/right:20 时，'分界 fn=0.798' 与 'fr' 落到 y=-10（只剩 2px），
+                  'Gmax=1.053'/'Gmin=0.952' 落到 x=661→720（超出 676，只显示「Gm」）。 */}
+              <LineChart data={calculated.gainCurveData} margin={{ top: 20, right: 72, left: 10, bottom: 25 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis
                   dataKey="fn"
@@ -283,7 +288,9 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                 <Line type="monotone" dataKey="mLight" stroke="#a78bfa" strokeWidth={1.5} dot={false} strokeDasharray="6 3" />
                 {/* 参考线：Gmax, Gmin, fr */}
                 <ReferenceLine y={calculated.gMax} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmax=${calculated.gMax.toFixed(3)}`, fill: '#ef4444', fontSize: 10, position: 'right' }} />
-                <ReferenceLine y={calculated.gMin} stroke="#22c55e" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmin=${calculated.gMin.toFixed(3)}`, fill: '#22c55e', fontSize: 10, position: 'right' }} />
+                {/* Gmin 与 Gmax 在图上只差约 8px，两个 position:'right' 的标签必然叠字（实测重叠 6px）
+                    ⇒ 把 Gmin 放到绘图区**内侧**右侧，与 Gmax 横向错开。 */}
+                <ReferenceLine y={calculated.gMin} stroke="#22c55e" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmin=${calculated.gMin.toFixed(3)}`, fill: '#22c55e', fontSize: 10, position: 'insideRight' }} />
                 <ReferenceLine x={1} stroke="#94a3b8" strokeDasharray="3 3" strokeWidth={1} label={{ value: 'fr', fill: '#94a3b8', fontSize: 10, position: 'top' }} />
                 {/* 感容分界点：左侧为容性区（不可工作），右侧为感性区 */}
                 {Number.isFinite(fnBnd) && (

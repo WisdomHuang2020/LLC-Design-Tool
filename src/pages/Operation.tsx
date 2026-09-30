@@ -108,6 +108,7 @@ function SectionCard({
       viewport={{ once: true, margin: '-50px' }}
       variants={fadeUp}
       custom={index}
+      data-section-index={index > 0 ? index : undefined}
       className={`card-surface overflow-hidden ${className}`}
     >
       <button
@@ -845,7 +846,7 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 2.5: Animated Switching Process */}
-        <SectionCard index={2} header={<SectionTitle
+        <SectionCard index={3} header={<SectionTitle
             icon={Zap}
             title="开关过程动画"
             subtitle="半桥LLC的实时开关波形与电流流动示意"
@@ -874,7 +875,7 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 3: ZVS Conditions */}
-        <SectionCard index={3} header={<SectionTitle
+        <SectionCard index={4} header={<SectionTitle
             icon={CheckCircle2}
             title="ZVS 条件"
             subtitle="为什么 LLC 能实现零电压开关（ZVS）及其必要条件"
@@ -958,7 +959,7 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 4: Gain Characteristics */}
-        <SectionCard index={4} header={<SectionTitle
+        <SectionCard index={5} header={<SectionTitle
             icon={TrendingUp}
             title="增益特性"
             subtitle="电压增益 M 与频率、负载的关系"
@@ -1021,7 +1022,7 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 5: Design Trade-offs */}
-        <SectionCard index={5} header={<SectionTitle
+        <SectionCard index={6} header={<SectionTitle
             icon={Scale}
             title="设计权衡"
             subtitle="效率、频率、损耗与体积之间的工程折中"
@@ -1150,7 +1151,7 @@ export default function Operation() {
         </SectionCard>
 
         {/* Section 6: Why LLC is efficient */}
-        <SectionCard index={6} header={<SectionTitle
+        <SectionCard index={7} header={<SectionTitle
             icon={Gauge}
             title="为什么 LLC 效率高"
             subtitle="ZVS / ZCS 是主因，其余 5 条是次要增益；逐条给出机制与本站损耗模型的口径"
