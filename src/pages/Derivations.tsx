@@ -519,13 +519,14 @@ export default function Derivations() {
           </ParamTable>
 
           <HighlightBox type="warning">
-            <strong>Q<sub>max1</sub> 有两条不同判据（不是谁近似谁）：</strong>
-            ① <b>峰值判据</b>（本站默认）：令增益曲线<b>峰顶</b> M<sub>peak</sub> = G<sub>max</sub>；
-            ② <b>感容分界判据</b>（教材/计算书常用）：令<b>分界点</b>（Im Z<sub>in</sub> = 0）增益 M<sub>bnd</sub> = G<sub>max</sub>，
-            其精确解析解即教材闭式 Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1))。
-            峰顶恒在分界点<b>左侧</b>（实测左移 2%~15%，Q 越小偏得越多），即峰顶位于<b>容性区</b>，
-            故按峰值判据取 Q<sub>max1</sub> 时，感性区内实际略够不到 G<sub>max</sub>（默认参数差约 0.15%，平时被 m 裕量掩盖）。
-            需要与计算书逐位对齐或取最保守口径时，请在结果卡把 Q<sub>max1</sub> 切到「分界判据」。
+            <strong>Q<sub>max1</sub> 必须由「感容分界点增益 ∩ G<sub>max</sub>」给出 —— 峰值增益点在容性区，不能用来限制：</strong>
+            ① <b>感容分界点在峰值增益点的右边一点点</b>（实测右移 2%~15%，Q 越小差得越多）；分界点左侧为容性区、右侧为感性区。
+            ② <b>峰值判据</b>（本站 v2.10.95 及更早的默认）：令增益曲线<b>峰顶</b> M<sub>peak</sub> = G<sub>max</sub>，
+            只能保证「增益数值达标」，但那个峰顶本身已处于<b>容性区</b>，容性区<b>不允许工作</b>（无法 ZVS、环路不能稳定停留）。
+            ③ 因此要<b>确保工作在感性区</b>，限制条件必须取<b>感容分界判据</b>：令分界点（Im Z<sub>in</sub> = 0）增益
+            M<sub>bnd</sub> = G<sub>max</sub>；其精确解析解即教材闭式
+            Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1)) —— <b>不是近似式</b>。
+            本站 v2.10.97 起默认采用分界判据；需复现旧口径时，在设计工具页表单「Qmax1 判据」切到「峰值增益判据」。
           </HighlightBox>
 
           <HighlightBox type="info">

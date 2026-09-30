@@ -3,7 +3,7 @@
 // 本文件由 pages/Designer.tsx 的 handleCalculate 逐行搬移而来，数学部分未做任何改动。
 import type { DesignParameters, CalculatedResults } from '../DesignContext'
 import type { CalculatedData, LossParameters, Suggestion } from './types'
-import { gainM, peakGain, zvsPhase, fullLoadGainCrossing, magnetizingCurrentOffPeak } from './llcMath'
+import { gainM, peakGain, zvsPhase, fullLoadGainCrossing, magnetizingCurrentOffPeak, qmax1Boundary, qmax1Peak } from './llcMath'
 import { generateSuggestions } from './suggestions'
 
 export interface DesignComputation {
@@ -69,24 +69,17 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 轻载 Q 减小、峰值增益自动更高，无需额外校验）
   const rac = (8 * n * n * vout * vout) / (Math.PI * Math.PI * pout)
 
-  // Qmax1：峰值增益约束（Gmax为归一化增益，peakGain直接比较）
-  function findQmax1(kVal: number, targetGain: number): number {
-    let lowQ = 0.001
-    let highQ = 5.0
-    const tolerance = 0.001
-    for (let iter = 0; iter < 50; iter++) {
-      const midQ = (lowQ + highQ) / 2
-      const peakM = peakGain(kVal, midQ)
-      if (peakM > targetGain) {
-        lowQ = midQ
-      } else {
-        highQ = midQ
-      }
-      if (highQ - lowQ < tolerance) break
-    }
-    return (lowQ + highQ) / 2
-  }
-  const qmax1 = findQmax1(k, gMax)
+  // Qmax1：增益能力约束。两条判据二选一（v2.10.96 起默认取**感容分界判据**）：
+  //   · boundary（默认／推荐）：分界点增益 Mbnd = Gmax。峰顶在分界点左侧（容性区），
+  //     感性区内增益最大值出现在分界点，故只有这条判据能保证「感性区内真的够得着 Gmax」。
+  //     峰值判据只看增益数值达标，但那个峰值点本身已位于容性区，不允许作为工作点。
+  //   · peak（旧口径）：峰顶 Mpeak = Gmax，仅保证增益数值，不保证感性区。
+  // 分界判据要求 Gmax > 1（否则无分界交点），越界时自动回落到峰值判据。
+  const qmax1PeakVal = qmax1Peak(k, gMax)
+  const qmax1BndVal = qmax1Boundary(k, gMax)
+  const useBoundary = form.qmax1Criterion !== 'peak' && Number.isFinite(qmax1BndVal)
+  const qmax1Criterion: 'boundary' | 'peak' = useBoundary ? 'boundary' : 'peak'
+  const qmax1 = useBoundary ? qmax1BndVal : qmax1PeakVal
 
   // Qmax2：ZVS条件（死区时间），基于能量守恒推导
   // 系数 16 来源于半桥 LLC 死区时间近似公式 t_dead = 16·C_eq·fr1·Lm 的反推
@@ -263,6 +256,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     zvsEr: er,
     zvsEc: ec,
     qmax1,
+    qmax1Criterion,
     qmax2,
     qmax3,
     qMargin,

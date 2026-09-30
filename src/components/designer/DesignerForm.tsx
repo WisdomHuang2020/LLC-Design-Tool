@@ -147,6 +147,21 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             调小 m（如 0.85）→ Q 更小 → ZVS 能量与时间裕量更大，但 Lr 更小 / Cr 更大、环流损耗上升
           </span>
         </div>
+        <div>
+          <label className={labelClass}>Qmax1 判据</label>
+          <select
+            className={inputClass}
+            value={form.qmax1Criterion === 'peak' ? 'peak' : 'boundary'}
+            onChange={(e) => update('qmax1Criterion', e.target.value as DesignParameters['qmax1Criterion'])}
+          >
+            <option value="boundary">感容分界判据（推荐／默认）</option>
+            <option value="peak">峰值增益判据（旧口径，仅供对照）</option>
+          </select>
+          <span className="text-xs text-text-muted mt-1 block">
+            感容分界点在峰值点<b className="text-text-secondary">右侧</b>；峰值点位于容性区，
+            只保证增益数值达标、不能保证工作在感性区，故限制条件应取「分界点增益 ∩ Gmax」
+          </span>
+        </div>
         <div className="sm:col-span-2">
           <label className={labelClass}>负载范围 (%)</label>
           <div className="grid grid-cols-2 gap-2">

@@ -27,6 +27,14 @@ export interface DesignParameters {
    * 默认 0.95。
    */
   qMargin: number
+  /**
+   * Qmax1 采用哪条判据（v2.10.96 起）：
+   * - 'boundary'（**默认**）：感容分界点增益 Mbnd = Gmax。分界点在峰顶右侧，只有这条判据能保证
+   *   最坏工况下仍工作在**感性区**且够得着 Gmax。
+   * - 'peak'（旧口径）：峰顶增益 Mpeak = Gmax。只保证增益数值达标，但峰顶本身位于**容性区**，
+   *   不允许作为工作点，故不作为默认。
+   */
+  qmax1Criterion: 'boundary' | 'peak'
 }
 
 export interface CalculatedResults {
@@ -96,6 +104,7 @@ const defaultParams: DesignParameters = {
   ioMax: 4.8,
   k: 4,
   qMargin: 0.95,
+  qmax1Criterion: 'boundary',
 }
 
 const defaultCurves: CurvesState = { k: 4.0, q: 0.8 }

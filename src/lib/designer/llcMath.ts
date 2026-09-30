@@ -158,6 +158,29 @@ export function qmax1Boundary(k: number, gMax: number): number {
   return (lo + hi) / 2
 }
 
+/**
+ * 「峰值判据」下的 Q 上限：令增益曲线**峰顶** Mpeak 恰等于 Gmax 的 Q（二分）。
+ *
+ * ⚠️ 该判据**只保证增益数值达标，不保证工作在感性区**：峰顶恒位于分界点左侧（容性区），
+ * 因此按此值取 Q 时，感性区内实际够不到 Gmax（默认参数差约 0.15%）。
+ * 本站 v2.10.96 起设计默认改用 `qmax1Boundary`；本函数保留供对照与旧口径复现。
+ *
+ * 单一来源：引擎 `computeDesign` 与结果卡展示都调用它（旧实现是 `computeDesign` 内的局部函数）。
+ */
+export function qmax1Peak(k: number, gMax: number): number {
+  if (!(k > 0) || !(gMax > 0)) return NaN
+  let lo = 0.001
+  let hi = 5
+  const tolerance = 1e-6
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2
+    if (peakGain(k, mid) > gMax) lo = mid
+    else hi = mid
+    if (hi - lo < tolerance) break
+  }
+  return (lo + hi) / 2
+}
+
 // ZVS phase check at fsw (fn = 1 since fr = fsw in our design)
 export function zvsPhase(k: number, q: number): number {
   // 原实现用 x = k·q、real = x²/(1+x²)、imag = x/(1+x²)，即 Re/Rac 与 Im/Rac 的归一化形式。

@@ -75,6 +75,11 @@ export interface CalculatedData {
   qmax1: number
   qmax2: number
   qmax3: number
+  /**
+   * 本次 Qmax1 用的是哪条判据：'boundary'（感容分界点增益 = Gmax，默认）或 'peak'（峰顶增益 = Gmax）。
+   * ⚠️ 旧存档（本地存储）可能缺此字段 —— 读取处一律写成 `=== 'peak' ? 'peak' : 'boundary'` 兜底。
+   */
+  qmax1Criterion?: 'boundary' | 'peak'
   /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)；旧存档可能缺此字段，用时应兜底 0.95 */
   qMargin: number
   gMin: number

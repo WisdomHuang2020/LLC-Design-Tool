@@ -4,7 +4,7 @@ import { TrendingUp } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import CollapsibleCard from './CollapsibleCard'
 import ResultItem from './ResultItem'
-import { boundaryFn, boundaryGain, fminTextbook, qmax1Boundary } from '../../lib/designer/llcMath'
+import { boundaryFn, boundaryGain, fminTextbook, qmax1Boundary, qmax1Peak } from '../../lib/designer/llcMath'
 import type { CalculatedData } from '../../lib/designer/types'
 
 interface ResultsSummaryCardProps {
@@ -16,21 +16,28 @@ interface ResultsSummaryCardProps {
 }
 
 /**
- * Qmax1 的展示口径 —— 两条**不同判据**，不是谁近似谁：
- * - peak：本站默认。令增益曲线**峰值**（dM/dfn=0）恰等于 Gmax。
- * - boundary：令**感容分界点**（Im Zin = 0）的增益恰等于 Gmax；其解析解即教材闭式。
- * 仅影响展示，不参与设计计算（设计始终用 peak 判据，除非另有说明）。
+ * Qmax1 的两条**判据** —— 不是谁近似谁，物理含义不同：
+ * - boundary（**默认**／推荐）：令**感容分界点**（Im Zin = 0）增益 Mbnd 恰等于 Gmax。
+ *   分界点在峰顶右侧，只有这条判据能保证最坏工况下仍工作在**感性区**且够得着 Gmax。
+ * - peak（旧口径，仅供对照）：令增益曲线**峰顶**（dM/dfn = 0）恰等于 Gmax。
+ *   只保证增益数值达标，但那个峰顶本身位于**容性区**，不允许作为工作点。
+ *
+ * 实际用于设计的判据由 `calculated.qmax1Criterion` 决定（表单里可切换）；
+ * 卡片上的开关只切换**显示**哪一条，两条值始终并列给出。
  */
 type Qmax1Mode = 'peak' | 'boundary'
 
 export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle }: ResultsSummaryCardProps) {
-  // 展示口径开关（本地视图状态，不持久化）
-  const [qmax1Mode, setQmax1Mode] = useState<Qmax1Mode>('peak')
+  // 展示口径开关（本地视图状态，不持久化）：默认显示**当前设计所用**的那条
+  const designCriterion: Qmax1Mode = calculated.qmax1Criterion === 'peak' ? 'peak' : 'boundary'
+  const [qmax1Mode, setQmax1Mode] = useState<Qmax1Mode>(designCriterion)
+  const [criteriaOpen, setCriteriaOpen] = useState(false)
   const qmax1BndVal = qmax1Boundary(calculated.k, calculated.gMax)
+  const qmax1PeakVal = qmax1Peak(calculated.k, calculated.gMax)
   const fminTextbookVal = fminTextbook(calculated.fr, calculated.k, calculated.gMax)
   const showBoundary = qmax1Mode === 'boundary' && Number.isFinite(qmax1BndVal)
 
-  // 感性/容性分界点：本站判据（峰值）与感性区可用上限（分界点）之差由此量化
+  // 感性/容性分界点：感性区可用上限（分界点）与曲线峰顶之差由此量化
   const fnBnd = boundaryFn(calculated.k, calculated.q)
   const mBnd = boundaryGain(calculated.k, calculated.q)
   const bndOk = Number.isFinite(mBnd)
@@ -125,7 +132,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             }
           />
           <ResultItem
-            label="Qmax1（增益能力约束）"
+            label={`Qmax1（增益能力约束 · 设计用${designCriterion === 'boundary' ? '分界判据' : '峰值判据'}）`}
             value={
               showBoundary
                 ? qmax1BndVal.toFixed(3)
@@ -136,8 +143,8 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             unit=""
             formula={
               showBoundary
-                ? '分界判据：令分界点增益 Mbnd 恰等于 Gmax｜解析解 = 教材式 1/(k·Gmax)·√(k+Gmax²/(Gmax²−1))，保证感性区内够得着'
-                : '峰值判据：令峰值增益 Mpeak 恰等于 Gmax｜峰顶在容性区，故感性区内略够不到（默认参数差 0.15%）'
+                ? '分界判据：令分界点增益 Mbnd 恰等于 Gmax｜解析解 = 教材式 1/(k·Gmax)·√(k+Gmax²/(Gmax²−1))；保证工作在感性区'
+                : '峰值判据：令峰顶增益 Mpeak 恰等于 Gmax｜只保证增益数值达标，峰顶位于容性区，不能保证感性区'
             }
             action={
               <div className="flex gap-0.5 shrink-0">
@@ -179,21 +186,56 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           </p>
         </div>
 
-        {/* Qmax1 两种判据 + 感性区可用上限（并列展示，供对照；不参与设计计算） */}
-        <div className="mt-4 rounded-lg border border-border bg-surface-elevated p-3 text-xs leading-relaxed">
-          <p className="font-medium text-text-primary mb-1.5">Qmax1 的两种判据与「感性区够不够得着」</p>
-          <div className="space-y-1 font-mono text-text-secondary">
-            <div>峰值判据（本站默认）Qmax1 = {Number.isFinite(calculated.qmax1) ? calculated.qmax1.toFixed(5) : '—'} —— 令峰顶 Mpeak = Gmax</div>
-            <div>分界判据（教材闭式）Qmax1 = {Number.isFinite(qmax1BndVal) ? qmax1BndVal.toFixed(5) : '—'} —— 令分界点 Mbnd = Gmax，更保守</div>
-            <div>本设计分界点 fn = {Number.isFinite(fnBnd) ? fnBnd.toFixed(4) : '—'}，该点 Mbnd = {bndOk ? mBnd.toFixed(5) : '—'}，Mpeak = {calculated.mMax.toFixed(5)}</div>
-            <div>感性区可用裕量 = {bndOk ? ((mBnd - calculated.gMax) / calculated.gMax * 100).toFixed(3) : '—'}%（按 Mbnd），曲线峰顶显示裕量 = {((calculated.mMax - calculated.gMax) / calculated.gMax * 100).toFixed(3)}%</div>
-          </div>
-          <p className="mt-1.5 text-text-muted">
-            两条判据都自洽，<b className="text-text-secondary">不是谁近似谁</b>：峰顶恒在分界点左侧（实测左移 2%~15%，Q 越小偏得越多），
-            即<b className="text-text-secondary">峰顶位于容性区</b>；
-            感性区内增益最大值出现在分界点。故按峰值判据取 Qmax1 时，感性区内实际<b className="text-text-secondary">略够不到</b> Gmax
-            （默认参数差约 0.15%，平时被 m 裕量掩盖）。若需与计算书逐位对齐或取最保守口径，请把上行切到「分界判据」。
-          </p>
+        {/* Qmax1 判据说明：常驻警示（一行）+ 点击展开全文 */}
+        <div className="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 text-xs leading-relaxed">
+          <button
+            type="button"
+            onClick={() => setCriteriaOpen((v) => !v)}
+            className="w-full flex items-start justify-between gap-2 text-left"
+          >
+            <span className="font-medium text-text-primary">
+              ⚠ Qmax1 必须由<b className="text-amber-300">感容分界点增益 ∩ Gmax</b>给出 ——
+              峰值增益点在<b className="text-amber-300">容性区</b>，不能用来限制
+            </span>
+            <span className="shrink-0 text-text-muted">{criteriaOpen ? '收起 ▲' : '展开说明 ▼'}</span>
+          </button>
+
+          {criteriaOpen && (
+            <div className="mt-2">
+              <div className="space-y-1 font-mono text-text-secondary">
+                <div>分界判据（推荐／本站默认）Qmax1 = {Number.isFinite(qmax1BndVal) ? qmax1BndVal.toFixed(5) : '—'} —— 令分界点 Mbnd = Gmax</div>
+                <div>峰值判据（旧口径，仅对照）Qmax1 = {Number.isFinite(qmax1PeakVal) ? qmax1PeakVal.toFixed(5) : '—'} —— 令峰顶 Mpeak = Gmax</div>
+                <div>峰值判据比分界判据宽松 {Number.isFinite(qmax1PeakVal) && Number.isFinite(qmax1BndVal) && qmax1BndVal > 0 ? ((qmax1PeakVal - qmax1BndVal) / qmax1BndVal * 100).toFixed(2) : '—'}%（Q 偏大 ⇒ 感性区内够不到）</div>
+                <div>本设计分界点 fn = {Number.isFinite(fnBnd) ? fnBnd.toFixed(4) : '—'}，该点 Mbnd = {bndOk ? mBnd.toFixed(5) : '—'}，Mpeak = {calculated.mMax.toFixed(5)}</div>
+                <div>感性区可用裕量 = {bndOk ? ((mBnd - calculated.gMax) / calculated.gMax * 100).toFixed(3) : '—'}%（按 Mbnd），曲线峰顶显示裕量 = {((calculated.mMax - calculated.gMax) / calculated.gMax * 100).toFixed(3)}%</div>
+              </div>
+              <div className="mt-2 space-y-1.5 text-text-muted">
+                <p>
+                  <b className="text-text-secondary">两者不是同一个东西。</b>
+                  计算书（教材）用的是<b className="text-text-secondary">感容分界点增益</b>，
+                  网站早期用的是<b className="text-text-secondary">峰值增益</b> —— 这是两条不同的限制条件：
+                </p>
+                <p>
+                  ① <b className="text-text-secondary">感容分界点在峰值增益点的右边一点点</b>（实测右移 2%~15%，Q 越小差得越多），
+                  分界点左侧是容性区、右侧是感性区。
+                </p>
+                <p>
+                  ② 以<b className="text-text-secondary">峰值增益</b>作限制，只能保证「增益数值达标」，
+                  但那个峰值点本身已经处于<b className="text-amber-300">容性区</b>，而容性区是<b className="text-text-secondary">不允许工作</b>的
+                  （不能 ZVS、环路无法稳定停留）。
+                </p>
+                <p>
+                  ③ 因此要<b className="text-text-secondary">确保工作在感性区</b>，限制条件必须取
+                  「<b className="text-amber-300">感容分界点增益 ∩ Gmax</b>」的交点 —— 这也是教材闭式
+                  Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1)) 的精确含义（不是近似式）。
+                </p>
+                <p>
+                  本站 v2.10.97 起默认采用分界判据；如需复现旧口径或与既有设计逐位对齐，
+                  可在左侧表单「Qmax1 判据」切到「峰值增益判据」。
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 增益-频率曲线 */}
