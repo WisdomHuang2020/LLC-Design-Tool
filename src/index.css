@@ -368,23 +368,17 @@ svg text {
   }
   /* 容差表列宽：组合列（长标签）与判定列给足，其余 8 个数值列均分 */
   .tol-table th:first-child,
-  .tol-table td:first-child { width: 26% !important; }
+  .tol-table td:first-child { width: 24% !important; }
   .tol-table th:last-child,
-  .tol-table td:last-child { width: 13% !important; }
+  .tol-table td:last-child { width: 15% !important; }
   /* 蒙特卡洛直方图：容器给确定高度后，**每一箱的包裹层也必须满高**，
      否则柱条的百分比高度失去参照而塌成 0（屏幕上靠 h-24 撑住，打印时不会） */
   .mc-hist { break-inside: avoid; }
   .mc-hist > div { height: 100% !important; }
-  /* 页脚：打印时去掉深色底（省墨，且深底浅字在纸上几乎不可读） */
-  footer {
-    background: #fff !important;
-    color: #000 !important;
-  }
-  footer * {
-    background: transparent !important;
-    color: #333 !important;
-  }
-  footer svg { display: none !important; }
+  /* 站点页脚（导航/备案/版本那类站点 chrome）：打印时**整块隐藏** ——
+     它不是报告内容，且深色底会整页占位、深底浅字在纸上几乎不可读。
+     注意：报告自身的页脚是普通 div（含构建版本号与日期），不受此规则影响，仍会打印 */
+  footer { display: none !important; }
 }
 
 /* ── 损耗面板字段网格：让同一行的输入框对齐 ──────────────────────────
