@@ -134,6 +134,19 @@ export interface LossParameters {
   vPlateau: number // V_plat 米勒平台电压 (V)，同一曲线读
   rgTotal: number // R_g 栅极回路总电阻 (Ω) = 内部 R_G + 外部 R_g + 驱动下拉/上拉阻抗
   vDrv: number // V_drv 驱动电平 (V)，开通过程 ΔV = V_drv − V_plat；关断按 0
+  /**
+   * 平台电荷的两种取法（两者本质相同，都是「搬走米勒电荷」；差别只是电荷从哪来）：
+   * - `'qgd'`（默认，推荐）：`Q_plat = Q_gd`。规格书栅荷曲线的 Q_gd **本身就是厂商实测的
+   *   `∫Crss(V) dV`**（平台段电荷），且测试电压（如 V_DD=520 V）通常贴近实际母线 ⇒ 误差最小。
+   * - `'crss'`：`Q_plat = Crss_eq · V_DS,swing`。`Crss_eq` **必须**是「对 Crss(V) 曲线积分再除以电压」
+   *   得到的等效值（面积÷电压）。⚠️ 直接填规格书**某一点**的 Crss（如 600 V 处 2 pF）会把平台电荷
+   *   低估数倍 —— 因为 Crss 在近 0 V 段极大，积分主要由那一段贡献。
+   */
+  tcrMethod: 'qgd' | 'crss'
+  /** 等效反向传输电容 Crss_eq (pF) = ∫Crss dV / V_DS（仅 tcrMethod='crss' 时参与计算） */
+  crssEq: number
+  /** 平台对应的 V_DS 摆幅 (V)：半桥一般就填母线电压 V_in（关断时器件从 0 承压到 V_in） */
+  vdsSwing: number
   // 注：Coss 相关电容**不在此处**——损耗面板不再单独输入 Coss。
   //     硬开关 Coss 损耗与 ZVS 能量判据统一取设计参数 `DesignParameters.cossEr`（C_oss,er ≡ Co(er)，
   //     能量相关等效电容），死区时间/电荷判据取 `cossEq`（C_oss,eq ≡ Co(tr)）。单一来源，避免同一物理量两处输入。

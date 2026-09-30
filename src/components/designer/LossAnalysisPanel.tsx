@@ -48,9 +48,21 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
   // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
   const cossErP = Number.isFinite(Number(calc.cossEr)) && Number(calc.cossEr) > 0 ? Number(calc.cossEr) : 35
-  // 交叉时间（由 losses.ts 依 Q_gd·R_g/ΔV 算出；这里只做显示）
+  // 交叉时间（由 losses.ts 依「平台电荷·R_g/ΔV」算出；这里只做显示）
   const tCrossOffNs = (losses.tCrossOff * 1e9).toFixed(1)
   const tCrossOnNs = (losses.tCrossOn * 1e9).toFixed(1)
+  // 两种平台电荷取法的并列对照：都用同一 R_g / V_plat 换算成关断交叉时间，便于判断数量级是否可信
+  const qQgd = losses.qPlateauQgd * 1e9
+  const qCrss = losses.qPlateauCrss * 1e9
+  const rgUse = Number.isFinite(params.rgTotal) ? params.rgTotal : 12
+  const vPlatUse = Number.isFinite(params.vPlateau) ? params.vPlateau : 4.5
+  const toffNs = (qC: number) => ((qC * 1e-9 * rgUse) / vPlatUse) * 1e9
+  const tOffQgd = toffNs(losses.qPlateauQgd)
+  const tOffCrss = toffNs(losses.qPlateauCrss)
+  const qRatio = qCrss > 1e-12 ? qQgd / qCrss : NaN
+  const ratioNote = Number.isFinite(qRatio) && Math.abs(qRatio - 1) > 0.5
+    ? `（相差 ${qRatio > 1 ? qRatio.toFixed(1) : (1 / qRatio).toFixed(1)}×，${qRatio > 1 ? 'Crss 法的等效值可能取了单点、偏小' : 'Qgd 法取值待核对'}）`
+    : '（两法一致）'
 
   return (
     <CollapsibleCard
@@ -105,16 +117,49 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <Note hidden={notesHidden}>开通交叉时间用；关断按 0</Note>
           </div>
           <div>
-            <label className={labelClass}>交叉时间 t_cr（由上式算出）</label>
+            <label className={labelClass}>交叉时间 t_cr（由平台电荷算出）</label>
             <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center">
               <span className="font-mono text-sm text-text-primary truncate">关断 {tCrossOffNs} ｜ 开通 {tCrossOnNs} ns</span>
             </div>
             <Note hidden={notesHidden}>
-              t_cr = Q<sub>gd</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
+              t_cr = Q<sub>plat</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
               ⚠️ 不要直接填规格书 t<sub>r</sub>/t<sub>f</sub>：那是特定测试条件（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω）下测的
               <b>漏极电流 10%↔90% 过渡时间</b>，既非本机工况、也不是损耗积分所需的 V·I 重叠时长
             </Note>
           </div>
+          <div>
+            <label className={labelClass}>平台电荷取法</label>
+            <select
+              className={inputClass}
+              value={params.tcrMethod}
+              onChange={(e) => update('tcrMethod', e.target.value as LossParameters['tcrMethod'])}
+            >
+              <option value="qgd">Qgd 法（规格书实测 ∫Crss dV，推荐）</option>
+              <option value="crss">Crss 积分法（等效 Crss × V_DS）</option>
+            </select>
+            <Note hidden={notesHidden}>
+              两法并列：<b>Qgd 法</b> Q = {qQgd.toFixed(2)} nC ⇒ 关断 {tOffQgd.toFixed(1)} ns（参与计算）｜
+              <b>Crss 法</b> Q = {qCrss.toFixed(2)} nC ⇒ 关断 {tOffCrss.toFixed(1)} ns
+              {ratioNote}
+            </Note>
+          </div>
+          {params.tcrMethod === 'crss' && (
+            <>
+              <div>
+                <label className={labelClass}>Crss 等效值 (pF)</label>
+                <input type="number" step="0.1" className={inputClass} value={params.crssEq} onChange={(e) => update('crssEq', Number(e.target.value))} />
+                <Note hidden={notesHidden}>
+                  必须是「∫Crss(V) dV ÷ 电压」（面积÷电压），400 V 级器件通常<b>十几个 pF</b>；
+                  ⚠️ 直接填规格书<b>某一点</b>的 Crss（低压段 0.5~2 pF）会低估数倍 —— Crss 近 0 V 处可达成百上千 pF，积分主要由那一段贡献
+                </Note>
+              </div>
+              <div>
+                <label className={labelClass}>V_DS 平台摆幅 (V)</label>
+                <input type="number" className={inputClass} value={params.vdsSwing} onChange={(e) => update('vdsSwing', Number(e.target.value))} />
+                <Note hidden={notesHidden}>一般就填母线电压 V<sub>in</sub>（关断时器件由 0 承压到 V<sub>in</sub>）</Note>
+              </div>
+            </>
+          )}
           <div>
             <label className={labelClass}>Coss,er (pF)</label>
             <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
@@ -324,13 +369,13 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>gd</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
+                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>plat</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>gd</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
+                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>plat</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>

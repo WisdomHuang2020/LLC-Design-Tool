@@ -7,11 +7,15 @@ export const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
   rdsonTempFactor: 1.6,
   // 开关损耗的**交叉时间**参数（默认取 600 V / 0.3 Ω 级器件的典型量级；换器件必须改）
-  // 默认 ⇒ t_cr,off = 8 nC × 12 Ω / 4.5 V = 21.3 ns，t_cr,on = 8 × 12 / (12 − 4.5) = 12.8 ns
+  // 默认 ⇒ 平台电荷 8 nC、R_g = 12 Ω ⇒ t_cr,off = 8 nC × 12 Ω / 4.5 V = 21.3 ns
   qgd: 8,
   vPlateau: 4.5,
   rgTotal: 12,
   vDrv: 12,
+  // 平台电荷取法：默认 Q_gd 法（规格书实测的 ∫Crss dV，最准）；Crss 法为备选（见 types.ts 说明）
+  tcrMethod: 'qgd',
+  crssEq: 15, // pF，等效 Crss = ∫Crss dV / V_DS —— 十几个 pF 是 400 V 级器件的典型量级
+  vdsSwing: 400, // V，一般填母线电压 V_in
   mosfetVsd: 1.2,
   primaryTurns: 30,
   coreMaterial: 'PC95',
@@ -50,10 +54,18 @@ export interface LossResult {
   mosfetCond: number
   mosfetSwitchOn: number
   mosfetSwitchOff: number
-  /** 开通过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_gd·R_g/(V_drv − V_plat) 算出 */
+  /** 开通过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_plat·R_g/(V_drv − V_plat) 算出 */
   tCrossOn: number
-  /** 关断过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_gd·R_g/V_plat 算出 */
+  /** 关断过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_plat·R_g/V_plat 算出 */
   tCrossOff: number
+  /** 实际参与计算的平台电荷 Q_plat，C（按 tcrMethod 选中法一或法二） */
+  qPlateau: number
+  /** 法一：规格书栅荷曲线的 Q_gd，C */
+  qPlateauQgd: number
+  /** 法二：等效 Crss × V_DS 摆幅，C */
+  qPlateauCrss: number
+  /** 实际用于损耗的取法 */
+  tcrMethod: 'qgd' | 'crss'
   mosfetCoss: number
   mosfetDiode: number
   coreLoss: number
@@ -115,19 +127,37 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   //   ★ 为什么不能用规格书 t_r/t_f：那是特定测试条件（如 V_DD=400 V、I_D≈5 A、R_G=10 Ω、V_GS=10 V）下
   //     测得的**漏极电流 10%↔90% 过渡时间**；而损耗积分 `∫v·i dt` 需要的是「V_DS 与 I_D 重叠」的时长
   //     （即米勒平台持续时间）。两者既非同一测试条件、也非同一物理量，直接填进去必然错。
-  //   ★ 交叉时间的正确算法（栅极电荷守恒）：米勒平台期间栅压恒定在 V_plat，栅极驱动电流
-  //       I_g = ΔV_gate / R_g，而 V_DS 完成翻转需要移走米勒电荷 Q_gd
-  //       ⇒  t_cr = Q_gd / I_g = **Q_gd · R_g / ΔV_gate**
+  //   ★ 交叉时间的正确算法（栅极电荷守恒，两种取法共用）：
+  //      米勒平台期间栅压恒定在 V_plat，栅极驱动电流 I_g = ΔV_gate / R_g，V_DS 完成翻转需移走平台电荷 Q_plat
+  //       ⇒  t_cr = Q_plat / I_g = **Q_plat · R_g / ΔV_gate**
   //         关断：ΔV_gate = V_plat（栅极被拉到 0）；开通：ΔV_gate = V_drv − V_plat
   //     R_g 取**回路总电阻** = 器件内部 R_G + 外部 R_g + 驱动上/下拉阻抗（规格书 t_r/t_f 的 R_G 常是 10 Ω 测试值，别直接抄）。
+  //
+  //   ★★ 平台电荷 Q_plat 的两种取法（等价关系与误差量级，实测见 SKILL 与报告）：
+  //      (A) Q_gd 法（默认）：Q_plat = Q_gd。规格书栅荷曲线的 Q_gd **本身即厂商实测的 ∫Crss dV**
+  //          （平台段电荷），且其测试电压（如 V_DD = 520 V）通常贴近实际母线。
+  //          实例（LSD65R380GF，650 V）：Q_gd = 6.3 nC @520 V ⇒ 折算到 400 V 母线约 6.1 nC。
+  //      (B) Crss 法：Q_plat = Crss_eq · V_DS,swing，其中 Crss_eq 必须是「∫Crss(V)dV / V_DS」（面积÷电压）。
+  //          ⚠️ 若偷懒直接填规格书**某一点**的 Crss（该器件 100 V 处 0.86 pF、600 V 处约 2 pF），
+  //             Q 只有 0.34~0.8 nC ⇒ 比真值小 **7~18 倍** ⇒ t_cr 与关断损耗同步低估。
+  //             根因：Crss 在近 0 V 段极大（该器件 0 V 附近可达 ~2000 pF），积分主要由那一段贡献，
+  //             而单点值恰恰取在电容已经很小的高压段。等效值算下来是**十几 pF**量级，不是 1~2 pF。
+  //          ⇒ 用 Crss 法时务必确认 Crss_eq 是自己按曲线积分得到的，并对照 (A) 法的数量级复核。
   //   ⚠️ V_plat 取自规格书栅荷曲线，其测试电流通常远大于 LLC 的关断电流（本设计关断电流只有励磁电流量级），
   //     实际平台电压会略低 ⇒ 交叉时间略长 ⇒ 本项在这一点上**偏乐观**；有实测平台电压时应直接填实测值。
   const rgTotal = Math.max(0.1, Number.isFinite(lp.rgTotal) ? lp.rgTotal : 12)
   const qgdC = Math.max(0, Number.isFinite(lp.qgd) ? lp.qgd : 8) * 1e-9 // nC → C
   const vPlat = Math.max(0.1, Number.isFinite(lp.vPlateau) ? lp.vPlateau : 4.5)
   const vDrv = Number.isFinite(lp.vDrv) ? lp.vDrv : 12
-  const tCrossOff = (qgdC * rgTotal) / vPlat
-  const tCrossOn = vDrv > vPlat ? (qgdC * rgTotal) / (vDrv - vPlat) : tCrossOff
+  // 平台电荷：两种取法都算出来（UI 要并列展示，便于对照数量级），按 tcrMethod 选一个进损耗
+  const qPlateauQgd = qgdC
+  const crssEqP = Math.max(0, Number.isFinite(lp.crssEq) ? lp.crssEq : 15)
+  const vdsSwing = Math.max(1, Number.isFinite(lp.vdsSwing) ? lp.vdsSwing : 400)
+  const qPlateauCrss = crssEqP * 1e-12 * vdsSwing
+  const useCrss = lp.tcrMethod === 'crss' && qPlateauCrss > 0
+  const qPlateau = useCrss ? qPlateauCrss : qPlateauQgd
+  const tCrossOff = (qPlateau * rgTotal) / vPlat
+  const tCrossOn = vDrv > vPlat ? (qPlateau * rgTotal) / (vDrv - vPlat) : tCrossOff
   const switchV = vin
   const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * tCrossOn * fsw * nSwitches
   // 关断瞬间电流 = 励磁电流峰值 Im,off（此刻负载折算分量已归零，原边只剩励磁电流），
@@ -253,6 +283,10 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     mosfetSwitchOff: switchOff,
     tCrossOn,
     tCrossOff,
+    qPlateau,
+    qPlateauQgd,
+    qPlateauCrss,
+    tcrMethod: useCrss ? 'crss' : 'qgd',
     mosfetCoss: cossLoss, // 与 mosfetCond/mosfetSwitchOn/mosfetDiode 同族命名；此处是损耗（W），不再是电容参数
     mosfetDiode: diodeLoss,
     coreLoss,

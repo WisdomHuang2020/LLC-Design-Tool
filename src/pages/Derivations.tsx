@@ -643,7 +643,11 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">交叉时间（由栅极回路算出）</p>
-              <MathBlock latex="t_{cr} = \frac{Q_{gd} R_g}{\Delta V_{gate}}, \quad \Delta V_{gate} = V_{plat}\ (\text{关断}),\ V_{drv} - V_{plat}\ (\text{开通})" />
+              <MathBlock latex="t_{cr} = \frac{Q_{plat} R_g}{\Delta V_{gate}}, \quad \Delta V_{gate} = V_{plat}\ (\text{关断}),\ V_{drv} - V_{plat}\ (\text{开通})" />
+            </div>
+            <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">平台电荷的两种取法（等价）</p>
+              <MathBlock latex="Q_{plat} = Q_{gd}\ \ (\text{法一}) \qquad Q_{plat} = \overline{C}_{rss}\, V_{DS} = \left[\frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV\right] V_{DS}\ \ (\text{法二})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">体二极管导通损耗</p>
@@ -679,13 +683,73 @@ export default function Derivations() {
             测得的<b>漏极电流 10%↔90% 过渡时间</b>；而损耗积分 <InlineMath latex="\int v\,i\,dt" /> 需要的是
             <b>V<sub>DS</sub> 与 I<sub>D</sub> 重叠（米勒平台）的时长</b> —— 测试条件不同、物理量也不是同一个。
             正确做法是按栅极电荷守恒算：米勒平台期间栅压恒定在 V<sub>plat</sub>，栅极电流
-            <InlineMath latex="I_g = \Delta V_{gate}/R_g" />，移走米勒电荷 Q<sub>gd</sub> 所需时间
-            <InlineMath latex="t_{cr} = Q_{gd} R_g / \Delta V_{gate}" />。
+            <InlineMath latex="I_g = \Delta V_{gate}/R_g" />，移走平台电荷 Q<sub>plat</sub> 所需时间
+            <InlineMath latex="t_{cr} = Q_{plat} R_g / \Delta V_{gate}" />。
             其中 R<sub>g</sub> 取<b>回路总电阻</b>（器件内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗），
             不是规格书测试条件里的那个 10 Ω。
             <br />
             ⚠️ 本项偏乐观之处：V<sub>plat</sub> 取自规格书栅荷曲线，其测试电流远大于 LLC 的关断电流
             （本设计关断电流只有励磁电流量级）⇒ 实际平台电压略低、交叉时间略长。有实测平台电压时应填实测值。
+          </HighlightBox>
+
+          <HighlightBox type="warning">
+            <strong>平台电荷 Q<sub>plat</sub> 的两种取法（等价，可互校）：</strong>
+            两者本质相同 —— 都是「把 V<sub>DS</sub> 从 0 推到摆幅电压所需搬走的栅-漏电荷」：
+            <br />
+            <b>法一 · Q<sub>gd</sub> 法（默认，推荐）：</b>直接取规格书栅荷曲线的
+            <b>Q<sub>gd</sub></b>。它<b>本身就是厂商实测的 ∫Crss dV</b>（平台段电荷），
+            且其测试电压（如 V<sub>DD</sub> = 520 V）通常贴近实际母线 ⇒ 误差最小。
+            <br />
+            <b>法二 · Crss 积分法（备选）：</b>
+            <InlineMath latex="Q_{plat} = \bar{C}_{rss}\, V_{DS}" />，其中
+            <InlineMath latex="\bar{C}_{rss} = \frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV" />
+            是<b>对 Crss(V) 曲线积分后再除以电压</b>得到的等效电容。
+            <br />
+            ⚠️ <b>法二最容易错的地方：用「某一点的 Crss」代替「积分平均」。</b>
+            Crss 在近 0 V 段可达成百上千 pF（规格书曲线左端），积分主要由那一段贡献，
+            而规格书表格给出的常是 100 V、600 V 这类<b>高压段单点值</b>（只有 0.5~2 pF）——
+            直接代入会把平台电荷低估一个数量级、交叉时间与关断损耗同步低估。
+            <br />
+            实测对照（650 V 器件、400 V 母线、R<sub>g</sub> = 12 Ω、V<sub>plat</sub> = 4 V）：
+
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="text-text-muted">
+                  <tr>
+                    <th className="text-left py-1 pr-3 font-medium">取法</th>
+                    <th className="text-left py-1 pr-3 font-medium">平台电荷 Q<sub>plat</sub></th>
+                    <th className="text-left py-1 pr-3 font-medium">关断交叉时间 t<sub>cr,off</sub></th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-text-secondary">
+                  <tr className="border-t border-border/50">
+                    <td className="py-1 pr-3">Q<sub>gd</sub> 法（规格书实测 6.3 nC @520 V）</td>
+                    <td className="py-1 pr-3">6.3 nC（折算 0→400 V 约 6.1 nC）</td>
+                    <td className="py-1 pr-3">18.9 ns ← 真值量级</td>
+                  </tr>
+                  <tr className="border-t border-border/50">
+                    <td className="py-1 pr-3">Crss 积分法（等效 ≈15 pF × 400 V）</td>
+                    <td className="py-1 pr-3">≈6.1 nC</td>
+                    <td className="py-1 pr-3">18.4 ns ✓ 与法一差 3%</td>
+                  </tr>
+                  <tr className="border-t border-border/50 text-amber-300">
+                    <td className="py-1 pr-3">✗ 误用单点 Crss(600 V) ≈2 pF × 400 V</td>
+                    <td className="py-1 pr-3">0.80 nC</td>
+                    <td className="py-1 pr-3">2.4 ns —— 低估约 8 倍</td>
+                  </tr>
+                  <tr className="border-t border-border/50 text-amber-300">
+                    <td className="py-1 pr-3">✗ 误用单点 Crss(100 V) 0.86 pF × 400 V</td>
+                    <td className="py-1 pr-3">0.34 nC</td>
+                    <td className="py-1 pr-3">1.0 ns —— 低估约 18 倍</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <br />
+            <b>结论</b>：两种方法<b>都能用</b>，前提是「法二必须真的做积分」。
+            有 Q<sub>gd</sub> 时优先用它（厂商已替你积分且条件贴近实际）；只有电容曲线、没有栅荷曲线时，
+            才自己按曲线积分求 <InlineMath latex="\bar{C}_{rss}" />，并用法一或 Q<sub>g</sub> 量级复核。
+            设计工具页的「平台电荷取法」可切换，并会把两法的 Q 与 t<sub>cr</sub> 并列显示，便于互校。
           </HighlightBox>
 
           <HighlightBox type="warning">
@@ -720,11 +784,13 @@ export default function Derivations() {
           <ParamTable>
             <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="mΩ" description="25℃ 规格书值；实际导通损耗按 ×kT 折算到结温" typical="mΩ 级" />
             <ParamRow symbol="kT" name="Rds(on) 温度修正系数" unit="-" description="硅管 100℃ 时约为 25℃ 值的 1.5~2.0 倍，工具默认 1.6" typical="1.5 ~ 2.0" />
-            <ParamRow symbol="tcr" name="开关交叉时间（米勒平台时长）" unit="ns" description="t_cr = Q_gd·R_g/ΔV_gate；关断 ΔV = V_plat、开通 ΔV = V_drv − V_plat。★ 不能用规格书 t_r/t_f 代替：那是特定测试条件下的漏极电流过渡时间，既非本机工况也不是 V·I 重叠时长" typical="10 ~ 40 ns" />
+            <ParamRow symbol="tcr" name="开关交叉时间（米勒平台时长）" unit="ns" description="t_cr = Q_plat·R_g/ΔV_gate；关断 ΔV = V_plat、开通 ΔV = V_drv − V_plat。平台电荷 Q_plat 有两种等价取法（Q_gd 法 / Crss 积分法，见上方警示框）。★ 不能用规格书 t_r/t_f 代替：那是特定测试条件下的漏极电流过渡时间，既非本机工况也不是 V·I 重叠时长" typical="10 ~ 40 ns" />
             <ParamRow symbol="Qgd" name="米勒电荷" unit="nC" description="规格书栅荷曲线的 Q_gd（平台段电荷），交叉时间公式的分子" typical="查规格书栅荷曲线" />
             <ParamRow symbol="Vplat" name="米勒平台电压" unit="V" description="同一条栅荷曲线的平台电压；规格书值多在较大测试电流下取得，低电流实际值略低" typical="V_th ~ 6 V" />
             <ParamRow symbol="Rg" name="栅极回路总电阻" unit="Ω" description="器件内部 R_G + 外部 R_g + 驱动上/下拉阻抗；⚠ 不是规格书 t_r/t_f 测试条件里的 10 Ω" typical="5 ~ 20 Ω" />
             <ParamRow symbol="Vdrv" name="驱动电平" unit="V" description="开通交叉时间用 ΔV = V_drv − V_plat；关断按栅极被拉到 0 处理" typical="10 ~ 15 V" />
+            <ParamRow symbol="Crss_eq" name="等效反向传输电容（Crss 积分法用）" unit="pF" description="= ∫Crss(V)dV ÷ V_DS（面积÷电压）。★ 不是规格书某一点的 Crss：低压段 Crss 可达成百上千 pF，积分主要由 0~25 V 段贡献，等效值通常有十几 pF；填高压段单点值（0.5~2 pF）会把平台电荷低估近一个数量级" typical="10 ~ 20 pF" />
+            <ParamRow symbol="VDS,swing" name="平台对应的 V_DS 摆幅（Crss 积分法用）" unit="V" description="关断时器件由 0 承压到母线电压，故一般就填母线 V_in；保守可取器件耐压（会偏保守）" typical="= V_in" />
             <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="仅用于驱动损耗参考式；工具损耗模型未计入该项" typical="datasheet 值" />
             <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
             <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
