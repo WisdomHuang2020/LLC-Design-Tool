@@ -210,8 +210,26 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
           margin: [8, 8, 10, 8],
           filename: `LLC-Design-Report-${new Date().toISOString().split('T')[0]}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            // html2canvas 抓的是**屏幕**布局：宽表格外面的横向滚动容器会把超出部分裁掉，
+            // 故在克隆体里放开滚动容器与固定宽度（不改动页面本身）。
+            onclone: (doc: Document) => {
+              doc.querySelectorAll('.overflow-x-auto').forEach((el) => {
+                const e = el as HTMLElement
+                e.style.overflow = 'visible'
+                e.style.width = '100%'
+                e.style.maxWidth = 'none'
+              })
+              doc.querySelectorAll('.mc-hist').forEach((el) => {
+                ;(el as HTMLElement).style.height = '58px'
+              })
+            },
+          },
+          // A4 横向：可打印宽约 281 mm，10 列容差表可完整放下（竖版只有 194 mm，必被切）
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
           pagebreak: { mode: ['css', 'legacy'] },
         })
         .from(node)
@@ -991,7 +1009,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     </div>
 
                     <div className="overflow-x-auto rounded-lg border border-border print:border-gray-300">
-                      <table className="w-full text-xs">
+                      <table className="w-full text-xs tol-table">
                         <thead className="bg-surface-elevated print:bg-gray-100 text-text-muted">
                           <tr>
                             {['组合', 'fr (kHz)', 'k', 'Q', 'Mbnd', 'f_min (kHz)', 'f_max (kHz)', 'Er/Ec', 't_ZVS (ns)', '判定'].map((h) => (
@@ -1107,7 +1125,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         </div>
 
                         <p className="text-xs text-text-muted mb-1">t_ZVS / td 余量分布（左端 &lt; 1 即死区不足；每格为一箱，数字为该箱样本数占比）</p>
-                        <div className="flex items-end gap-1 h-24">
+                        <div className="flex items-end gap-1 h-24 mc-hist">
                           {mcRes.histTime.map((b, i) => {
                             const maxN = Math.max(...mcRes.histTime.map((x) => x.n)) || 1
                             return (

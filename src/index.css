@@ -339,6 +339,33 @@ svg text {
     color: black !important;
     text-decoration: none !important;
   }
+
+  /* ── 宽表格打印不许裁切 ──────────────────────────────────────────────
+     屏幕上的 .overflow-x-auto 是横向滚动容器；打印/生成 PDF 时若不放开，
+     超出 A4 宽的部分会被静默切掉（表现就是"表格打印出来显示不全"）。
+     配套：固定布局 + 小字号，让 10 列宽表落进 A4 宽内；表头每页重复；行不跨页断开。 */
+  .overflow-x-auto {
+    overflow: visible !important;
+    width: 100% !important;
+  }
+  table {
+    width: 100% !important;
+    table-layout: fixed;
+    font-size: 7.5pt !important;
+  }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr { break-inside: avoid; page-break-inside: avoid; }
+  th, td {
+    padding: 1px 2px !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* 容差表：组合列（含长标签）给足宽度，数值列均分剩余 */
+  .tol-table th:first-child,
+  .tol-table td:first-child { width: 21%; }
+  /* 蒙特卡洛直方图：打印时给确定高度，避免百分比高度塌陷成一条线 */
+  .mc-hist { height: 20mm !important; break-inside: avoid; }
 }
 
 /* ── 损耗面板字段网格：让同一行的输入框对齐 ──────────────────────────
