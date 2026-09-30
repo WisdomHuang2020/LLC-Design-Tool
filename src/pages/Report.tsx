@@ -897,12 +897,29 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                   </div>
                 </section>
 
-                {/* Section 9: Component tolerance sweep */}
+                {/* Section 9: Next steps（与导出 Markdown 的第 9 章一一对应） */}
+                <section>
+                  <h3 className="text-lg font-semibold text-text-primary print:text-black mb-3 flex items-center gap-2">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary text-white text-xs font-bold">
+                      9
+                    </span>
+                    建议与下一步
+                  </h3>
+                  <ol className="space-y-2 text-sm text-text-primary print:text-black list-decimal list-inside">
+                    <li>使用 SPICE/Simulink 进行详细时域仿真，验证软开关与效率。</li>
+                    <li>根据 E12/E24 标准值选择实际 Cr，并微调 Lr 保持 fr 不变。</li>
+                    <li>设计变压器：通过气隙调节 Lm，同时保证漏感满足 Lr 需求。</li>
+                    <li>验证 PCB 布局：最小化谐振回路寄生电感与电容。</li>
+                    <li>制作原型并测试：满载效率、温升、EMI、负载瞬态。</li>
+                  </ol>
+                </section>
+
+                {/* Section 10: Component tolerance sweep */}
                 {tolRes && (
                   <section>
                     <h3 className="text-lg font-semibold text-text-primary print:text-black mb-3 flex items-center gap-2">
                       <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary text-white text-xs font-bold">
-                        9
+                        10
                       </span>
                       元器件容差影响（穷举法）
                     </h3>
