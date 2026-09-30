@@ -29,9 +29,13 @@ export const defaultLossParams: LossParameters = {
   corePcv: 290,
   coreWaveK: 1.25,
 
-  // 谐振电感铁损：默认 0（需按 Lr 实际磁芯填 P_cv 与 Ve，否则该项不参与计算）
-  lrCorePcv: 0,
-  lrCoreVe: 0,
+  // 谐振电感铁损：默认给出有依据的量级值，而不是留 0
+  //  · P_cv = 130 mW/cm³ —— PC95 手册 @100 kHz 查图：B ≈ 0.15 T 处约 130 mW/cm³（0.2 T / 290 mW/cm³ 按 B^2.5 折算约 141）
+  //  · Ve   = 1.25 cm³   —— 取变压器 Ve（默认 5.0 cm³）的 1/4（谐振电感体积通常为变压器的 1/5~1/4）
+  //  ⚠️ 这只是「典型量级」假设（默认 0.16 W）；实际必须按 Lr 所用磁芯的牌号、Ae、匝数与实测 B 重查，
+  //     给默认值不等于免责 —— 换成实际磁芯数据后须重算。
+  lrCorePcv: 130,
+  lrCoreVe: 1.25,
 
   // 谐振电容：默认由 1kHz 损耗角正切 + 频率修正折算等效 ESR
   crEsrMode: 'df',
@@ -53,6 +57,10 @@ export interface LossResult {
   bPeak: number
   windingLoss: number
   rectLoss: number
+  /** 整流器件数 Nrect：中心抽头 2 / 全波（桥）4 */
+  nRect: number
+  /** 每个整流器件在整周期内的电流有效值 Is,sw = (π/4)·Io */
+  isSw: number
   resonantLoss: number
   /** 谐振电感铜损 */
   lrCopperLoss: number
@@ -151,26 +159,38 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const windingLoss = ipRms * ipRms * rdc * racFactor
 
   // 7. Rectifier loss
-  let rectLoss = 0
+  // ⌾ 口径（v2.10.98 厘清，此前两处串味导致中心抽头少算一半）：
+  //    Is,sw = **每个整流器件在整周期内的电流有效值**；Nrect = 同时计数的器件数。
+  //    · 中心抽头（含同步）：每个绕组/整流管半波导通，波形是半波正弦，
+  //      峰值 π·Io/2 ⇒ RMS = 峰值/2 = π·Io/4 ≈ 0.785 Io，Nrect = 2
+  //    · 全波/整流桥（含同步）：副边绕组整周期正弦，RMS = π·Io/(2√2) ≈ 1.11 Io；
+  //      但每个整流管只导通半周 ⇒ Is,sw = 绕组 RMS / √2 = π·Io/4 ⇒ **同样是 π·Io/4**，Nrect = 4
+  //    ⟹ 两种拓扑下 Is,sw 同为 (π/4)·Io，差别只在 Nrect（2 / 4）；整流桥导通损耗恰为中心抽头的 2 倍。
+  //    ⚠️ 旧实现统一按 calc.isRms/√2 取 Is,sw —— 对全波口径正确，却把中心抽头的
+  //       「本就是每管 RMS」的量又除了一次 √2 ⇒ 功率少算 2 倍（v2.10.98 修正）。
+  //    ⚠️ 同步整流的 Rds(on) 与原边一样是 25℃ 值，必须同乘温度修正 kT（v2.10.98 补）。
+  const isCt = calc.rectifier === 'center-tapped' || calc.rectifier === 'sync-center-tapped'
   const isSync = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
+  const nRect = isCt ? 2 : 4
+  const isSw = (Math.PI / 4) * io
+  let rectLoss = 0
   if (isSync) {
-    const rectSwitches = calc.rectifier === 'sync-center-tapped' ? 2 : 4
-    const isPerSwitch = calc.isRms / Math.sqrt(2)
-    rectLoss = rectSwitches * isPerSwitch * isPerSwitch * (lp.syncRectRdsOn / 1000)
+    rectLoss = nRect * isSw * isSw * (lp.syncRectRdsOn / 1000) * kT
   } else {
-    const rectDiodes = calc.rectifier === 'center-tapped' ? 2 : 4
-    const iAvgPerDiode = io / 2
-    rectLoss = rectDiodes * lp.rectVf * iAvgPerDiode
+    // 二极管口径不变：每个管子平均电流 Io/2（Iavg），Nrect 个管子的 Vf·Iavg 之和
+    rectLoss = nRect * lp.rectVf * (io / 2)
   }
 
   // 8. Resonant element loss
-  //  · 谐振电感：铜损 + 铁损（铁损默认 0，须按 Lr 实际磁芯填 P_cv / Ve 才计入）
+  //  · 谐振电感：铜损 + 铁损（正弦激励 ⇒ 手册 P_cv 直接用，不乘 k_wave）
   //  · 谐振电容：等效 ESR 两种口径 ——
   //      'esr'：直接给 ESR（mΩ）；
   //      'df' ：规格书一般只给 1kHz 损耗角正切，需按频率折算：
   //             ESR(f) = tanδ(f) / (2π·f·Cr)，其中 tanδ(f) = DF_1k × k
   const lrCopperLoss = ipRms * ipRms * (lp.lrDcr / 1000)
-  const lrCoreLoss = (lp.lrCorePcv * lp.lrCoreVe * coreWaveK) / 1000
+  // ⚠️ Lr 铁损**不乘 k_wave**：谐振电感流过的是正弦谐振电流，而手册 P_cv 曲线本就按正弦标定，
+  //    k_wave（默认 1.25）修的是「手册正弦标定 vs LLC 变压器方波励磁」的差异，套到 Lr 上会虚增 25%。
+  const lrCoreLoss = (lp.lrCorePcv * lp.lrCoreVe) / 1000
   const lrLoss = lrCopperLoss + lrCoreLoss
 
   const crEsrEff =
@@ -208,6 +228,8 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     bPeak: bPeakMt,
     windingLoss,
     rectLoss,
+    nRect,
+    isSw,
     resonantLoss,
     lrCopperLoss,
     lrCoreLoss,

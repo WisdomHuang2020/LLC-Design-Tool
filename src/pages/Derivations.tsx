@@ -512,7 +512,7 @@ export default function Derivations() {
             <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
-            <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取峰值判据：满足 Mpeak(k,Q) = Gmax 的最大 Q（数值二分）；教材闭式对应分界判据 Mbnd = Gmax，更保守" typical="0.3 ~ 1.0" />
+            <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；设计工具页表单可切回【峰值判据】Mpeak = Gmax，该判据更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / Cj 与最高工作频率决定，不含死区时间" typical="数值求解" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
@@ -592,7 +592,8 @@ export default function Derivations() {
 
           <p className="text-text-secondary mt-2 mb-2">
             下列各式与设计工具页「损耗分析」面板<b>逐项对应</b>（同一套口径）：N<sub>sw</sub> 为 MOSFET 数
-            （半桥 2 / 全桥 4），k<sub>T</sub> 为 R<sub>ds(on)</sub> 的温度修正系数，t<sub>ZVS</sub> 见上一节的死区校验式。
+            （半桥 2 / 全桥 4），k<sub>T</sub> 为 R<sub>ds(on)</sub> 的温度修正系数（<b>原边与同步整流共用</b>），
+            N<sub>rect</sub> 为整流器件数（中心抽头 2 / 全波桥 4），t<sub>ZVS</sub> 见上一节的死区校验式。
           </p>
 
           <div className="grid md:grid-cols-2 gap-4 my-4">
@@ -613,8 +614,12 @@ export default function Derivations() {
               <MathBlock latex="P_{diode} = V_{sd} I_{m,off} (t_d - t_{ZVS}) f_{sw} N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
-              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">整流损耗</p>
-              <MathBlock latex="P_{rect} = N_{diode} V_f \\frac{I_o}{2}\\ (\\text{二极管}), \\quad P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)}\\ (\\text{同步})" />
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">副边整流电流口径（中心抽头 / 全桥共用）</p>
+              <MathBlock latex="I_{s,sw} = \\frac{\\pi}{4} I_o, \\qquad N_{rect} = 2\\ (\\text{中心抽头}) \\ / \\ 4\\ (\\text{全波桥})" />
+            </div>
+            <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">整流损耗（同步须乘 kT）</p>
+              <MathBlock latex="P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)} k_T\\ (\\text{同步}), \\quad P_{rect} = N_{rect} V_f \\frac{I_o}{2}\\ (\\text{二极管})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗（默认走手册法）</p>
@@ -623,9 +628,25 @@ export default function Derivations() {
           </div>
 
           <MathBlock
-            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{dc,pri}\\left[1 + (f_{sw}/f_0)^2\\right], \\qquad P_{res} = I_{p,rms}^2\\left(R_{dc,Lr} + R_{esr,Cr}\\right)"
-            label="磁密、铜损与谐振元件损耗"
+            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{dc,pri}\\left[1 + (f_{sw}/f_0)^2\\right]"
+            label="磁密与原边铜损"
           />
+
+          <MathBlock
+            latex="P_{res} = \\underbrace{I_{p,rms}^2 R_{dc,Lr}}_{\\text{Lr 铜损}} + \\underbrace{P_{cv,Lr} V_{e,Lr}}_{\\text{Lr 铁损（正弦，不乘 } k_{wave}\\text{）}} + \\underbrace{I_{p,rms}^2 R_{esr,Cr}}_{\\text{Cr 损耗}}"
+            label="谐振元件损耗（三项）"
+          />
+
+          <HighlightBox type="warning">
+            <strong>整流与谐振元件损耗的三处易错口径（v2.10.98 厘清）：</strong>
+            ① <b>N<sub>rect</sub> 与 I<sub>s,sw</sub> 必须同一口径</b> —— I<sub>s,sw</sub> 是「每个整流器件整周期的 RMS」，
+            两种拓扑下都等于 (π/4)·I<sub>o</sub>：中心抽头绕组本身只导通半波（RMS = π·I<sub>o</sub>/4，直接就是每管值），
+            全波桥的<b>绕组</b> RMS 是 π·I<sub>o</sub>/(2√2)，但每个管只导半周 ⇒ 再除 √2 后同样落到 π·I<sub>o</sub>/4。
+            历史上若把中心抽头按「绕组 RMS 再除一次 √2」处理，功率会<b>整整少算一半</b>；
+            ② <b>同步整流的 R<sub>ds(on)</sub> 同为 25℃ 值</b>，须与原边一样乘 k<sub>T</sub>；
+            ③ <b>Lr 铁损不乘 k<sub>wave</sub></b> —— 谐振电感是正弦激励，手册 P<sub>cv</sub> 曲线本就按正弦标定，
+            k<sub>wave</sub> 修的是「手册正弦标定 vs 变压器方波励磁」的差异，套到 Lr 上只会虚增。
+          </HighlightBox>
 
           <HighlightBox type="warning">
             <strong>与「工具」的两处有意差异：</strong>
@@ -639,9 +660,12 @@ export default function Derivations() {
             <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="mΩ" description="25℃ 规格书值；实际导通损耗按 ×kT 折算到结温" typical="mΩ 级" />
             <ParamRow symbol="kT" name="Rds(on) 温度修正系数" unit="-" description="硅管 100℃ 时约为 25℃ 值的 1.5~2.0 倍，工具默认 1.6" typical="1.5 ~ 2.0" />
             <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="仅用于驱动损耗参考式；工具损耗模型未计入该项" typical="datasheet 值" />
+            <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
+            <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
             <ParamRow symbol="Vf" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
-            <ParamRow symbol="Pcv" name="磁芯损耗密度（手册值）" unit="mW/cm³" description="在目标温度/频率/B 下查磁芯手册；工具默认口径" typical="查手册" />
-            <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25" typical="1.2 ~ 1.4" />
+            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；默认 130（≈PC95 @100kHz / B≈0.15 T）。正弦激励，不乘 k_wave" typical="查手册" />
+            <ParamRow symbol="Ve,Lr" name="Lr 磁芯有效体积" unit="cm³" description="默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）" typical="1 ~ 2 cm³" />
+            <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25；⚠ 仅用于变压器磁芯，Lr 不用" typical="1.2 ~ 1.4" />
             <ParamRow symbol="Cm, α, β" name="Steinmetz 系数（对照口径）" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="正弦激励拟合系数，方波励磁下有偏差，仅作并列对照" typical="查磁芯 datasheet" />
             <ParamRow symbol="Bpeak" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值" typical="0.1 ~ 0.3 T" />
             <ParamRow symbol="Np" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 Ae 与 B 设计" />

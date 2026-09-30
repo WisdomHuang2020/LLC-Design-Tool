@@ -42,7 +42,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>Rds(on) 温度修正系数 kT</label>
             <input type="number" step="0.1" className={inputClass} value={params.rdsonTempFactor} onChange={(e) => update('rdsonTempFactor', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">×Rds(on) 得 100℃ 等效值，硅管典型 1.5~2.0</div>
+            <div className="text-[10px] text-text-muted mt-0.5">原边 MOSFET 与同步整流共用；硅管 100℃ 典型 1.5~2.0</div>
           </div>
           <div>
             <label className={labelClass}>tr (ns)</label>
@@ -163,11 +163,12 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>Lr 磁芯 P_cv (mW/cm³)</label>
             <input type="number" className={inputClass} value={params.lrCorePcv} onChange={(e) => update('lrCorePcv', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">填 0 则不计算铁损</div>
+            <div className="text-[10px] text-text-muted mt-0.5">默认按 B_Lr≈0.15 T 查 PC95 手册；须按实际磁芯重查（填 0 则不计）</div>
           </div>
           <div>
             <label className={labelClass}>Lr 磁芯 Ve (cm³)</label>
             <input type="number" step="0.1" className={inputClass} value={params.lrCoreVe} onChange={(e) => update('lrCoreVe', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">默认取变压器 Ve 的 1/4；正弦激励，不乘 k_wave</div>
           </div>
         </div>
 
@@ -296,14 +297,18 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">整流损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.rectLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.rectLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'P = Nrect·Is,sw²·Rds(on)' : 'P = Ndiode·Vf·(Io/2)'}</td>
+                <td className="py-2 text-text-secondary">
+                  {calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
+                    ? `P = Nrect(${losses.nRect})·Is,sw²·Rds(on)·kT；Is,sw = ${losses.isSw.toFixed(2)} A = (π/4)·Io（每个整流管整周期 RMS）`
+                    : `P = Nrect(${losses.nRect})·Vf·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A`}
+                </td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">谐振元件损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.resonantLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.resonantLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
                 <td className="py-2 text-text-secondary">
-                  {`P = Ip²·DCR(${losses.lrCopperLoss.toFixed(3)}) + Lr铁损(${losses.lrCoreLoss.toFixed(3)}) + Ip²·ESR(${losses.crLoss.toFixed(3)}, ESR_eff=${(losses.crEsrEff * 1000).toFixed(1)} mΩ)`}
+                  {`P = Ip²·DCR(${losses.lrCopperLoss.toFixed(3)}) + Lr铁损(${losses.lrCoreLoss.toFixed(3)}, 正弦激励不乘 k_wave) + Ip²·ESR(${losses.crLoss.toFixed(3)}, ESR_eff=${(losses.crEsrEff * 1000).toFixed(1)} mΩ)`}
                 </td>
               </tr>
               <tr className="bg-surface-elevated">
