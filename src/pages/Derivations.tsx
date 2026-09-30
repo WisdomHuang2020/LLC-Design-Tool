@@ -647,7 +647,8 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">平台电荷的两种取法（等价）</p>
-              <MathBlock latex="Q_{plat} = Q_{gd}\ \ (\text{法一}) \qquad Q_{plat} = \overline{C}_{rss}\, V_{DS} = \left[\frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV\right] V_{DS}\ \ (\text{法二})" />
+              <MathBlock latex="Q_{plat} = Q_{gd}\ \ (\text{法一，默认})" />
+              <MathBlock latex="Q_{plat} = \overline{C}_{rss}\, V_{DS}, \quad \overline{C}_{rss} = \frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV\ \ (\text{法二})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">体二极管导通损耗</p>
@@ -659,11 +660,13 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">整流损耗（同步须乘 kT）</p>
-              <MathBlock latex="P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)} k_T\\ (\\text{同步}), \\quad P_{rect} = N_{rect} V_f \\frac{I_o}{2}\\ (\\text{二极管})" />
+              <MathBlock latex="P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)} k_T\ \ (\text{同步整流})" />
+              <MathBlock latex="P_{rect} = N_{rect} V_d \frac{I_o}{2}\ \ (\text{二极管整流；}V_d\text{ 取自设计参数})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗（默认走手册法）</p>
-              <MathBlock latex="P_{core} = P_{cv} V_e k_{wave} \\ (\\text{手册法，默认}), \\quad P_{core} = C_m f_{sw}^{\\alpha} B_{peak}^{\\beta} V_e \\ (\\text{Steinmetz 对照})" />
+              <MathBlock latex="P_{core} = P_{cv} V_e k_{wave}\ \ (\text{手册法，默认})" />
+              <MathBlock latex="P_{core} = C_m f_{sw}^{\alpha} B_{peak}^{\beta} V_e\ \ (\text{Steinmetz 对照})" />
             </div>
           </div>
 

@@ -54,6 +54,12 @@ export interface CalculatedResults {
   fmax: number
   fmin: number
   gmaxEmpty: number
+  /** 以下 4 项供报告页做「元器件容差穷举」等二次分析使用（值来自同一引擎，不是另算一遍） */
+  topology: string
+  vinMin: number
+  td: number
+  /** 死区用总电容 C总 = 2·Coss,eq + Cj */
+  cossZvs: number
   zvsEr: number
   zvsEc: number
   qmax1: number

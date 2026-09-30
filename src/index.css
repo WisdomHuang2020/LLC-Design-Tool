@@ -354,3 +354,18 @@ svg text {
 .loss-field-grid.hide-notes > div > label {
   flex: 1 1 auto;
 }
+
+/* 公式过宽时：「显示不全」不得无提示 —— 悬停时露出细滚动条
+   （.math-block 默认把滚动条隐藏以保持版面干净，但那样超宽公式会被静默切掉） */
+.math-block:hover::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background: transparent;
+}
+.math-block:hover::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+.math-block:hover {
+  scrollbar-width: thin; /* Firefox：悬停时给出细滚动条 */
+}

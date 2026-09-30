@@ -47,6 +47,14 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const effDiff = losses.efficiency - calc.efficiency
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
   // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
+  // 整流分支的联动显示：整流方式来自**设计参数**，面板据此切换输入项与公式（二极管用的 Vd 也是设计参数）
+  const isSyncRect = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
+  const isCtRect = calc.rectifier === 'center-tapped' || calc.rectifier === 'sync-center-tapped'
+  const nRectVal = isCtRect ? 2 : 4
+  const rectLabel = isSyncRect
+    ? (isCtRect ? '同步整流（中心抽头）' : '同步整流（全波桥）')
+    : (isCtRect ? '二极管整流（中心抽头）' : '二极管整流（全波桥）')
+  const vdDesign = Number.isFinite(Number(calc.vd)) ? Number(calc.vd) : 0
   const cossErP = Number.isFinite(Number(calc.cossEr)) && Number(calc.cossEr) > 0 ? Number(calc.cossEr) : 35
   // 交叉时间（由 losses.ts 依「平台电荷·R_g/ΔV」算出；这里只做显示）
   const tCrossOffNs = (losses.tCrossOff * 1e9).toFixed(1)
@@ -230,8 +238,22 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.skinF0} onChange={(e) => update('skinF0', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>{calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? '同步整流 Rds(on) (mΩ)' : '整流 Vf (V)'}</label>
-            <input type="number" step="0.1" className={inputClass} value={calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? params.syncRectRdsOn : params.rectVf} onChange={(e) => update(calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped' ? 'syncRectRdsOn' : 'rectVf', Number(e.target.value))} />
+            <label className={labelClass}>{isSyncRect ? '同步整流 Rds(on) (mΩ)' : '整流压降 Vd (V)'}</label>
+            {isSyncRect ? (
+              <input type="number" step="0.1" className={inputClass} value={params.syncRectRdsOn} onChange={(e) => update('syncRectRdsOn', Number(e.target.value))} />
+            ) : (
+              <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
+                <span className="font-mono text-sm text-text-primary">{vdDesign.toFixed(2)}</span>
+                <span className="text-[10px] text-text-muted">取自设计参数</span>
+              </div>
+            )}
+            <Note hidden={notesHidden}>
+              当前整流方式：<b>{rectLabel}</b>（由上方「设计参数」决定）⇒
+              {isSyncRect
+                ? ` 按 P_rect = Nrect·Is,sw²·Rds(on)·kT 计（Nrect = ${nRectVal}）`
+                : ` 按 P_rect = Nrect·Vd·(Io/2) 计（Nrect = ${nRectVal}）；Vd 与匝比 n 用的是同一个压降，改它请到「设计参数」区的「输出整流压降 Vd」`}
+              {!isSyncRect && vdDesign < 0.2 ? ' ⚠️ 当前 Vd ≈ 0 ⇒ 整流损耗会被算成 0，二极管应填 0.6~1.2 V' : ''}
+            </Note>
           </div>
           <div>
             <label className={labelClass}>Lr DCR (mΩ)</label>
@@ -418,9 +440,10 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-mono">{losses.rectLoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.rectLoss / losses.totalLoss) * 100).toFixed(1)}%</td>
                 <td className="py-2 text-text-secondary">
-                  {calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
+                  <b>{rectLabel}</b>：
+                  {isSyncRect
                     ? `P = Nrect(${losses.nRect})·Is,sw²·Rds(on)·kT；Is,sw = ${losses.isSw.toFixed(2)} A = (π/4)·Io（每个整流管整周期 RMS）`
-                    : `P = Nrect(${losses.nRect})·Vf·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A`}
+                    : `P = Nrect(${losses.nRect})·Vd(${vdDesign.toFixed(2)} V)·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A（Vd 取自设计参数）`}
                 </td>
               </tr>
               <tr className="border-b border-border/50">

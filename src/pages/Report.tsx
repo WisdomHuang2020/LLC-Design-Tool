@@ -2,6 +2,8 @@ import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useDesign } from '../lib/DesignContext'
 import { boundaryGain, GAIN_RESERVE_FLOOR } from '../lib/designer/llcMath'
+import { sweepTolerance, toleranceSummary, defaultToleranceSpec } from '../lib/designer/tolerance'
+import type { ToleranceSpec } from '../lib/designer/tolerance'
 import {
   FileText,
   Download,
@@ -24,6 +26,8 @@ export default function Report() {
   const [notes, setNotes] = useState('')
   const [copied, setCopied] = useState(false)
   const [pdfBusy, setPdfBusy] = useState(false)
+  // 元器件容差穷举：容差设定放在报告页本地（便于导出前临时改算），默认见 defaultToleranceSpec
+  const [tolSpec, setTolSpec] = useState<ToleranceSpec>(defaultToleranceSpec)
   const reportRef = useRef<HTMLDivElement>(null)
 
   const dateStr = new Date().toLocaleDateString('zh-CN', {
@@ -130,6 +134,19 @@ ${suggestions.map((s) => `- ${s}`).join('\n')}
 4. 验证 PCB 布局：最小化谐振回路寄生电感与电容。
 5. 制作原型并测试：满载效率、温升、EMI、负载瞬态。
 
+## 10. 元器件容差影响（穷举法）
+
+${tolRes ? `${tolLines.join('\n\n')}
+
+**逐组结果**（每参数取 −容差 / 标称 / +容差，共 ${tolRes.rows.length} 组；「判定」列需同时满足 增益能力 / ZVS 能量 / ZVS 时间 三项）：
+
+| 组合 | fr (kHz) | k | Q | Mbnd | f_min (kHz) | f_max (kHz) | Er/Ec | t_ZVS (ns) | 判定 |
+|---|---|---|---|---|---|---|---|---|---|
+${tolRes.rows.map((x) => `| ${x.label} | ${(x.fr / 1000).toFixed(1)} | ${x.k.toFixed(3)} | ${x.q.toFixed(4)} | ${Number.isFinite(x.mbnd) ? x.mbnd.toFixed(4) : '—'} | ${Number.isFinite(x.fmin) ? (x.fmin / 1000).toFixed(1) : '—'} | ${Number.isFinite(x.fmax) ? (x.fmax / 1000).toFixed(1) : '—'} | ${(x.er / x.ec).toFixed(2)} | ${(x.tZvs * 1e9).toFixed(1)} | ${x.okAll ? '✔ 通过' : `✘ ${[!x.okGain ? '增益不足' : '', !x.okZvsE ? 'ZVS 能量不足' : '', !x.okZvsT ? '死区不足' : ''].filter(Boolean).join('、')}`} |`).join('\n')}
+
+> 说明：本项只扫 Lr / Cr / Lm（变压器感量）三项 —— Coss / Cj / 死区时间未扫；匝比 n 与 Gmax/Gmin 由电压规格决定、不随元件容差变化。
+` : '（无设计数据）'}
+
 ${notes ? `## 备注\n\n${notes}\n` : ''}
 
 ---
@@ -223,6 +240,10 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
     : 0
   // 感性区可达增益上限（分界点增益）；Mpeak 恒在容性区，不能用来算裕量（v2.10.99 修正）
   const mbndVal = hasData ? boundaryGain(r.k, r.q) : NaN
+  // 元器件容差穷举（穷举法）：Lr / Cr / Lm 各取 −容差 / 标称 / +容差 ⇒ 27 组，逐组复核三项判据。
+  // 标称组与引擎输出逐位一致（公式同源），可作自校验。
+  const tolRes = hasData && r ? sweepTolerance(r, tolSpec) : null
+  const tolLines = tolRes && r ? toleranceSummary(r, tolRes, tolSpec).split('\n') : []
   const gainMargin = hasData && Number.isFinite(mbndVal) ? (mbndVal / mReqMin - 1) * 100 : NaN
 
   // 设计可行性：同时看两条 —— ① 空载降压约束 r.designFeasible（k/(k+1) ≤ Gmin）；
@@ -875,6 +896,96 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     )}
                   </div>
                 </section>
+
+                {/* Section 9: Component tolerance sweep */}
+                {tolRes && (
+                  <section>
+                    <h3 className="text-lg font-semibold text-text-primary print:text-black mb-3 flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary text-white text-xs font-bold">
+                        9
+                      </span>
+                      元器件容差影响（穷举法）
+                    </h3>
+
+                    <div className="flex flex-wrap items-end gap-4 mb-3">
+                      {([
+                        ['lmPct', '变压器感量 Lm ±%'],
+                        ['lrPct', '谐振电感 Lr ±%'],
+                        ['crPct', '谐振电容 Cr ±%'],
+                      ] as const).map(([key, label]) => (
+                        <div key={key}>
+                          <label className="block text-xs font-medium text-text-secondary mb-1">{label}</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step="1"
+                            className="input-field w-28"
+                            value={tolSpec[key]}
+                            onChange={(e) => setTolSpec({ ...tolSpec, [key]: Math.max(0, Number(e.target.value)) })}
+                          />
+                        </div>
+                      ))}
+                      <p className="text-xs text-text-muted">
+                        每参数取 −容差 / 标称 / +容差 ⇒ <b>{tolRes.rows.length} 组</b>；只扫 Lr / Cr / Lm（Coss、Cj、死区时间未扫）
+                      </p>
+                    </div>
+
+                    <div
+                      className={`rounded-lg p-4 mb-3 border ${
+                        tolRes.allOk
+                          ? 'bg-success/5 border-success/40'
+                          : 'bg-amber-500/5 border-amber-500/40'
+                      }`}
+                    >
+                      {tolLines.map((l, i) => (
+                        <p key={i} className={`text-sm ${i === 1 ? 'font-medium text-text-primary print:text-black' : 'text-text-secondary print:text-gray-700'}`}>
+                          {l}
+                        </p>
+                      ))}
+                    </div>
+
+                    <div className="overflow-x-auto rounded-lg border border-border print:border-gray-300">
+                      <table className="w-full text-xs">
+                        <thead className="bg-surface-elevated print:bg-gray-100 text-text-muted">
+                          <tr>
+                            {['组合', 'fr (kHz)', 'k', 'Q', 'Mbnd', 'f_min (kHz)', 'f_max (kHz)', 'Er/Ec', 't_ZVS (ns)', '判定'].map((h) => (
+                              <th key={h} className="text-left py-2 px-2 font-medium whitespace-nowrap">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="font-mono text-text-secondary print:text-gray-700">
+                          {tolRes.rows.map((x, i) => (
+                            <tr
+                              key={i}
+                              className={`border-t border-border/50 ${
+                                x.okAll ? '' : x.okGain ? 'bg-amber-500/5' : 'bg-red-500/10'
+                              }`}
+                            >
+                              <td className="py-1.5 px-2 whitespace-nowrap text-text-primary print:text-black">{x.label}</td>
+                              <td className="py-1.5 px-2">{(x.fr / 1000).toFixed(1)}</td>
+                              <td className="py-1.5 px-2">{x.k.toFixed(3)}</td>
+                              <td className="py-1.5 px-2">{x.q.toFixed(4)}</td>
+                              <td className="py-1.5 px-2">{Number.isFinite(x.mbnd) ? x.mbnd.toFixed(4) : '—'}</td>
+                              <td className="py-1.5 px-2">{Number.isFinite(x.fmin) ? (x.fmin / 1000).toFixed(1) : '—'}</td>
+                              <td className="py-1.5 px-2">{Number.isFinite(x.fmax) ? (x.fmax / 1000).toFixed(1) : '—'}</td>
+                              <td className="py-1.5 px-2">{(x.er / x.ec).toFixed(2)}</td>
+                              <td className="py-1.5 px-2">{(x.tZvs * 1e9).toFixed(1)}</td>
+                              <td className={`py-1.5 px-2 whitespace-nowrap ${x.okAll ? 'text-success' : 'text-amber-300'}`}>
+                                {x.okAll
+                                  ? '✔ 通过'
+                                  : `✘ ${[!x.okGain ? '增益不足' : '', !x.okZvsE ? 'ZVS 能量不足' : '', !x.okZvsT ? '死区不足' : ''].filter(Boolean).join('、')}`}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <p className="mt-2 text-xs text-text-muted">
+                      注：判定需同时满足 ① Mbnd ≥ Gmax（感性区仍够得着最低输入所需增益）② Er ≥ Ec（ZVS 能量）
+                      ③ t_ZVS ≤ td（死区内完成 C总 充放电）。匝比 n 与 Gmax/Gmin 由电压规格决定，不随元件容差变化。
+                    </p>
+                  </section>
+                )}
 
                 {/* Footer */}
                 <div className="text-center text-xs text-text-muted print:text-gray-500 border-t border-border pt-4 mt-8">

@@ -26,7 +26,6 @@ export const defaultLossParams: LossParameters = {
   coreBeta: 2.5,
   windingRdc: 50,
   skinF0: 100,
-  rectVf: 0.6,
   syncRectRdsOn: 5,
   lrDcr: 30,
   crEsr: 20,
@@ -230,6 +229,8 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   //    ⚠️ 旧实现统一按 calc.isRms/√2 取 Is,sw —— 对全波口径正确，却把中心抽头的
   //       「本就是每管 RMS」的量又除了一次 √2 ⇒ 功率少算 2 倍（v2.10.98 修正）。
   //    ⚠️ 同步整流的 Rds(on) 与原边一样是 25℃ 值，必须同乘温度修正 kT（v2.10.98 补）。
+  // 整流压降：取自设计参数（单一来源，见下方二极管分支说明）
+  const vdUse = Math.max(0, Number.isFinite(Number(calc.vd)) ? Number(calc.vd) : 0)
   const isCt = calc.rectifier === 'center-tapped' || calc.rectifier === 'sync-center-tapped'
   const isSync = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
   const nRect = isCt ? 2 : 4
@@ -238,8 +239,12 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   if (isSync) {
     rectLoss = nRect * isSw * isSw * (lp.syncRectRdsOn / 1000) * kT
   } else {
-    // 二极管口径不变：每个管子平均电流 Io/2（Iavg），Nrect 个管子的 Vf·Iavg 之和
-    rectLoss = nRect * lp.rectVf * (io / 2)
+    // 二极管口径：每个管子平均电流 Io/2（Iavg），Nrect 个管子的 Vf·Iavg 之和。
+    //   ★ 整流压降取**设计参数**里的 Vd（单一来源）—— 它与匝比 n 用的是同一个压降，
+    //     避免"设计参数里填了一个 Vf、损耗面板又填一个"，两处不一致导致看起来没联动。
+    //     ⚠️ 因此：选二极管整流时务必把设计参数区的「输出整流压降 Vd」填成实际值（0.6~1.2 V）；
+    //        若仍为 0（默认给同步整流用），整流损耗会被算成 0 —— UI 会就此给出提示。
+    rectLoss = nRect * vdUse * (io / 2)
   }
 
   // 8. Resonant element loss

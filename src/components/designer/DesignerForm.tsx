@@ -110,7 +110,15 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
           <select
             className={inputClass}
             value={form.rectifier}
-            onChange={(e) => update('rectifier', e.target.value as DesignParameters['rectifier'])}
+            onChange={(e) => {
+              // 与「输出整流压降 Vd」联动：整流损耗直接用这个 Vd（单一来源），
+              // 所以换整流方式时给出与类型匹配的默认压降，避免"选了二极管却按 0 V 算成无损耗"。
+              const next = e.target.value as DesignParameters['rectifier']
+              const sync = next === 'synchronous' || next === 'sync-center-tapped'
+              update('rectifier', next)
+              if (!sync && form.vd < 0.2) update('vd', 0.6)
+              else if (sync && Math.abs(form.vd - 0.6) < 1e-9) update('vd', 0)
+            }}
           >
             <option value="full-wave">全波整流</option>
             <option value="center-tapped">中心抽头</option>
@@ -248,7 +256,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               step="0.1"
               placeholder="整流二极管"
             />
-            <span className="text-xs text-text-muted mt-1 block">输出整流压降</span>
+            <span className="text-xs text-text-muted mt-1 block">输出整流压降：<b>同时用于</b>匝比 n 与整流损耗（二极管 0.6~1.2 V；同步整流填 0）</span>
           </div>
           <div>
             <label className={labelClass}>最大输出电流 Iomax (A)</label>

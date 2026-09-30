@@ -3,7 +3,7 @@
 // 本文件由 pages/Designer.tsx 的 handleCalculate 逐行搬移而来，数学部分未做任何改动。
 import type { DesignParameters, CalculatedResults } from '../DesignContext'
 import type { CalculatedData, LossParameters, Suggestion } from './types'
-import { gainM, peakGain, zvsPhase, fullLoadGainCrossing, magnetizingCurrentOffPeak, qmax1Boundary, qmax1Peak } from './llcMath'
+import { gainM, peakGain, zvsPhase, fullLoadGainCrossing, magnetizingCurrentOffPeak, qmax1Boundary, qmax1Peak, fmaxZvs, zvsStoredEnergy, zvsCrossTime } from './llcMath'
 import { generateSuggestions } from './suggestions'
 
 export interface DesignComputation {
@@ -85,7 +85,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const region1MinGain = k / (k + 1)
   const fmaxFeasible = gMin >= region1MinGain
   const fmaxEst = fmaxFeasible
-    ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+    ? fmaxZvs(fr, k, gMin)
     : Infinity
   // Coss 参数区分：
   // - cossEq：等效输出电容（用于 ZVS 死区时间 / qmax2）
@@ -143,7 +143,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // ─── 步骤6：验证 ───
   // fmax：从空载增益公式精确推导，对应 Region 1（fn>1），要求 gMin >= k/(k+1)
   const fmax = fmaxFeasible
-    ? fr * Math.sqrt(Math.max(0.001, gMin / Math.max(1e-9, gMin * (k + 1) - k)))
+    ? fmaxZvs(fr, k, gMin)
     : Infinity
   // fmin：由**满载**增益曲线与 M=Gmax 的交点给出（取感性区一侧）。
   // 满载 + 最低母线是调频下限的最坏情况；轻载在同一增益要求下所需频率更高，不会更低。
@@ -160,9 +160,9 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 两侧各取最坏输入：Er 用 V_in,min（励磁电流最小）、Ec 用 V_in,max（需要搬的电荷最多）——
   // 这一配对比计算书 V02 更严格（书里 Er/Ec 都用额定 V_in=400 V）。
   // 半桥谐振腔电压幅值为 Vin/2，因此分母为 8*f*Lm；全桥为 4*f*Lm
-  const fmaxZvs = Number.isFinite(fmax) ? fmax : fr
-  const imDeadtime = magnetizingCurrentOffPeak(vinMin, fmaxZvs, lm, topology)
-  const er = 0.5 * lm * imDeadtime * imDeadtime
+  const fmaxForZvs = Number.isFinite(fmax) ? fmax : fr
+  const imDeadtime = magnetizingCurrentOffPeak(vinMin, fmaxForZvs, lm, topology)
+  const er = zvsStoredEnergy(lm, imDeadtime)
   const ec = 0.5 * cossTotal * vinMax * vinMax
   const zvsMargin = er >= ec
 
@@ -173,7 +173,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   //   两个不同工况混用，被虚增 V_in,max/V_in,min 倍（默认 1.105 倍），且误用了能量口径电容。
   // 与计算书 V02 复核：γ=8、f_max=111.803 kHz、Lm=1652.4 µH、C_oss,zvs=170 pF
   //   ⇒ 本站 251.248 ns vs 计算书 T_d_max 251.248 ns ✓（逐位一致）
-  const tZvs = zvsCoeff * fmaxZvs * lm * cossZvs
+  const tZvs = zvsCrossTime(fmaxForZvs, lm, cossZvs, topology)
   const zvsTimeOk = tZvs <= td
 
   // ZVS相位（在fr处）
@@ -264,6 +264,8 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     vinMax,
     topology,
     rectifier,
+    vd,
+    cossZvs,
     rac,
     zr,
     fmax,
@@ -335,6 +337,10 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     fmax,
     fmin,
     gmaxEmpty,
+    topology,
+    vinMin,
+    td,
+    cossZvs,
     zvsEr: er,
     zvsEc: ec,
     qmax1,

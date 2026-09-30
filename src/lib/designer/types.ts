@@ -64,6 +64,8 @@ export interface CalculatedData {
   vinMax: number
   topology: string
   rectifier: string
+  /** 设计参数里的输出整流压降 Vd (V)：既用于匝比 n，也用于二极管整流的整流损耗（单一来源） */
+  vd: number
   rac: number
   zr: number
   /**
@@ -103,6 +105,8 @@ export interface CalculatedData {
    * ⚠️ 旧存档（本地存储）可能缺此字段，使用时须兜底。
    */
   td: number
+  /** 死区用的总电容 C总 = 2·Coss,eq + Cj（时间/电荷口径） */
+  cossZvs: number
   irRms: number
   imRms: number
   /**
@@ -160,7 +164,6 @@ export interface LossParameters {
   coreBeta: number
   windingRdc: number // mΩ
   skinF0: number // kHz
-  rectVf: number // V
   syncRectRdsOn: number // mΩ
   lrDcr: number // mΩ
   crEsr: number // mΩ（仅 crEsrMode='esr' 时使用）

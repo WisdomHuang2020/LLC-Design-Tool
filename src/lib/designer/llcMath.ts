@@ -260,6 +260,34 @@ export function fminTextbook(fr: number, k: number, gMax: number): number {
  * 单一来源：引擎（computeDesign）与损耗模型（losses）都从这里取，避免两处各写一遍。
  * 对非有限 fmax（设计不可行）返回 0，调用方需自行兜底。
  */
+/**
+ * 空载（Q→0）增益曲线与 M = Gmin 的交点频率 —— 即调频上限 f_max。
+ * 推导：M(fn) = 1/√((1+1/k−1/(k f_n²))² + Q²(f_n−1/f_n)²)，令 Q→0 解 M = Gmin 得
+ *   f_max = fr·√[Gmin/(Gmin(k+1) − k)]，需 Gmin ≥ k/(k+1)（否则空载降压不了，设计不可行）。
+ * ⚠️ 与 f_min 不对称是**有意为之**：Q 增大恒使 M 降低 ⇒ 降压（fn>1 求 Gmin）的最坏工况是**空载**。
+ * **本函数是引擎、结果卡与容差穷举共用的唯一来源。**
+ */
+/** ZVS 所需能量（励磁电感储能）：Er = ½·Lm·I_m,off² */
+export function zvsStoredEnergy(lm: number, imOff: number): number {
+  return 0.5 * lm * imOff * imOff
+}
+
+/**
+ * 死区内完成 C`总` 充放电所需时间：t_ZVS = γ·f_max·Lm·C总（γ = 8 半桥 / 4 全桥）。
+ * 推导：t = C总·V_in / I_m,dead，而 I_m,dead = V_in/(γ·f_max·Lm) ⇒ **V_in 精确相消**，
+ * 故 t_ZVS 与输入电压无关。**引擎与容差穷举共用此式。**
+ */
+export function zvsCrossTime(fmax: number, lm: number, cossZvs: number, topology: string): number {
+  const coeff = topology === 'half-bridge' ? 8 : 4
+  return coeff * fmax * lm * cossZvs
+}
+
+export function fmaxZvs(fr: number, k: number, gMin: number): number {
+  const den = gMin * (k + 1) - k
+  if (!(den > 1e-9) || !(fr > 0)) return Infinity
+  return fr * Math.sqrt(Math.max(0.001, gMin / den))
+}
+
 export function magnetizingCurrentOffPeak(
   vinMin: number,
   fmax: number,
