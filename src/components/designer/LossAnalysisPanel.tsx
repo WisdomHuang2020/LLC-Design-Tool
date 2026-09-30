@@ -26,6 +26,9 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
   // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
   const cossErP = Number.isFinite(Number(calc.cossEr)) && Number(calc.cossEr) > 0 ? Number(calc.cossEr) : 35
+  // 交叉时间（由 losses.ts 依 Q_gd·R_g/ΔV 算出；这里只做显示）
+  const tCrossOffNs = (losses.tCrossOff * 1e9).toFixed(1)
+  const tCrossOnNs = (losses.tCrossOn * 1e9).toFixed(1)
 
   return (
     <CollapsibleCard
@@ -47,12 +50,35 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <div className="text-[10px] text-text-muted mt-0.5">原边 MOSFET 与同步整流共用；硅管 100℃ 典型 1.5~2.0</div>
           </div>
           <div>
-            <label className={labelClass}>tr (ns)</label>
-            <input type="number" className={inputClass} value={params.mosfetTr} onChange={(e) => update('mosfetTr', Number(e.target.value))} />
+            <label className={labelClass}>Qgd 米勒电荷 (nC)</label>
+            <input type="number" step="0.1" className={inputClass} value={params.qgd} onChange={(e) => update('qgd', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">取规格书栅荷曲线 Q<sub>gd</sub></div>
           </div>
           <div>
-            <label className={labelClass}>tf (ns)</label>
-            <input type="number" className={inputClass} value={params.mosfetTf} onChange={(e) => update('mosfetTf', Number(e.target.value))} />
+            <label className={labelClass}>Vplat 平台电压 (V)</label>
+            <input type="number" step="0.1" className={inputClass} value={params.vPlateau} onChange={(e) => update('vPlateau', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">同一条曲线的平台电压</div>
+          </div>
+          <div>
+            <label className={labelClass}>Rg 栅极回路总电阻 (Ω)</label>
+            <input type="number" step="0.1" className={inputClass} value={params.rgTotal} onChange={(e) => update('rgTotal', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗</div>
+          </div>
+          <div>
+            <label className={labelClass}>Vdrv 驱动电平 (V)</label>
+            <input type="number" step="0.1" className={inputClass} value={params.vDrv} onChange={(e) => update('vDrv', Number(e.target.value))} />
+            <div className="text-[10px] text-text-muted mt-0.5">开通交叉时间用；关断按 0</div>
+          </div>
+          <div>
+            <label className={labelClass}>交叉时间 t_cr（由上式算出）</label>
+            <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
+              <span className="font-mono text-xs text-text-primary">关断 {tCrossOffNs} ns ｜ 开通 {tCrossOnNs} ns</span>
+              <span className="text-[10px] text-text-muted">t_cr = Qgd·Rg/ΔV</span>
+            </div>
+            <div className="text-[10px] text-text-muted mt-0.5">
+              ⚠️ 不要直接填规格书 t<sub>r</sub>/t<sub>f</sub>：那是特定测试条件（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω）下测的
+              <b>漏极电流 10%↔90% 过渡时间</b>，既非本机工况、也不是损耗积分所需的 V·I 重叠时长
+            </div>
           </div>
           <div>
             <label className={labelClass}>Coss,er (pF)</label>
@@ -262,13 +288,13 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pon = 0.5·Vin·Ip·tr·fsw·Nsw（ZVS下≈0）</td>
+                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>gd</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = "+tCrossOnNs+" ns</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Poff = 0.5·Vin·Im,off·tf·fsw·Nsw（关断瞬间为励磁电流峰值）</td>
+                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>gd</sub>·R<sub>g</sub>/V<sub>plat</sub> = "+tCrossOffNs+" ns —— 不用规格书 t<sub>f</sub></td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>

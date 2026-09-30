@@ -6,8 +6,12 @@ import { magnetizingCurrentOffPeak } from './llcMath'
 export const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
   rdsonTempFactor: 1.6,
-  mosfetTr: 15,
-  mosfetTf: 10,
+  // 开关损耗的**交叉时间**参数（默认取 600 V / 0.3 Ω 级器件的典型量级；换器件必须改）
+  // 默认 ⇒ t_cr,off = 8 nC × 12 Ω / 4.5 V = 21.3 ns，t_cr,on = 8 × 12 / (12 − 4.5) = 12.8 ns
+  qgd: 8,
+  vPlateau: 4.5,
+  rgTotal: 12,
+  vDrv: 12,
   mosfetVsd: 1.2,
   primaryTurns: 30,
   coreMaterial: 'PC95',
@@ -46,6 +50,10 @@ export interface LossResult {
   mosfetCond: number
   mosfetSwitchOn: number
   mosfetSwitchOff: number
+  /** 开通过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_gd·R_g/(V_drv − V_plat) 算出 */
+  tCrossOn: number
+  /** 关断过程的 V·I 交叉（米勒平台）时长，s —— 由 Q_gd·R_g/V_plat 算出 */
+  tCrossOff: number
   mosfetCoss: number
   mosfetDiode: number
   coreLoss: number
@@ -103,12 +111,28 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // ZVS 状态下开通损耗与 Coss 损耗可忽略（谐振电流在死区完成电容充放电）
   const zvsOn = calc.zvsMargin && calc.zvsTimeOk
 
-  // 2. Switching loss (linear approximation; with ZVS Pon ideally 0)
+  // 2. Switching loss —— 用**由栅极回路算出的交叉时间**，不用规格书的 t_r / t_f
+  //   ★ 为什么不能用规格书 t_r/t_f：那是特定测试条件（如 V_DD=400 V、I_D≈5 A、R_G=10 Ω、V_GS=10 V）下
+  //     测得的**漏极电流 10%↔90% 过渡时间**；而损耗积分 `∫v·i dt` 需要的是「V_DS 与 I_D 重叠」的时长
+  //     （即米勒平台持续时间）。两者既非同一测试条件、也非同一物理量，直接填进去必然错。
+  //   ★ 交叉时间的正确算法（栅极电荷守恒）：米勒平台期间栅压恒定在 V_plat，栅极驱动电流
+  //       I_g = ΔV_gate / R_g，而 V_DS 完成翻转需要移走米勒电荷 Q_gd
+  //       ⇒  t_cr = Q_gd / I_g = **Q_gd · R_g / ΔV_gate**
+  //         关断：ΔV_gate = V_plat（栅极被拉到 0）；开通：ΔV_gate = V_drv − V_plat
+  //     R_g 取**回路总电阻** = 器件内部 R_G + 外部 R_g + 驱动上/下拉阻抗（规格书 t_r/t_f 的 R_G 常是 10 Ω 测试值，别直接抄）。
+  //   ⚠️ V_plat 取自规格书栅荷曲线，其测试电流通常远大于 LLC 的关断电流（本设计关断电流只有励磁电流量级），
+  //     实际平台电压会略低 ⇒ 交叉时间略长 ⇒ 本项在这一点上**偏乐观**；有实测平台电压时应直接填实测值。
+  const rgTotal = Math.max(0.1, Number.isFinite(lp.rgTotal) ? lp.rgTotal : 12)
+  const qgdC = Math.max(0, Number.isFinite(lp.qgd) ? lp.qgd : 8) * 1e-9 // nC → C
+  const vPlat = Math.max(0.1, Number.isFinite(lp.vPlateau) ? lp.vPlateau : 4.5)
+  const vDrv = Number.isFinite(lp.vDrv) ? lp.vDrv : 12
+  const tCrossOff = (qgdC * rgTotal) / vPlat
+  const tCrossOn = vDrv > vPlat ? (qgdC * rgTotal) / (vDrv - vPlat) : tCrossOff
   const switchV = vin
-  const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * (lp.mosfetTr / 1e9) * fsw * nSwitches
+  const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * tCrossOn * fsw * nSwitches
   // 关断瞬间电流 = 励磁电流峰值 Im,off（此刻负载折算分量已归零，原边只剩励磁电流），
-  // 而非原边总电流峰值 ipPeak。
-  const switchOff = 0.5 * switchV * imOff * (lp.mosfetTf / 1e9) * fsw * nSwitches
+  // 而非原边总电流峰值 ipPeak。关断损耗与 ZVS 无关，任何工况都存在。
+  const switchOff = 0.5 * switchV * imOff * tCrossOff * fsw * nSwitches
 
   // 3. Coss loss —— 硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散
   //   Coss 随 V_ds 非线性变化，故必须用**能量相关等效电容 C_oss,er**（≡ 规格书 Co(er)）：
@@ -227,6 +251,8 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     mosfetCond,
     mosfetSwitchOn: switchOn,
     mosfetSwitchOff: switchOff,
+    tCrossOn,
+    tCrossOff,
     mosfetCoss: cossLoss, // 与 mosfetCond/mosfetSwitchOn/mosfetDiode 同族命名；此处是损耗（W），不再是电容参数
     mosfetDiode: diodeLoss,
     coreLoss,

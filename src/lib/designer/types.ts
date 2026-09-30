@@ -124,8 +124,16 @@ export interface LossParameters {
    * 默认 1.6（约对应 100℃ 工况）。若按 25℃ 值直接算会低估导通损耗。
    */
   rdsonTempFactor: number
-  mosfetTr: number // ns
-  mosfetTf: number // ns
+  /**
+   * 开关损耗用的**交叉时间**参数（不用规格书的 t_r / t_f 直接当交叉时间）：
+   * 规格书 t_r/t_f 是在特定测试条件（如 V_DD=400 V、I_D≈5 A、R_G=10 Ω、V_GS=10 V）下测的
+   * **漏极电流 10%↔90% 过渡时间**，与损耗积分所需的「V_DS 与 I_D 重叠（米勒平台）时长」不是同一个量。
+   * 交叉时间由栅极回路决定：`t_cr = Q_gd·R_g / ΔV_gate` —— 见 losses.ts 的推导注释。
+   */
+  qgd: number // Q_gd 米勒电荷 (nC)，取规格书栅荷曲线 Q_gd
+  vPlateau: number // V_plat 米勒平台电压 (V)，同一曲线读
+  rgTotal: number // R_g 栅极回路总电阻 (Ω) = 内部 R_G + 外部 R_g + 驱动下拉/上拉阻抗
+  vDrv: number // V_drv 驱动电平 (V)，开通过程 ΔV = V_drv − V_plat；关断按 0
   // 注：Coss 相关电容**不在此处**——损耗面板不再单独输入 Coss。
   //     硬开关 Coss 损耗与 ZVS 能量判据统一取设计参数 `DesignParameters.cossEr`（C_oss,er ≡ Co(er)，
   //     能量相关等效电容），死区时间/电荷判据取 `cossEq`（C_oss,eq ≡ Co(tr)）。单一来源，避免同一物理量两处输入。

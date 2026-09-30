@@ -635,11 +635,15 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 开通损耗</p>
-              <MathBlock latex="P_{on} = \\tfrac{1}{2} V_{in} I_{p,peak} t_r f_{sw} N_{sw} \\quad (\\text{ZVS 下} \\approx 0)" />
+              <MathBlock latex="P_{on} = \\tfrac{1}{2} V_{in} I_{p,peak} t_{cr,on} f_{sw} N_{sw} \\quad (\\text{ZVS 下} \\approx 0)" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 关断损耗</p>
-              <MathBlock latex="P_{off} = \\tfrac{1}{2} V_{in} I_{m,off} t_f f_{sw} N_{sw}" />
+              <MathBlock latex="P_{off} = \\tfrac{1}{2} V_{in} I_{m,off} t_{cr,off} f_{sw} N_{sw}" />
+            </div>
+            <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">交叉时间（由栅极回路算出）</p>
+              <MathBlock latex="t_{cr} = \frac{Q_{gd} R_g}{\Delta V_{gate}}, \quad \Delta V_{gate} = V_{plat}\ (\text{关断}),\ V_{drv} - V_{plat}\ (\text{开通})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">体二极管导通损耗</p>
@@ -668,6 +672,21 @@ export default function Derivations() {
             latex="P_{res} = \\underbrace{I_{p,rms}^2 R_{dc,Lr}}_{\\text{Lr 铜损}} + \\underbrace{P_{cv,Lr} V_{e,Lr}}_{\\text{Lr 铁损（正弦，不乘 } k_{wave}\\text{）}} + \\underbrace{I_{p,rms}^2 R_{esr,Cr}}_{\\text{Cr 损耗}}"
             label="谐振元件损耗（三项）"
           />
+
+          <HighlightBox type="warning">
+            <strong>开关损耗的交叉时间 t<sub>cr</sub> 必须算，不能抄规格书的 t<sub>r</sub>/t<sub>f</sub>：</strong>
+            规格书的 t<sub>r</sub>/t<sub>f</sub> 是<b>特定测试条件</b>下（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω、V<sub>GS</sub>=10 V）
+            测得的<b>漏极电流 10%↔90% 过渡时间</b>；而损耗积分 <InlineMath latex="\int v\,i\,dt" /> 需要的是
+            <b>V<sub>DS</sub> 与 I<sub>D</sub> 重叠（米勒平台）的时长</b> —— 测试条件不同、物理量也不是同一个。
+            正确做法是按栅极电荷守恒算：米勒平台期间栅压恒定在 V<sub>plat</sub>，栅极电流
+            <InlineMath latex="I_g = \Delta V_{gate}/R_g" />，移走米勒电荷 Q<sub>gd</sub> 所需时间
+            <InlineMath latex="t_{cr} = Q_{gd} R_g / \Delta V_{gate}" />。
+            其中 R<sub>g</sub> 取<b>回路总电阻</b>（器件内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗），
+            不是规格书测试条件里的那个 10 Ω。
+            <br />
+            ⚠️ 本项偏乐观之处：V<sub>plat</sub> 取自规格书栅荷曲线，其测试电流远大于 LLC 的关断电流
+            （本设计关断电流只有励磁电流量级）⇒ 实际平台电压略低、交叉时间略长。有实测平台电压时应填实测值。
+          </HighlightBox>
 
           <HighlightBox type="warning">
             <strong>整流与谐振元件损耗的三处易错口径：</strong>
@@ -701,6 +720,11 @@ export default function Derivations() {
           <ParamTable>
             <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="mΩ" description="25℃ 规格书值；实际导通损耗按 ×kT 折算到结温" typical="mΩ 级" />
             <ParamRow symbol="kT" name="Rds(on) 温度修正系数" unit="-" description="硅管 100℃ 时约为 25℃ 值的 1.5~2.0 倍，工具默认 1.6" typical="1.5 ~ 2.0" />
+            <ParamRow symbol="tcr" name="开关交叉时间（米勒平台时长）" unit="ns" description="t_cr = Q_gd·R_g/ΔV_gate；关断 ΔV = V_plat、开通 ΔV = V_drv − V_plat。★ 不能用规格书 t_r/t_f 代替：那是特定测试条件下的漏极电流过渡时间，既非本机工况也不是 V·I 重叠时长" typical="10 ~ 40 ns" />
+            <ParamRow symbol="Qgd" name="米勒电荷" unit="nC" description="规格书栅荷曲线的 Q_gd（平台段电荷），交叉时间公式的分子" typical="查规格书栅荷曲线" />
+            <ParamRow symbol="Vplat" name="米勒平台电压" unit="V" description="同一条栅荷曲线的平台电压；规格书值多在较大测试电流下取得，低电流实际值略低" typical="V_th ~ 6 V" />
+            <ParamRow symbol="Rg" name="栅极回路总电阻" unit="Ω" description="器件内部 R_G + 外部 R_g + 驱动上/下拉阻抗；⚠ 不是规格书 t_r/t_f 测试条件里的 10 Ω" typical="5 ~ 20 Ω" />
+            <ParamRow symbol="Vdrv" name="驱动电平" unit="V" description="开通交叉时间用 ΔV = V_drv − V_plat；关断按栅极被拉到 0 处理" typical="10 ~ 15 V" />
             <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="仅用于驱动损耗参考式；工具损耗模型未计入该项" typical="datasheet 值" />
             <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
             <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
