@@ -30,17 +30,17 @@ export const defaultLossParams: LossParameters = {
   lrDcr: 30,
   crEsr: 20,
 
-  // 磁芯损耗：默认走手册 P_cv 法（PC95 @100℃/100kHz/0.2T ≈ 290 mW/cm³）
+  // 磁芯损耗：默认走手册 P_cv 法（PC95 @100 ℃ / 100 kHz / 0.2 T ≈ 320 mW/cm³，TDK PC 系列参数表）
   coreLossMode: 'pcv',
-  corePcv: 290,
+  corePcv: 320,
   coreWaveK: 1.25,
 
   // 谐振电感铁损：默认给出有依据的量级值，而不是留 0
-  //  · P_cv = 130 mW/cm³ —— PC95 手册 @100 kHz 查图：B ≈ 0.15 T 处约 130 mW/cm³（0.2 T / 290 mW/cm³ 按 B^2.5 折算约 141）
+  //  · P_cv = 195 mW/cm³ —— PC95 手册：100 ℃/100 kHz 下 B=0.2 T 为 320 mW/cm³，按 B^2.5 折算到 B≈0.15 T：320×(0.15/0.2)^2.5 ≈ 197
   //  · Ve   = 1.25 cm³   —— 取变压器 Ve（默认 5.0 cm³）的 1/4（谐振电感体积通常为变压器的 1/5~1/4）
   //  ⚠️ 这只是「典型量级」假设（默认 0.16 W）；实际必须按 Lr 所用磁芯的牌号、Ae、匝数与实测 B 重查，
   //     给默认值不等于免责 —— 换成实际磁芯数据后须重算。
-  lrCorePcv: 130,
+  lrCorePcv: 195,
   lrCoreVe: 1.25,
 
   // 谐振电容：默认由 1kHz 损耗角正切 + 频率修正折算等效 ESR

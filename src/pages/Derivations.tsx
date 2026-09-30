@@ -540,7 +540,18 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="Gempty" name="空载增益下限" unit="-" description="空载（Q→0）时 Region 1 的增益下限 k/(k+1)；Gmin 必须 ≥ 它，否则高输入空载降压不了（对应 k ≤ kmax）" typical="≈ 0.75 ~ 0.9" />
+                      <HighlightBox type="info">
+            <strong>增益的符号体系（G 系 vs M 系）：</strong>
+            <b>G 系 = 设计需求</b>（"要多少增益"）—— G<sub>max</sub> 是<em>最低</em>输入所需的增益、
+            G<sub>min</sub> 是<em>最高</em>输入所需的增益、G<sub>empty</sub> 是空载增益下限；
+            <b>M 系 = 曲线能到多少</b> —— M 是增益曲线的纵轴、M<sub>peak</sub> 是峰顶、
+            <b>M<sub>bnd</sub></b> 是感容分界点处的增益。两者都是电压增益，区别在"<b>要求</b>"与"<b>可实现</b>"。
+            所以感性区增益上限叫 <b>M<sub>bnd</sub> 而不是 G<sub>bnd</sub></b>：它是 M 曲线上取的一个点、
+            与纵轴 M 同族；叫 G<sub>bnd</sub> 会被误当成与 G<sub>max</sub>/G<sub>min</sub> 同类的需求值。
+            M 也沿用 LLC 文献与计算书的通用写法（M = 2n·V<sub>o</sub>/V<sub>in</sub>）。
+          </HighlightBox>
+
+<ParamRow symbol="Gempty" name="空载增益下限" unit="-" description="空载（Q→0）时 Region 1 的增益下限 k/(k+1)；Gmin 必须 ≥ 它，否则高输入空载降压不了（对应 k ≤ kmax）" typical="≈ 0.75 ~ 0.9" />
             <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（V_in,nom / V_in,min）" typical="1.1 ~ 1.4" />
             <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />

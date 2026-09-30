@@ -31,6 +31,7 @@ import SuggestionsCard from '../components/designer/SuggestionsCard'
 import ComponentSelectionCard from '../components/designer/ComponentSelectionCard'
 import WaveformPreview from '../components/designer/WaveformPreview'
 import LossAnalysisPanel from '../components/designer/LossAnalysisPanel'
+import SymbolGlossary from '../components/designer/SymbolGlossary'
 import SnapshotCard from '../components/designer/SnapshotCard'
 
 // ─── Main Component ───
@@ -308,6 +309,9 @@ export default function Designer() {
               <p className="text-text-muted text-sm mt-2">系统将自动计算谐振参数、增益裕量与优化建议</p>
             </div>
           )}
+
+          {/* 符号与物理概念释义：结果列底部（数据与「公式推导」页符号表同源，勿分散手写） */}
+          <SymbolGlossary />
         </div>
       </div>
     </div>
