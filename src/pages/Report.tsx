@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { useDesign } from '../lib/DesignContext'
 import { boundaryGain, GAIN_RESERVE_FLOOR } from '../lib/designer/llcMath'
-import { sweepTolerance, toleranceSummary, defaultToleranceSpec } from '../lib/designer/tolerance'
-import type { ToleranceSpec } from '../lib/designer/tolerance'
+import { sweepTolerance, toleranceSummary, defaultToleranceSpec, monteCarlo, monteCarloSummary } from '../lib/designer/tolerance'
+import type { ToleranceSpec, MonteCarloSpec } from '../lib/designer/tolerance'
 import {
   FileText,
   Download,
@@ -28,6 +28,8 @@ export default function Report() {
   const [pdfBusy, setPdfBusy] = useState(false)
   // 元器件容差穷举：容差设定放在报告页本地（便于导出前临时改算），默认见 defaultToleranceSpec
   const [tolSpec, setTolSpec] = useState<ToleranceSpec>(defaultToleranceSpec)
+  // 蒙特卡洛：与极值组合法并列的第二种方法（抽样次数/分布/种子可调，种子固定 ⇒ 报告可复现）
+  const [mcSpec, setMcSpec] = useState<MonteCarloSpec>({ ...defaultToleranceSpec, samples: 2000, distribution: 'normal', seed: 20260930 })
   const reportRef = useRef<HTMLDivElement>(null)
 
   const dateStr = new Date().toLocaleDateString('zh-CN', {
@@ -134,7 +136,12 @@ ${suggestions.map((s) => `- ${s}`).join('\n')}
 4. 验证 PCB 布局：最小化谐振回路寄生电感与电容。
 5. 制作原型并测试：满载效率、温升、EMI、负载瞬态。
 
-## 10. 元器件容差影响（穷举法）
+## 10. 元器件容差影响（极值组合法 + 蒙特卡洛）
+
+> 两种方法**互不相同、互为补充**：**极值组合法**确定性地覆盖各参数极值，回答「最坏能做到多坏」；
+> **蒙特卡洛**按分布随机抽样，回答「批量做出来有多少不合格、余量怎么分布」。下面依次给出两者结果。
+
+### 10.1 极值组合法（最坏情况分析）
 
 ${tolRes ? `${tolLines.join('\n\n')}
 
@@ -146,6 +153,25 @@ ${tolRes.rows.map((x) => `| ${x.label} | ${(x.fr / 1000).toFixed(1)} | ${x.k.toF
 
 > 说明：本项只扫 Lr / Cr / Lm（变压器感量）三项 —— Coss / Cj / 死区时间未扫；匝比 n 与 Gmax/Gmin 由电压规格决定、不随元件容差变化。
 ` : '（无设计数据）'}
+
+### 10.2 蒙特卡洛（随机抽样 → 通过率与余量分布）
+
+${mcRes ? `${mcLines.join('\n\n')}
+
+**余量比统计**（三项均以 ≥1 为通过）：
+
+| 余量比 | 最小 | 均值 | 最大 | 标准差 σ |
+|---|---|---|---|---|
+${mcRes.stats.map((st) => `| ${st.name} | ${st.min.toFixed(3)} | ${st.mean.toFixed(3)} | ${st.max.toFixed(3)} | ${st.sd.toFixed(3)} |`).join('\n')}
+
+**t_ZVS / td 余量分布**（左端 < 1 即死区不足）：
+
+| 余量区间 | 样本占比 |
+|---|---|
+${mcRes.histTime.map((b) => `| ${b.lo.toFixed(3)} ~ ${b.hi.toFixed(3)} | ${((b.n / mcRes.samples) * 100).toFixed(2)}% |`).join('\n')}
+
+> 说明：固定随机种子 ⇒ 同一设置下结果可复现；抽样次数、分布假设与种子均可在报告页调整后重新导出。
+> 蒙特卡洛与极值法共用同一套公式与判据（标称组与引擎输出逐位一致），两者口径不会分叉。` : '（无设计数据）'}
 
 ${notes ? `## 备注\n\n${notes}\n` : ''}
 
@@ -244,6 +270,9 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
   // 标称组与引擎输出逐位一致（公式同源），可作自校验。
   const tolRes = hasData && r ? sweepTolerance(r, tolSpec) : null
   const tolLines = tolRes && r ? toleranceSummary(r, tolRes, tolSpec).split('\n') : []
+  // mcSpec 是不可变替换的 state 对象，直接入依赖即可（避免 exhaustive-deps 告警）
+  const mcRes = useMemo(() => (hasData && r ? monteCarlo(r, mcSpec) : null), [hasData, r, mcSpec])
+  const mcLines = mcRes && r ? monteCarloSummary(r, mcRes, mcSpec).split('\n') : []
   const gainMargin = hasData && Number.isFinite(mbndVal) ? (mbndVal / mReqMin - 1) * 100 : NaN
 
   // 设计可行性：同时看两条 —— ① 空载降压约束 r.designFeasible（k/(k+1) ≤ Gmin）；
@@ -921,7 +950,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-primary text-white text-xs font-bold">
                         10
                       </span>
-                      元器件容差影响（穷举法）
+                      元器件容差影响（极值组合法 + 蒙特卡洛）
                     </h3>
 
                     <div className="flex flex-wrap items-end gap-4 mb-3">
@@ -1001,6 +1030,103 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       注：判定需同时满足 ① Mbnd ≥ Gmax（感性区仍够得着最低输入所需增益）② Er ≥ Ec（ZVS 能量）
                       ③ t_ZVS ≤ td（死区内完成 C总 充放电）。匝比 n 与 Gmax/Gmin 由电压规格决定，不随元件容差变化。
                     </p>
+
+                    {/* 10.2 Monte Carlo */}
+                    {mcRes && (
+                      <div className="mt-7 pt-5 border-t border-border">
+                        <h4 className="text-sm font-semibold text-text-primary print:text-black mb-1">
+                          蒙特卡洛（随机抽样 → 通过率与余量分布）
+                        </h4>
+                        <p className="text-xs text-text-muted mb-3">
+                          与上面的极值组合法<b>是两种不同方法</b>：极值法确定性地覆盖极值、答「最坏能做到多坏」；
+                          蒙特卡洛按分布抽样、答「批量做出来有多少不合格、余量分布如何」。两者互补。
+                        </p>
+                        <div className="flex flex-wrap items-end gap-4 mb-3">
+                          <div>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">抽样次数</label>
+                            <input
+                              type="number" min={100} step="500" className="input-field w-28"
+                              value={mcSpec.samples}
+                              onChange={(e) => setMcSpec({ ...mcSpec, samples: Math.max(100, Number(e.target.value)) })}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">分布假设</label>
+                            <select
+                              className="input-field w-48"
+                              value={mcSpec.distribution}
+                              onChange={(e) => setMcSpec({ ...mcSpec, distribution: e.target.value as MonteCarloSpec['distribution'] })}
+                            >
+                              <option value="normal">正态分布（3σ = 容差）</option>
+                              <option value="uniform">均匀分布（±容差）</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-text-secondary mb-1">随机种子（固定 ⇒ 可复现）</label>
+                            <input
+                              type="number" className="input-field w-32"
+                              value={mcSpec.seed}
+                              onChange={(e) => setMcSpec({ ...mcSpec, seed: Number(e.target.value) })}
+                            />
+                          </div>
+                        </div>
+
+                        <div
+                          className={`rounded-lg p-4 mb-3 border ${
+                            mcRes.yieldAll >= 0.999 ? 'bg-success/5 border-success/40' : 'bg-amber-500/5 border-amber-500/40'
+                          }`}
+                        >
+                          {mcLines.map((l, i) => (
+                            <p key={i} className={`text-sm ${i === 1 ? 'font-medium text-text-primary print:text-black' : 'text-text-secondary print:text-gray-700'}`}>
+                              {l}
+                            </p>
+                          ))}
+                        </div>
+
+                        <div className="overflow-x-auto rounded-lg border border-border print:border-gray-300 mb-3">
+                          <table className="w-full text-xs">
+                            <thead className="bg-surface-elevated print:bg-gray-100 text-text-muted">
+                              <tr>
+                                {['余量比（≥1 通过）', '最小', '均值', '最大', '标准差 σ'].map((h) => (
+                                  <th key={h} className="text-left py-2 px-2 font-medium whitespace-nowrap">{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="font-mono text-text-secondary print:text-gray-700">
+                              {mcRes.stats.map((st) => (
+                                <tr key={st.name} className="border-t border-border/50">
+                                  <td className="py-1.5 px-2 text-text-primary print:text-black">{st.name}</td>
+                                  <td className="py-1.5 px-2">{st.min.toFixed(3)}</td>
+                                  <td className="py-1.5 px-2">{st.mean.toFixed(3)}</td>
+                                  <td className="py-1.5 px-2">{st.max.toFixed(3)}</td>
+                                  <td className="py-1.5 px-2">{st.sd.toFixed(3)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <p className="text-xs text-text-muted mb-1">t_ZVS / td 余量分布（左端 &lt; 1 即死区不足；每格为一箱，数字为该箱样本数占比）</p>
+                        <div className="flex items-end gap-1 h-24">
+                          {mcRes.histTime.map((b, i) => {
+                            const maxN = Math.max(...mcRes.histTime.map((x) => x.n)) || 1
+                            return (
+                              <div key={i} className="flex-1 flex flex-col items-center justify-end" title={`${b.lo.toFixed(3)} ~ ${b.hi.toFixed(3)}：${b.n} 个样本`}>
+                                <div
+                                  className={`w-full rounded-t ${b.lo < 1 ? 'bg-amber-500/70' : 'bg-primary/60'}`}
+                                  style={{ height: `${Math.max(2, (b.n / maxN) * 100)}%` }}
+                                />
+                                <span className="text-[9px] text-text-muted mt-1">{b.lo.toFixed(2)}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                        <p className="mt-2 text-xs text-text-muted">
+                          注：① 两项分析共用同一套公式与判据（标称组与引擎输出逐位一致）；
+                          ② 固定随机种子 ⇒ 同一设置下结果可复现；③ 只扫 Lr / Cr / Lm，Coss / Cj / td 未扫。
+                        </p>
+                      </div>
+                    )}
                   </section>
                 )}
 

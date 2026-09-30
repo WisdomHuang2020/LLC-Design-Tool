@@ -180,3 +180,158 @@ export function toleranceSummary(calc: ToleranceBase, res: ToleranceResult, spec
   return [line1, line2, line3, line4].join('\n')
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 蒙特卡洛（Monte Carlo）—— 与上面的「极值组合法」是两种**不同**方法，别混称：
+//   · 极值组合法 / 最坏情况分析（worst-case）：每参数取 −容差 / 标称 / +容差，确定性地覆盖极值，
+//     回答「最坏能做到多坏」。组数少（3ⁿ）、可复现、对单调响应能严格给出最坏点。
+//   · 蒙特卡洛：按**分布**随机抽样 N 次，回答「**通过率（良率）多少**、余量怎么分布、离失效有多远」。
+//     需要分布假设与更多样本，反映的是统计特性而不是确定极值。
+//   工程上两者互补：极值法定"能不能用"，蒙特卡洛定"批量做出来有多少不合格"。
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Distribution = 'uniform' | 'normal'
+
+export interface MonteCarloSpec extends ToleranceSpec {
+  /** 抽样次数（建议 2000~20000） */
+  samples: number
+  /** 'uniform'：±容差内等概率；'normal'：3σ = 容差，并截断在 ±容差内 */
+  distribution: Distribution
+  /** 随机种子 —— 固定种子保证报告可复现（同一份报告每次导出结果一致） */
+  seed: number
+}
+
+export interface MarginStats {
+  name: string
+  min: number
+  mean: number
+  max: number
+  sd: number
+}
+
+export interface MonteCarloResult {
+  samples: number
+  distribution: Distribution
+  seed: number
+  /** 三项判据同时满足的比例（良率／通过率） */
+  yieldAll: number
+  passGain: number
+  passZvsE: number
+  passZvsT: number
+  /** 各判据的余量比统计（Mbnd/Gmax、Er/Ec、td/tZVS —— 均以 ≥1 为通过） */
+  stats: MarginStats[]
+  /** 综合余量最小的样本（三项余量比取最小值后最小者） */
+  worst: ToleranceRow
+  /** t_ZVS/td 的直方图 */
+  histTime: { lo: number; hi: number; n: number }[]
+  /** Mbnd/Gmax 的直方图 */
+  histGain: { lo: number; hi: number; n: number }[]
+}
+
+/** mulberry32：小、快、可复现的 PRNG（同一 seed ⇒ 同一结果，报告必须可复现） */
+function mulberry32(seed: number) {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+/** 截断正态：3σ = tol，超出 ±tol 直接夹紧（不重采样，保证样本数正好） */
+function sampleDeviation(rnd: () => number, tol: number, dist: Distribution): number {
+  if (tol <= 0) return 0
+  if (dist === 'uniform') return (rnd() * 2 - 1) * tol
+  const u1 = Math.max(1e-12, rnd())
+  const u2 = rnd()
+  const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2)
+  const d = (z * tol) / 3
+  return Math.max(-tol, Math.min(tol, d))
+}
+
+function histogram(values: number[], bins = 10) {
+  if (!values.length) return []
+  const lo = Math.min(...values)
+  const hi = Math.max(...values)
+  if (!(hi > lo)) return [{ lo, hi, n: values.length }]
+  const w = (hi - lo) / bins
+  const out = Array.from({ length: bins }, (_, i) => ({ lo: lo + i * w, hi: lo + (i + 1) * w, n: 0 }))
+  for (const v of values) {
+    const idx = Math.min(bins - 1, Math.max(0, Math.floor((v - lo) / w)))
+    out[idx].n++
+  }
+  return out
+}
+
+function stat(name: string, v: number[]): MarginStats {
+  const mean = v.reduce((a, b) => a + b, 0) / v.length
+  const sd = Math.sqrt(v.reduce((a, b) => a + (b - mean) * (b - mean), 0) / v.length)
+  return { name, min: Math.min(...v), mean, max: Math.max(...v), sd }
+}
+
+/**
+ * 蒙特卡洛抽样：Lr / Cr / Lm 按分布抽取，逐样本复核三项判据，给出通过率与余量分布。
+ * 与极值法共用同一个 `evaluate()` 与同一套 llcMath 公式（口径不会分叉）。
+ */
+export function monteCarlo(base: ToleranceBase, spec: MonteCarloSpec): MonteCarloResult {
+  const n = Math.max(100, Math.min(200000, Math.round(spec.samples || 2000)))
+  const rnd = mulberry32(spec.seed || 20260930)
+  const tLm = Math.abs(spec.lmPct) / 100
+  const tLr = Math.abs(spec.lrPct) / 100
+  const tCr = Math.abs(spec.crPct) / 100
+  const rows: ToleranceRow[] = []
+  const mGain: number[] = []
+  const mEnergy: number[] = []
+  const mTime: number[] = []
+  for (let i = 0; i < n; i++) {
+    const dLm = sampleDeviation(rnd, tLm, spec.distribution)
+    const dLr = sampleDeviation(rnd, tLr, spec.distribution)
+    const dCr = sampleDeviation(rnd, tCr, spec.distribution)
+    const r = evaluate(base, dLm, dLr, dCr)
+    rows.push(r)
+    mGain.push(Number.isFinite(r.mbnd) ? r.mbnd / base.gMax : 0)
+    mEnergy.push(r.er / r.ec)
+    mTime.push(base.td / r.tZvs) // 以 ≥1 为通过，与另两项口径一致
+  }
+  const passGain = mGain.filter((v) => v >= 1).length / n
+  const passZvsE = mEnergy.filter((v) => v >= 1).length / n
+  const passZvsT = mTime.filter((v) => v >= 1).length / n
+  const yieldAll = rows.filter((r) => r.okAll).length / n
+  let worstIdx = 0
+  let worstScore = Infinity
+  for (let i = 0; i < n; i++) {
+    const s = Math.min(mGain[i], mEnergy[i], mTime[i])
+    if (s < worstScore) { worstScore = s; worstIdx = i }
+  }
+  return {
+    samples: n,
+    distribution: spec.distribution,
+    seed: spec.seed,
+    yieldAll,
+    passGain,
+    passZvsE,
+    passZvsT,
+    stats: [
+      stat('Mbnd/Gmax', mGain),
+      stat('Er/Ec', mEnergy),
+      stat('td/tZVS', mTime),
+    ],
+    worst: { ...rows[worstIdx], label: rows[worstIdx].label + '（蒙特卡洛最坏样本）' },
+    histTime: histogram(mTime),
+    histGain: histogram(mGain),
+  }
+}
+
+/** 蒙特卡洛小结文字（供报告与导出使用） */
+export function monteCarloSummary(base: ToleranceBase, res: MonteCarloResult, spec: MonteCarloSpec): string {
+  const pc = (x: number) => (x * 100).toFixed(2) + '%'
+  const f = (x: number, k = 3) => (Number.isFinite(x) ? x.toFixed(k) : '—')
+  const dist = spec.distribution === 'uniform' ? '±容差内均匀分布' : '正态分布（3σ = 容差，截断在 ±容差内）'
+  const l1 = '抽样 ' + res.samples + ' 组（' + dist + '；Lm ±' + spec.lmPct + '%、Lr ±' + spec.lrPct + '%、Cr ±' + spec.crPct + '%；种子 ' + res.seed + '，可复现）'
+  const l2 = '综合通过率 ' + pc(res.yieldAll) + '（增益能力 ' + pc(res.passGain) + '／ZVS 能量 ' + pc(res.passZvsE) + '／ZVS 时间 ' + pc(res.passZvsT) + '）'
+  const l3 = res.stats.map((s) => s.name + '：最小 ' + f(s.min) + '／均值 ' + f(s.mean) + '／最大 ' + f(s.max) + '（σ=' + f(s.sd, 3) + '）').join('；')
+  const l4 = '最坏样本：' + res.worst.label + '（Mbnd/Gmax = ' + f(res.worst.mbnd / base.gMax) + '、Er/Ec = ' + f(res.worst.er / res.worst.ec, 2) + '、t_ZVS = ' + f(res.worst.tZvs * 1e9, 1) + ' ns vs td ' + f(base.td * 1e9, 0) + ' ns）'
+  return [l1, l2, l3, l4].join('\n')
+}

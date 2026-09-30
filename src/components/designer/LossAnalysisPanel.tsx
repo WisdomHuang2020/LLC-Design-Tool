@@ -7,6 +7,7 @@ import CollapsibleCard from './CollapsibleCard'
 import { calculateLosses } from '../../lib/designer/losses'
 import type { CalculatedData, LossParameters } from '../../lib/designer/types'
 import { loadLossNotesHidden, saveLossNotesHidden } from '../../lib/designer/persistence'
+import { CORE_MATERIALS, applyCoreMaterial, coreMaterialById, materialPresetMatches, steinmetzCm } from '../../lib/designer/coreMaterials'
 
 interface LossAnalysisPanelProps {
   calc: CalculatedData
@@ -201,13 +202,32 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           </div>
           <div>
             <label className={labelClass}>磁芯材料</label>
-            <select className={inputClass} value={params.coreMaterial} onChange={(e) => update('coreMaterial', e.target.value)}>
-              <option value="PC40">PC40</option>
-              <option value="PC95">PC95</option>
-              <option value="PC200">PC200</option>
-              <option value="3C95">3C95</option>
-              <option value="3C97">3C97</option>
+            <select
+              className={inputClass}
+              value={params.coreMaterial}
+              onChange={(e) => setParams(applyCoreMaterial(params, e.target.value))}
+            >
+              {CORE_MATERIALS.map((m) => (
+                <option key={m.id} value={m.id}>{m.name}（{m.family}）</option>
+              ))}
             </select>
+            <Note hidden={notesHidden}>
+              {(() => {
+                const m = coreMaterialById(params.coreMaterial)
+                if (!m) return '切换牌号会按参考点（100 kHz / 200 mT / 100 ℃ 正弦）自动填入 P_cv 与 Steinmetz 系数，之后仍可手工微调'
+                if (m.id === 'custom') return m.note
+                return (
+                  <>
+                    已按 <b>{m.name}</b> 预设：P_cv = {m.pcvRef} mW/cm³、α = {m.alpha}、β = {m.beta}、
+                    Cm = {steinmetzCm(m).toExponential(3)}
+                    {materialPresetMatches(params) ? '' : '（当前数值已被手工修改，不再等于预设）'}
+                    {m.note ? `｜${m.note}` : ''}
+                    <br />
+                    ⚠️ 预设是"参考点常见量级"，**投产前须按 {m.name} 手册在目标温度/频率/B 下核对**
+                  </>
+                )
+              })()}
+            </Note>
           </div>
           <div>
             <label className={labelClass}>Ve (cm³)</label>
