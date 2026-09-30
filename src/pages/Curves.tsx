@@ -326,7 +326,7 @@ export default function Curves() {
                   label={{
                     value: 'fr₂',
                     fill: '#f59e0b',
-                    position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
+                    position: 'insideBottomRight',
                     fontSize: 12,
                   }}
                 />
@@ -405,7 +405,7 @@ export default function Curves() {
                   label={{
                     value: 'fr₂',
                     fill: '#f59e0b',
-                    position: fr2 < 0.6 ? 'insideTopLeft' : 'insideTopRight',
+                    position: 'insideBottomRight',
                     fontSize: 12,
                   }}
                 />
