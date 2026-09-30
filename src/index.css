@@ -356,16 +356,35 @@ svg text {
   thead { display: table-header-group; }
   tfoot { display: table-footer-group; }
   tr { break-inside: avoid; page-break-inside: avoid; }
-  th, td {
+  /* ⚠️ 关键：屏幕上为了让单元格不换行，很多单元带了 Tailwind 的 `whitespace-nowrap`；
+     打印时**必须强行解除**，否则文字会溢出到相邻单元格里（表现为"标签和数值叠在一起"）。
+     同时允许在长串内断行，避免撑破列宽。 */
+  table th,
+  table td {
     padding: 1px 2px !important;
-    overflow-wrap: break-word;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
     word-break: break-word;
   }
-  /* 容差表：组合列（含长标签）给足宽度，数值列均分剩余 */
+  /* 容差表列宽：组合列（长标签）与判定列给足，其余 8 个数值列均分 */
   .tol-table th:first-child,
-  .tol-table td:first-child { width: 21%; }
-  /* 蒙特卡洛直方图：打印时给确定高度，避免百分比高度塌陷成一条线 */
-  .mc-hist { height: 20mm !important; break-inside: avoid; }
+  .tol-table td:first-child { width: 26% !important; }
+  .tol-table th:last-child,
+  .tol-table td:last-child { width: 13% !important; }
+  /* 蒙特卡洛直方图：容器给确定高度后，**每一箱的包裹层也必须满高**，
+     否则柱条的百分比高度失去参照而塌成 0（屏幕上靠 h-24 撑住，打印时不会） */
+  .mc-hist { break-inside: avoid; }
+  .mc-hist > div { height: 100% !important; }
+  /* 页脚：打印时去掉深色底（省墨，且深底浅字在纸上几乎不可读） */
+  footer {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  footer * {
+    background: transparent !important;
+    color: #333 !important;
+  }
+  footer svg { display: none !important; }
 }
 
 /* ── 损耗面板字段网格：让同一行的输入框对齐 ──────────────────────────

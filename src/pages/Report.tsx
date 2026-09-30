@@ -1132,7 +1132,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                               <div key={i} className="flex-1 flex flex-col items-center justify-end" title={`${b.lo.toFixed(3)} ~ ${b.hi.toFixed(3)}：${b.n} 个样本`}>
                                 <div
                                   className={`w-full rounded-t ${b.lo < 1 ? 'bg-amber-500/70' : 'bg-primary/60'}`}
-                                  style={{ height: `${Math.max(2, (b.n / maxN) * 100)}%` }}
+                                  style={{ height: `${Math.max(2, (b.n / maxN) * 88)}px` }}
                                 />
                                 <span className="text-[9px] text-text-muted mt-1">{b.lo.toFixed(2)}</span>
                               </div>
