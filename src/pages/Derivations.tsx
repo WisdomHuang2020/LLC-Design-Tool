@@ -463,13 +463,13 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="Q_{max1}:\\ \\max_{f_n} M(f_n, k, Q) = G_{max}"
-            label="约束一 · 峰值增益能力（无闭式解，数值二分求解）"
+            latex="Q_{max1} = \\frac{1}{k\\,G_{max}}\\sqrt{k + \\frac{G_{max}^2}{G_{max}^2 - 1}} \\quad\\Longleftarrow\\quad M_{bnd}(f_n,k,Q) = G_{max}"
+            label="约束一 · 感性区增益能力（默认：感容分界判据；旧口径为 max M = Gmax，峰值落在容性区）"
           />
 
           <MathBlock
-            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,(k+1)\\,V_{in,min}^2}{16\\,f_{max}^2\\,k^2\\,C_{oss,zvs}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j"
-            label="约束二 · 原边开关管 Coss 约束（等效电容口径）"
+            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{oss,zvs}\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
+            label="约束二 · 死区时间约束（死区内恰好完成 Coss 充放电：t_dead = γ·f_max·L_m·C_oss,zvs = t_d）"
           />
 
           <MathBlock
@@ -484,14 +484,15 @@ export default function Derivations() {
           />
 
           <HighlightBox type="warning">
-            <strong>注意：死区时间约束不在上述三条之内。</strong>Q<sub>max2</sub> 只含 C<sub>oss</sub> 与 f<sub>max</sub>，
-            <b>不含死区时间 t<sub>d</sub></b>。死区时间内能否完成 C<sub>oss</sub> 充放电由下式单独校验；由该式反解出的
-            Q<sub>dead</sub> 供设计者手工校核：
+            <strong>死区时间约束现在是「约束二（Q<sub>max2</sub>）」本身，不再是额外一条。</strong>
+            Q<sub>max2</sub> 的含义就是「死区内刚好把 C<sub>oss,zvs</sub> 充放电用完 t<sub>d</sub>」所对应的 Q，
+            所以 <b>t<sub>ZVS</sub> = m·t<sub>d</sub> ≤ t<sub>d</sub></b> 在 Q<sub>max2</sub> 生效时按构造成立，
+            下面的 t<sub>ZVS</sub> 公式退化为一致性复核（不生效时才是唯一的把关项）：
           </HighlightBox>
 
           <MathBlock
-            latex="t_{ZVS} = \\frac{C_{oss,total}\\,V_{in,max}}{I_{m,off}} \\le t_d, \\qquad Q_{dead} = \\frac{2\\pi f_{r1}\\,t_d\\,V_{in,min}}{\\gamma\\,f_{max}\\,k\\,C_{oss,total}\\,V_{in,max}\\,R_{ac}}"
-            label="死区时间约束与手工校核上限"
+            latex="t_{ZVS} = \\frac{C_{oss,zvs}\\,V_{in}}{I_{m,off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{oss,zvs} \\le t_d"
+            label="死区时间校核：分子分母同为 V_in，V_in 精确相消 ⇒ t_ZVS 与输入电压无关"
           />
 
           <p className="text-text-secondary text-sm mt-2">
@@ -513,7 +514,7 @@ export default function Derivations() {
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；设计工具页表单可切回【峰值判据】Mpeak = Gmax，该判据更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
-            <ParamRow symbol="Qmax2" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / Cj 与最高工作频率决定，不含死区时间" typical="数值求解" />
+            <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 Coss,zvs 充放电（t_dead = td）对应的 Q；由 td、Coss,eq/Cj、fmax、Rac 共同决定" typical="0.3 ~ 1.5" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
