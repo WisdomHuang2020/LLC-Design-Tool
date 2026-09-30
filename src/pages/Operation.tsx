@@ -1148,6 +1148,96 @@ export default function Operation() {
             </p>
           </div>
         </SectionCard>
+
+        {/* Section 6: Why LLC is efficient */}
+        <SectionCard index={6} header={<SectionTitle
+            icon={Gauge}
+            title="为什么 LLC 效率高"
+            subtitle="ZVS / ZCS 是主因，其余 5 条是次要增益；逐条给出机制与本站损耗模型的口径"
+          />}>
+
+          <p className="text-text-secondary text-sm leading-relaxed mb-5">
+            结论先说：<b>① 原边 ZVS</b> 与 <b>② 副边 ZCS</b> 是效率高的<b>主要原因</b>，
+            其余 5 条（③~⑦）是<b>次要增益</b>。下面每条都给出机制，并标明在本站损耗模型里对应哪一项
+            —— 可到「设计工具」页的「损耗分析」逐项对照。
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="p-5 rounded-lg border border-success/40 bg-success/5">
+              <p className="text-xs uppercase tracking-wider text-success mb-2 font-medium">主因 ① · 原边两个主 MOS 实现 ZVS</p>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                开通前 V<sub>DS</sub> 已被谐振腔电流降到 0，<b>开通瞬间没有 V·I 重叠</b> ⇒ 开通损耗 ≈ 0。
+                同时开关节点电容（2·C<sub>oss</sub> + C<sub>j</sub>）的储能由谐振腔搬运、被循环利用，
+                而不是在开通时于沟道里耗散。
+              </p>
+              <p className="text-text-muted text-xs leading-relaxed mt-2">
+                <b>本站对应</b>：损耗模型在 ZVS 达成时「MOSFET 开通损耗」与「Coss 损耗」均为 0
+                （默认算例实测 0.000 W / 0.000 W）。
+              </p>
+            </div>
+            <div className="p-5 rounded-lg border border-success/40 bg-success/5">
+              <p className="text-xs uppercase tracking-wider text-success mb-2 font-medium">主因 ② · 副边整流管实现 ZCS</p>
+              <p className="text-text-secondary text-sm leading-relaxed">
+                副边电流在换流前先自然过零，整流管在<b>零电流</b>下关断 ⇒ 关断损耗与<b>反向恢复损耗基本消除</b>
+                （反向恢复的根源是"电流未过零而电压先反相"，ZCS 恰好消除了这个条件）；开通损耗同样可忽略。
+              </p>
+              <p className="text-text-muted text-xs leading-relaxed mt-2">
+                <b>本站对应</b>：整流支路只计<b>导通损耗</b>（二极管 V<sub>f</sub> 或同步整流 R<sub>ds(on)</sub>×k<sub>T</sub>），
+                不含反向恢复项；改用同步整流可把这一项进一步压下来。
+              </p>
+            </div>
+          </div>
+
+          <h3 className="text-sm font-semibold text-text-primary mb-3">次要增益（5 条）</h3>
+          <div className="space-y-3">
+            {[
+              {
+                n: '③',
+                t: '非峰值硬关断，关断电流不是峰值电流',
+                d: '关断瞬间副边已经换流完毕，原边只剩励磁电流 Im,off，远小于谐振腔峰值电流 ⇒ 关断时 V·I 的重叠面积小，损耗比传统硬关断低。（仍是硬关断，只是"电流小"）',
+                s: '本站关断损耗按 Poff = ½·Vin·Im,off·tcr,off·fsw·Nsw 计 —— 用的正是 Im,off，不是峰值电流。',
+              },
+              {
+                n: '④',
+                t: '漏感（谐振电感）能量不再是损耗，被循环利用',
+                d: 'Lr 与 Cr 构成谐振腔，能量在两者之间往复交换、不进入耗散路径；只有绕组的铜损、磁芯损耗与电容 ESR 才是真损耗。',
+                s: '本站把 Lr 铜损、Lr 铁损、Cr 的 ESR 损耗单列在「谐振元件损耗」里，Lr 储存的谐振能量本身不计损耗。',
+              },
+              {
+                n: '⑤',
+                t: '主 MOS 的 Cds（Coss）能量不再被浪费，被循环利用',
+                d: 'ZVS 下开关节点的 Coss / Cj 电荷由谐振腔电流搬运，储能回馈给谐振腔，而不是在开通瞬间由沟道耗散。',
+                s: '本站 Coss 损耗 E_oss = ½·Coss,er·Vin,nom²·fsw·Nsw，ZVS 达成时 ≈ 0（默认算例 0.000 W）。',
+              },
+              {
+                n: '⑥',
+                t: '变压器工作在磁滞回线的 Ⅰ、Ⅲ 象限（无直流偏磁）',
+                d: '磁通在 ±ΔB/2 之间往复：同样的 ΔB 设计下 Bmax 只有 ΔB 的一半（单端拓扑 Bmax = ΔB）⇒ 磁芯有富余，可换取更少匝数 / 更小磁芯。',
+                s: '⚠️ 精确化：磁芯损耗由 ΔB 与频率决定，不能理解为"同样的 ΔB 下磁损更小"。这条的真正收益是"同样的 Bmax 限值下可用的 ΔB 翻倍"。',
+              },
+              {
+                n: '⑦',
+                t: '占空比全程 50%，不靠占空比调压',
+                d: '稳压靠调频而非调占空比 ⇒ 副边两组整流管轮流导通半周、全周期都在传能，原边电流接近正弦，同样输出功率下的有效值电流更小 ⇒ 导通损耗与绕组损耗低。',
+                s: '⚠️ 精确化：铁损受益于"励磁波形接近正弦"、不是占空比本身 —— 本站磁芯损耗里的方波修正系数 kwave（默认 1.25）就是「方波相对正弦」的差异。',
+              },
+            ].map((it) => (
+              <div key={it.n} className="p-4 rounded-lg border border-border/60 bg-surface-elevated/20">
+                <p className="text-sm text-text-primary font-medium mb-1">
+                  <span className="text-primary-light mr-2">{it.n}</span>{it.t}
+                </p>
+                <p className="text-text-secondary text-sm leading-relaxed">{it.d}</p>
+                <p className="text-text-muted text-xs leading-relaxed mt-2">{it.s}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-4 text-xs text-text-muted leading-relaxed">
+            小结：<b>① ② 是主要原因，③~⑦ 是次要增益</b>。它们共同说明 LLC 的高效率来自"把能量做成往复交换、
+            只在必要处才让它变成热"，而不是靠更贵的器件硬拼 —— 也正因如此，ZVS 是否达成、副边是否 ZCS
+            是评估 LLC 设计质量的两个关键判据（见上面「ZVS 条件」一节与「设计工具」的损耗分析）。
+          </p>
+        </SectionCard>
       </div>
     </div>
   )
