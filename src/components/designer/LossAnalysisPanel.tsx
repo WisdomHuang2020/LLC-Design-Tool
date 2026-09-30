@@ -223,6 +223,8 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                     {materialPresetMatches(params) ? '' : '（当前数值已被手工修改，不再等于预设）'}
                     {m.note ? `｜${m.note}` : ''}
                     <br />
+                    数据核对：{m.verified === 'official' ? '厂商官方文档（逐项核对）' : '厂商材料表（经转载）'}｜出处：{m.source}
+                    <br />
                     ⚠️ 预设是"参考点常见量级"，<b>投产前须按 {m.name} 手册在目标温度/频率/B 下核对</b>
                   </>
                 )

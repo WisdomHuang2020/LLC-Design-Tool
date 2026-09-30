@@ -245,7 +245,7 @@ export default function Curves() {
           k={k}
           Q={Q}
           showTitle
-          title="增益-频率曲线"
+          title="增益-频率曲线（纵轴：电压增益 M）"
           showExportButton
           className="w-full h-96"
         />
@@ -257,7 +257,7 @@ export default function Curves() {
         <div className="card-surface p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
             <h2 className="text-xl font-semibold text-text-primary">
-              输入阻抗幅值
+              输入阻抗幅值（纵轴：|Zin| / Zr，归一化）
             </h2>
             <button
               onClick={() =>
@@ -276,7 +276,7 @@ export default function Curves() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={impedanceData}
-                margin={{ top: 5, right: 20, bottom: 20, left: 10 }}
+                margin={{ top: 8, right: 24, bottom: 28, left: 16 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
                 <XAxis
@@ -304,14 +304,7 @@ export default function Curves() {
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
-                  }}
-                  label={{
-                    value: '|Zin| / Zr',
-                    angle: -90,
-                    position: 'insideLeft',
-                    fill: '#a3a3a3',
-                    fontSize: 13,
-                  }}
+                  }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <ReferenceLine
@@ -354,14 +347,14 @@ export default function Curves() {
         <div className="card-surface p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-text-primary">
-              输入阻抗相位
+              输入阻抗相位（纵轴：相位 °）
             </h2>
           </div>
           <div className="w-full h-80">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={impedanceData}
-                margin={{ top: 5, right: 20, bottom: 20, left: 10 }}
+                margin={{ top: 8, right: 24, bottom: 28, left: 16 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
                 <XAxis
@@ -389,14 +382,7 @@ export default function Curves() {
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
-                  }}
-                  label={{
-                    value: '相位 (°)',
-                    angle: -90,
-                    position: 'insideLeft',
-                    fill: '#a3a3a3',
-                    fontSize: 13,
-                  }}
+                  }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <ReferenceLine

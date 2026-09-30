@@ -153,7 +153,7 @@ export default function GainChart({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={gainData}
-            margin={{ top: 5, right: 20, bottom: 40, left: 10 }}
+            margin={{ top: 8, right: 24, bottom: 44, left: 16 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
             <XAxis
@@ -182,14 +182,7 @@ export default function GainChart({
                 fill: '#a3a3a3',
                 fontFamily: 'JetBrains Mono',
                 fontSize: 12,
-              }}
-              label={{
-                value: '电压增益 M',
-                angle: -90,
-                position: 'insideLeft',
-                fill: '#a3a3a3',
-                fontSize: 13,
-              }}
+              }}
             />
             <Tooltip content={<CustomTooltip />} />
             {showLegend && (
@@ -233,7 +226,7 @@ export default function GainChart({
                 stroke={Q_COLORS[i]}
                 strokeWidth={2}
                 dot={false}
-                name={`Q=${q}`}
+                name={`Q=${q.toFixed(3)}`}
               />
             ))}
             {showCurrentQ && (
