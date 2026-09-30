@@ -815,7 +815,7 @@ export default function Derivations() {
             <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
             <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
             <ParamRow symbol="Vf" name="整流管压降（= 设计参数值）" unit="V" description="单管压降；与匝比 n 用的是同一个数（单一来源）。二极管 0.6~1.2 V，同步整流按 Io·Rds(on) 折算后通常填 0" typical="0 / 0.6 ~ 1.2 V" />
-            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；默认 130（≈PC95 @100kHz / B≈0.15 T）。正弦激励，不乘 k_wave" typical="查手册" />
+            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；默认 179（≈PC95 @100kHz / B_Lr≈0.165 T）。正弦激励，不乘 k_wave" typical="查手册" />
             <ParamRow symbol="Ve,Lr" name="Lr 磁芯有效体积" unit="cm³" description="默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）" typical="1 ~ 2 cm³" />
             <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25；⚠ 仅用于变压器磁芯，Lr 不用" typical="1.2 ~ 1.4" />
             <ParamRow symbol="Cm, α, β" name="Steinmetz 系数（对照口径）" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="正弦激励拟合系数，方波励磁下有偏差，仅作并列对照" typical="查磁芯 datasheet" />

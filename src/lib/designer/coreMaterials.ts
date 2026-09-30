@@ -20,6 +20,8 @@
 //     官方数据）均已移除 —— **宁可留空也不编**，这类材料走「自定义 / 其他牌号」按手册手填。
 //   · ⚠️ **温度曲线形状**：PC47 的损耗谷在 100 ℃ 附近（250，本表最低）；PC95 是"全程低"（100 ℃ 时 290）。
 //     选型要看实际工作温度区间，别只比一个点。
+//   ⚠️ **note 里写温度序列时必须与 `pcvRef` 同源**：曾给 PC95 抄了另一份文档的
+//      「25/60/100/120 ℃ = 350/300/280/330」（100 ℃ 写 280），而本表 pcvRef 取 290 ⇒ 界面自相矛盾。
 //   · `alpha`/`beta` 是 Steinmetz 指数（f 用 kHz、B 用 mT 口径），典型范围 α≈1.3~1.7、β≈2.4~2.9；
 //     Steinmetz 系数 `Cm` **由 pcvRef 反推**（`steinmetzCm()`），使两条口径在参考点自洽、可互校。
 import type { LossParameters } from './types'
@@ -46,7 +48,7 @@ export const CORE_MATERIALS: CoreMaterial[] = [
   { id: 'PC40', name: 'PC40', family: 'TDK MnZn', pcvRef: 410, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '通用牌号，损耗偏高、价格低' },
   { id: 'PC44', name: 'PC44', family: 'TDK MnZn', pcvRef: 300, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '损耗谷在 100 ℃ 附近' },
   { id: 'PC47', name: 'PC47', family: 'TDK MnZn', pcvRef: 250, alpha: 1.4, beta: 2.6, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '100 ℃ 单点损耗最低（谷温在 100 ℃ 附近）' },
-  { id: 'PC95', name: 'PC95', family: 'TDK MnZn', pcvRef: 290, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '全程低损耗（25/60/100/120 ℃ = 350/300/280/330），站内默认' },
+  { id: 'PC95', name: 'PC95', family: 'TDK MnZn', pcvRef: 290, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '宽温低损耗（工作温区内损耗平坦），站内默认' },
   { id: 'PC90', name: 'PC90', family: 'TDK MnZn', pcvRef: 320, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '高 Bs、低损耗' },
   { id: '3C90', name: '3C90', family: 'Ferroxcube MnZn', pcvRef: 450, alpha: 1.35, beta: 2.5, verified: 'vendor-table', source: 'Ferroxcube 材料表（经代理转载）', note: '损耗谷在 100 ℃' },
   { id: '3C94', name: '3C94', family: 'Ferroxcube MnZn', pcvRef: 350, alpha: 1.4, beta: 2.6, verified: 'vendor-table', source: 'Ferroxcube 材料表（经代理转载）', note: '低成本低损耗牌号' },

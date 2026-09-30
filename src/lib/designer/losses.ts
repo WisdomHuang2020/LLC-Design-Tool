@@ -2,6 +2,12 @@
 // 由设计计算结果 + 器件/磁芯参数估算各项损耗与效率。
 import type { CalculatedData, LossParameters, LossBreakdown } from './types'
 import { magnetizingCurrentOffPeak } from './llcMath'
+import { coreMaterialById, steinmetzCm } from './coreMaterials'
+
+// 默认磁芯材料（PC95）。下面的 coreK / coreAlpha / coreBeta / corePcv **一律取自材料库**，不另写数值：
+// 界面用 `materialPresetMatches()` 逐项比对（coreK 的容差只有 1e-15），默认值只要与预设差一点，
+// 打开设计页就会误报「当前数值已被手工修改，不再等于预设」——这是用户可见的假告警，别再各写一套。
+const defaultCoreMaterial = coreMaterialById('PC95')!
 
 export const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
@@ -18,28 +24,29 @@ export const defaultLossParams: LossParameters = {
   vdsSwing: 400, // V，一般填母线电压 V_in
   mosfetVsd: 1.2,
   primaryTurns: 30,
-  coreMaterial: 'PC95',
+  coreMaterial: defaultCoreMaterial.id,
   coreVe: 5.0,
   coreAe: 80,
-  coreK: 1.5e-6,
-  coreAlpha: 1.3,
-  coreBeta: 2.5,
+  coreK: steinmetzCm(defaultCoreMaterial),
+  coreAlpha: defaultCoreMaterial.alpha,
+  coreBeta: defaultCoreMaterial.beta,
   windingRdc: 50,
   skinF0: 100,
   syncRectRdsOn: 5,
   lrDcr: 30,
   crEsr: 20,
 
-  // 磁芯损耗：默认走手册 P_cv 法（PC95 @100 ℃ / 100 kHz / 0.2 T ≈ 290 mW/cm³，TDK《材质标准特性表》变压器・扼流圈用）
+  // 磁芯损耗：默认走手册 P_cv 法（PC95 @100 ℃ / 100 kHz / 0.2 T，取自材料库的预设值）
   coreLossMode: 'pcv',
-  corePcv: 290,
+  corePcv: defaultCoreMaterial.pcvRef,
   coreWaveK: 1.25,
 
   // 谐振电感铁损：默认给出有依据的量级值，而不是留 0
-  //  · P_cv = 179 mW/cm³ —— PC95 官方：100 ℃/100 kHz 下 B=0.2 T 为 290 mW/cm³，按 B^2.5 折算到 B≈0.15 T：290×(0.15/0.2)^2.5 ≈ 179
+  //  · P_cv = 179 mW/cm³ —— 由 PC95 参考点（100 ℃/100 kHz、B=0.2 T 时 290 mW/cm³）按 B^β 折算（β=2.5）
+  //    到 B_Lr ≈ 0.165 T：290×(0.165/0.2)^2.5 ≈ 179
   //  · Ve   = 1.25 cm³   —— 取变压器 Ve（默认 5.0 cm³）的 1/4（谐振电感体积通常为变压器的 1/5~1/4）
-  //  ⚠️ 这只是「典型量级」假设（默认 0.16 W）；实际必须按 Lr 所用磁芯的牌号、Ae、匝数与实测 B 重查，
-  //     给默认值不等于免责 —— 换成实际磁芯数据后须重算。
+  //  ⚠️ 这只是「典型量级」假设（默认 179×1.25/1000 ≈ 0.22 W）；实际必须按 Lr 所用磁芯的牌号、Ae、
+  //     匝数与实测 B 重查，给默认值不等于免责 —— 换成实际磁芯数据后须重算。
   lrCorePcv: 179,
   lrCoreVe: 1.25,
 
@@ -210,8 +217,8 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // ⚠️ 电流必须用原边**总电流有效值** ipRms = √(Ir² + Im²)，**不可**用励磁电流 imRms。
   //    依据 MMF 平衡 Np·ip = Ns·is + Np·im：原边绕组这一个导体上，**负载折算分量与励磁分量
   //    同时流过**（负载电流经磁耦合折算回原边，并非"只在副边流"）；二者近似正交，
-  //    故有效值按平方和相加。默认参数下 ipRms=0.70A、imRms=0.22A，误用后者会把铜损
-  //    低估约 10 倍（0.049W → 0.005W），进而严重低估温升、导致变压器欠设计。
+  //    故有效值按平方和相加。默认参数下 ipRms≈0.56A、imRms≈0.17A，误用后者会把铜损
+  //    低估约 11 倍（0.016W → 0.001W），进而严重低估温升、导致变压器欠设计。
   //    （2026-09-29 审核结论：此项曾被外部意见列为"应改用 Im"，实为误报。）
   const rdc = lp.windingRdc / 1000
   const freqRatio = fsw / 1000 / lp.skinF0
