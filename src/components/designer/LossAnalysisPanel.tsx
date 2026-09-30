@@ -106,11 +106,11 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           </div>
           <div>
             <label className={labelClass}>交叉时间 t_cr（由上式算出）</label>
-            <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
-              <span className="font-mono text-xs text-text-primary">关断 {tCrossOffNs} ns ｜ 开通 {tCrossOnNs} ns</span>
-              <span className="text-[10px] text-text-muted">t_cr = Qgd·Rg/ΔV</span>
+            <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center">
+              <span className="font-mono text-xs text-text-primary truncate">关断 {tCrossOffNs} ｜ 开通 {tCrossOnNs} ns</span>
             </div>
             <Note hidden={notesHidden}>
+              t_cr = Q<sub>gd</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
               ⚠️ 不要直接填规格书 t<sub>r</sub>/t<sub>f</sub>：那是特定测试条件（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω）下测的
               <b>漏极电流 10%↔90% 过渡时间</b>，既非本机工况、也不是损耗积分所需的 V·I 重叠时长
             </Note>
