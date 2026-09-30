@@ -107,7 +107,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>交叉时间 t_cr（由上式算出）</label>
             <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center">
-              <span className="font-mono text-xs text-text-primary truncate">关断 {tCrossOffNs} ｜ 开通 {tCrossOnNs} ns</span>
+              <span className="font-mono text-sm text-text-primary truncate">关断 {tCrossOffNs} ｜ 开通 {tCrossOnNs} ns</span>
             </div>
             <Note hidden={notesHidden}>
               t_cr = Q<sub>gd</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
