@@ -225,7 +225,9 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                     <br />
                     数据核对：{m.verified === 'official' ? '厂商官方文档（逐项核对）' : '厂商材料表（经转载）'}｜出处：{m.source}
                     <br />
-                    ⚠️ 预设是"参考点常见量级"，<b>投产前须按 {m.name} 手册在目标温度/频率/B 下核对</b>
+                    {m.verified === 'official'
+                      ? <>（本牌号数值已与其官方文档逐项核对；仍建议按<b>实际工作点</b>复核）</>
+                      : <>⚠️ 该值取自厂商材料表（经转载），<b>投产前须按 {m.name} 手册核对</b></>}
                   </>
                 )
               })()}
