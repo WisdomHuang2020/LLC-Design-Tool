@@ -510,12 +510,23 @@ export default function Derivations() {
           <ParamTable>
             <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（V_in,nom / V_in,min）" typical="1.1 ~ 1.4" />
             <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
-            <ParamRow symbol="Mpeak" name="峰值增益（曲线峰值）" unit="-" description="给定 (k, Q) 下增益曲线的最大值；设计须满足 Mpeak ≥ Gmax" typical="数值求解" />
-            <ParamRow symbol="Qmax1" name="峰值增益约束 Q" unit="-" description="满足 Mpeak(k,Q) = Gmax 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
+            <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
+            <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
+            <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取峰值判据：满足 Mpeak(k,Q) = Gmax 的最大 Q（数值二分）；教材闭式对应分界判据 Mbnd = Gmax，更保守" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / Cj 与最高工作频率决定，不含死区时间" typical="数值求解" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
+
+          <HighlightBox type="warning">
+            <strong>Q<sub>max1</sub> 有两条不同判据（不是谁近似谁）：</strong>
+            ① <b>峰值判据</b>（本站默认）：令增益曲线<b>峰顶</b> M<sub>peak</sub> = G<sub>max</sub>；
+            ② <b>感容分界判据</b>（教材/计算书常用）：令<b>分界点</b>（Im Z<sub>in</sub> = 0）增益 M<sub>bnd</sub> = G<sub>max</sub>，
+            其精确解析解即教材闭式 Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1))。
+            峰顶恒在分界点<b>左侧</b>（实测左移 2%~15%，Q 越小偏得越多），即峰顶位于<b>容性区</b>，
+            故按峰值判据取 Q<sub>max1</sub> 时，感性区内实际略够不到 G<sub>max</sub>（默认参数差约 0.15%，平时被 m 裕量掩盖）。
+            需要与计算书逐位对齐或取最保守口径时，请在结果卡把 Q<sub>max1</sub> 切到「分界判据」。
+          </HighlightBox>
 
           <HighlightBox type="info">
             <strong>设计流程：</strong>定义规格 → 计算匝比 n → 计算 R<sub>ac</sub> → 确定 G<sub>max</sub>/G<sub>min</sub> → 选取 k → 求解 Q<sub>max</sub> → 取 Q<sub>s</sub> → 解算 L<sub>r</sub>、C<sub>r</sub>、L<sub>m</sub> → 校验应力、损耗与磁密。

@@ -4,7 +4,7 @@ import { TrendingUp } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import CollapsibleCard from './CollapsibleCard'
 import ResultItem from './ResultItem'
-import { fminTextbook, qmax1Textbook } from '../../lib/designer/llcMath'
+import { boundaryFn, boundaryGain, fminTextbook, qmax1Boundary } from '../../lib/designer/llcMath'
 import type { CalculatedData } from '../../lib/designer/types'
 
 interface ResultsSummaryCardProps {
@@ -15,15 +15,25 @@ interface ResultsSummaryCardProps {
   onToggle: () => void
 }
 
-/** Qmax1 的展示口径：本站数值解 / 教材闭式（近似）。仅影响展示，不参与设计计算。 */
-type Qmax1Mode = 'numeric' | 'textbook'
+/**
+ * Qmax1 的展示口径 —— 两条**不同判据**，不是谁近似谁：
+ * - peak：本站默认。令增益曲线**峰值**（dM/dfn=0）恰等于 Gmax。
+ * - boundary：令**感容分界点**（Im Zin = 0）的增益恰等于 Gmax；其解析解即教材闭式。
+ * 仅影响展示，不参与设计计算（设计始终用 peak 判据，除非另有说明）。
+ */
+type Qmax1Mode = 'peak' | 'boundary'
 
 export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle }: ResultsSummaryCardProps) {
   // 展示口径开关（本地视图状态，不持久化）
-  const [qmax1Mode, setQmax1Mode] = useState<Qmax1Mode>('numeric')
-  const qmax1TextbookVal = qmax1Textbook(calculated.k, calculated.gMax)
+  const [qmax1Mode, setQmax1Mode] = useState<Qmax1Mode>('peak')
+  const qmax1BndVal = qmax1Boundary(calculated.k, calculated.gMax)
   const fminTextbookVal = fminTextbook(calculated.fr, calculated.k, calculated.gMax)
-  const showTextbook = qmax1Mode === 'textbook' && Number.isFinite(qmax1TextbookVal)
+  const showBoundary = qmax1Mode === 'boundary' && Number.isFinite(qmax1BndVal)
+
+  // 感性/容性分界点：本站判据（峰值）与感性区可用上限（分界点）之差由此量化
+  const fnBnd = boundaryFn(calculated.k, calculated.q)
+  const mBnd = boundaryGain(calculated.k, calculated.q)
+  const bndOk = Number.isFinite(mBnd)
 
   return (
     <CollapsibleCard
@@ -66,8 +76,19 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="峰值增益 Mpeak"
             value={calculated.mMax.toFixed(3)}
             unit=""
-            formula="数值寻优峰值"
+            formula="数值寻优峰顶（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值 —— 判断「够不够」请看下行的 Mbnd"
             highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
+          />
+          <ResultItem
+            label="感性区增益上限 Mbnd"
+            value={bndOk ? mBnd.toFixed(3) : '—'}
+            unit=""
+            formula={
+              bndOk
+                ? `分界点（Im Zin = 0，fn=${fnBnd.toFixed(3)}）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限（须 ≥ Gmax=${calculated.gMax.toFixed(3)}）`
+                : '分界点不可解（参数越界）'
+            }
+            highlight={!bndOk ? undefined : mBnd >= calculated.gMax * 1.05 ? 'good' : mBnd >= calculated.gMax ? 'warn' : 'critical'}
           />
           <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]（空载推导口径；与 fmin 不对称）" />
           <ResultItem label="fmin（满载低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="满载增益曲线 M=Gmax 的交点（感性区，最坏工况）" />
@@ -104,23 +125,23 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             }
           />
           <ResultItem
-            label="Qmax1（峰值增益约束）"
+            label="Qmax1（增益能力约束）"
             value={
-              showTextbook
-                ? qmax1TextbookVal.toFixed(3)
+              showBoundary
+                ? qmax1BndVal.toFixed(3)
                 : Number.isFinite(calculated.qmax1)
                   ? calculated.qmax1.toFixed(3)
                   : '—'
             }
             unit=""
             formula={
-              showTextbook
-                ? '教材式 1/(k·Gmax)·√(k+Gmax²/(Gmax²−1))｜近似：峰值增益略高于 Gmax，偏保守'
-                : '数值二分：令峰值增益 Mpeak 恰等于 Gmax 的 Q 上限｜更精确'
+              showBoundary
+                ? '分界判据：令分界点增益 Mbnd 恰等于 Gmax｜解析解 = 教材式 1/(k·Gmax)·√(k+Gmax²/(Gmax²−1))，保证感性区内够得着'
+                : '峰值判据：令峰值增益 Mpeak 恰等于 Gmax｜峰顶在容性区，故感性区内略够不到（默认参数差 0.15%）'
             }
             action={
               <div className="flex gap-0.5 shrink-0">
-                {(['numeric', 'textbook'] as const).map((m) => (
+                {(['peak', 'boundary'] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
@@ -131,7 +152,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                         : 'border-border text-text-muted hover:text-text-secondary'
                     }`}
                   >
-                    {m === 'numeric' ? '数值解' : '教材闭式'}
+                    {m === 'peak' ? '峰值判据' : '分界判据'}
                   </button>
                 ))}
               </div>
@@ -148,11 +169,30 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           <div className="space-y-1 font-mono text-text-secondary">
             <div>fmax = {Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} kHz —— 空载增益公式推导（fn&gt;1 侧）</div>
             <div>fmin = {(calculated.fmin / 1000).toFixed(1)} kHz —— 本站口径：满载增益曲线 M=Gmax 的交点（感性区，最坏工况）</div>
-            <div>fmin(教材式) = {Number.isFinite(fminTextbookVal) ? (fminTextbookVal / 1000).toFixed(1) : '—'} kHz —— fr/√(1+k(1−1/Gmax²))，忽略 Q 项的近似</div>
+            <div>fmin(教材式) = {Number.isFinite(fminTextbookVal) ? (fminTextbookVal / 1000).toFixed(1) : '—'} kHz —— fr/√(1+k(1−1/Gmax²))，即「感容分界轨迹 ∩ Gmax」的精确 fn（ZVS 安全下限，非近似）</div>
           </div>
           <p className="mt-1.5 text-text-muted">
             本站 fmax 取空载口径、fmin 取满载口径，两者不对称是有意为之（分别对应最高/最低输入电压的最坏工况）；
-            教材 fmin 式与本站满载交点式<b className="text-text-secondary">定义不同、均成立</b>，此处仅并列展示供对照。
+            教材 fmin 式与本站满载交点式<b className="text-text-secondary">是两条不同曲线与 Gmax 的交点</b>：
+            本站是「<b className="text-text-secondary">设计曲线 ∩ Gmax</b>」（实际工作频率），教材式是「<b className="text-text-secondary">感容分界轨迹 ∩ Gmax</b>」（ZVS 安全下限）。
+            本站值只要高于自身分界频率（本设计 {Number.isFinite(fnBnd) ? (fnBnd * calculated.fr / 1000).toFixed(1) : '—'} kHz）即为安全。
+          </p>
+        </div>
+
+        {/* Qmax1 两种判据 + 感性区可用上限（并列展示，供对照；不参与设计计算） */}
+        <div className="mt-4 rounded-lg border border-border bg-surface-elevated p-3 text-xs leading-relaxed">
+          <p className="font-medium text-text-primary mb-1.5">Qmax1 的两种判据与「感性区够不够得着」</p>
+          <div className="space-y-1 font-mono text-text-secondary">
+            <div>峰值判据（本站默认）Qmax1 = {Number.isFinite(calculated.qmax1) ? calculated.qmax1.toFixed(5) : '—'} —— 令峰顶 Mpeak = Gmax</div>
+            <div>分界判据（教材闭式）Qmax1 = {Number.isFinite(qmax1BndVal) ? qmax1BndVal.toFixed(5) : '—'} —— 令分界点 Mbnd = Gmax，更保守</div>
+            <div>本设计分界点 fn = {Number.isFinite(fnBnd) ? fnBnd.toFixed(4) : '—'}，该点 Mbnd = {bndOk ? mBnd.toFixed(5) : '—'}，Mpeak = {calculated.mMax.toFixed(5)}</div>
+            <div>感性区可用裕量 = {bndOk ? ((mBnd - calculated.gMax) / calculated.gMax * 100).toFixed(3) : '—'}%（按 Mbnd），曲线峰顶显示裕量 = {((calculated.mMax - calculated.gMax) / calculated.gMax * 100).toFixed(3)}%</div>
+          </div>
+          <p className="mt-1.5 text-text-muted">
+            两条判据都自洽，<b className="text-text-secondary">不是谁近似谁</b>：峰顶恒在分界点左侧（实测左移 2%~15%，Q 越小偏得越多），
+            即<b className="text-text-secondary">峰顶位于容性区</b>；
+            感性区内增益最大值出现在分界点。故按峰值判据取 Qmax1 时，感性区内实际<b className="text-text-secondary">略够不到</b> Gmax
+            （默认参数差约 0.15%，平时被 m 裕量掩盖）。若需与计算书逐位对齐或取最保守口径，请把上行切到「分界判据」。
           </p>
         </div>
 
@@ -193,6 +233,16 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                 <ReferenceLine y={calculated.gMax} stroke="#ef4444" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmax=${calculated.gMax.toFixed(3)}`, fill: '#ef4444', fontSize: 10, position: 'right' }} />
                 <ReferenceLine y={calculated.gMin} stroke="#22c55e" strokeDasharray="5 5" strokeWidth={1} label={{ value: `Gmin=${calculated.gMin.toFixed(3)}`, fill: '#22c55e', fontSize: 10, position: 'right' }} />
                 <ReferenceLine x={1} stroke="#94a3b8" strokeDasharray="3 3" strokeWidth={1} label={{ value: 'fr', fill: '#94a3b8', fontSize: 10, position: 'top' }} />
+                {/* 感容分界点：左侧为容性区（不可工作），右侧为感性区 */}
+                {Number.isFinite(fnBnd) && (
+                  <ReferenceLine
+                    x={Number(fnBnd.toFixed(2))}
+                    stroke="#f59e0b"
+                    strokeDasharray="4 2"
+                    strokeWidth={1.5}
+                    label={{ value: `分界 fn=${fnBnd.toFixed(3)}`, fill: '#f59e0b', fontSize: 10, position: 'top' }}
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -202,6 +252,9 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#ef4444] border-dashed" /> Gmax = {calculated.gMax.toFixed(3)}</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#22c55e] border-dashed" /> Gmin = {calculated.gMin.toFixed(3)}</span>
             <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#94a3b8]" /> fr (fn=1)</span>
+            {Number.isFinite(fnBnd) && (
+              <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#f59e0b]" /> 感容分界 fn={fnBnd.toFixed(3)}（左侧容性区）</span>
+            )}
           </div>
         </div>
       </div>

@@ -101,6 +101,63 @@ export function inputImpedanceNorm(
   return { re, im, mag: Math.sqrt(re * re + im * im), phase: (Math.atan2(im, re) * 180) / Math.PI }
 }
 
+// ─── 感性 / 容性分界点（Im(Zin) = 0）───
+
+/**
+ * 给定 Q 的增益曲线上，**感性区与容性区的分界点**归一化频率 fn（Im(Zin) = 0）。
+ *
+ * 由 `inputImpedanceNorm` 的虚部为零解出（令 x = fn²，是 x 的二次方程）：
+ *
+ *   Im(Zin)/Zr = (fn − 1/fn) + fn·k/(1 + fn²k²Q²) = 0
+ *   ⇒ k²Q²x² + (1 + k − k²Q²)x − 1 = 0      （x = fn²）
+ *   ⇒ x = [ −(1+k−k²Q²) + √((1+k−k²Q²)² + 4k²Q²) ] / (2k²Q²)   （取正根）
+ *
+ * fn < fn_b ⇒ 容性区（不能稳定工作）; fn > fn_b ⇒ 感性区（可 ZVS）。
+ * 实测残差 |Im(Zin)| < 1e-16。
+ */
+export function boundaryFn(k: number, q: number): number {
+  const a = k * k * q * q
+  if (!(a > 0) || !(k > 0)) return NaN
+  const b = 1 + k - a
+  const disc = b * b + 4 * a
+  const x = (-b + Math.sqrt(disc)) / (2 * a)
+  return x > 0 ? Math.sqrt(x) : NaN
+}
+
+/**
+ * **感性区内实际可达的增益上限** = 分界点处的增益 M(fn_b)。
+ *
+ * 为什么不是峰值增益：增益曲线的峰值（dM/dfn = 0）恒落在分界点**左侧**（实测左移 2%~15%，
+ * Q 越小偏得越多），即**峰值位于容性区**。感性区内 M 随 fn 单调下降，最大值出现在分界点。
+ * 因此判断「够不够得着 Gmax」必须用本值，用 Mpeak 会乐观若干个百分点。
+ */
+export function boundaryGain(k: number, q: number): number {
+  const fn = boundaryFn(k, q)
+  return Number.isFinite(fn) ? gainM(fn, k, q) : NaN
+}
+
+/**
+ * 「感容分界判据」下的 Q 上限：**分界点增益恰等于 Gmax** 的 Q。
+ *
+ * 与本站默认判据（峰值增益 = Gmax，`computeDesign.findQmax1`）的区别：
+ * 本判据保证在最坏工况下**感性区内仍够得着** Gmax，故更保守；本站默认判据的峰值落在容性区，
+ * 代入后在感性区内实际差一点点（默认参数下差 0.15%）。
+ *
+ * 本函数按判据定义二分求解；其**精确解析解即 `qmax1Textbook`**（实测相对差 < 1e-12），
+ * 对应的分界点频率即 `fminTextbook` 的归一化值（实测 0.0000% 一致）。
+ */
+export function qmax1Boundary(k: number, gMax: number): number {
+  if (!(k > 0) || !(gMax > 1)) return NaN
+  let lo = 1e-4
+  let hi = 20
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2
+    if (boundaryGain(k, mid) > gMax) lo = mid
+    else hi = mid
+  }
+  return (lo + hi) / 2
+}
+
 // ZVS phase check at fsw (fn = 1 since fr = fsw in our design)
 export function zvsPhase(k: number, q: number): number {
   // 原实现用 x = k·q、real = x²/(1+x²)、imag = x/(1+x²)，即 Re/Rac 与 Im/Rac 的归一化形式。
@@ -116,11 +173,15 @@ export function zvsPhase(k: number, q: number): number {
  *
  *   Qmax = 1/(k·Gmax) · √( k + Gmax²/(Gmax² − 1) )
  *
- * ⚠️ 该式是**近似式**：并不保证代入后增益曲线的峰值恰为 Gmax。
- * 实测（k=4, Gmax=1.0526）峰值增益 = 1.05434 > Gmax，**偏保守**（留了额外余量）；
- * 参数越极端偏差越大（k=8, Gmax=1.35 时约 −5.4%）。
- * 本站默认用数值二分求**精确解**（`computeDesign.findQmax1` 令峰值增益恰为 Gmax）。
- * 保留此式仅为与教材结果对照。
+ * ✅ 该式**不是近似式**，而是「**感容分界点**增益 = Gmax」这条判据的**精确解析解**
+ * （与 `qmax1Boundary` 的二分解相对差 < 1e-12，实测 k=3~8、Gmax=1.05~1.35 全部逐位相同）。
+ *
+ * 它与本站默认的「峰值增益 = Gmax」是**两条不同判据**，不是谁近似谁：
+ * 峰值点恒在分界点左侧（落在容性区），故同一 Gmax 下本式给出的 Q 上限**更小、更保守**，
+ * 但它保证感性区内真的够得着 Gmax（默认参数下 0.896744 vs 0.90727，差 1.2%）。
+ *
+ * 本站默认用数值二分求**峰值判据**解（`computeDesign.findQmax1`，令峰值增益恰为 Gmax）；
+ * 保留此式供与教材/计算书对照，并在结果卡并列展示两种判据。
  */
 export function qmax1Textbook(k: number, gMax: number): number {
   const denom = gMax * gMax - 1
@@ -129,14 +190,19 @@ export function qmax1Textbook(k: number, gMax: number): number {
 }
 
 /**
- * 教材/常用资料给出的「最低工作频率」闭式解（忽略 Q 项的近似）：
+ * 教材/常用资料给出的「最低工作频率」闭式解（ZVS 安全下限）：
  *
  *   fn,min = 1 / √( 1 + k(1 − 1/Gmax²) )    ⇒    fmin = fr / √(1 + k(1 − 1/Gmax²))
  *
- * ⚠️ 定义与本站不同：本站 fmin 取**满载增益曲线 M=Gmax 的交点**
- * （`fullLoadGainCrossing`，满载 + 最低母线的最坏工况，更保守）；
- * 本式是把增益式分母第一项单独置为 1/Gmax 得到的解析近似，**忽略 Q 项**。
- * 二者均成立、数值略有差异（默认参数下 84.8 kHz vs 86.7 kHz），页面并列展示供对照。
+ * ✅ 该式**不是「忽略 Q 项的近似」**，而是「**感容分界轨迹** ∩ M = Gmax」这一点的**精确 fn 坐标**
+ * （实测：该 fn 上分界轨迹对应的 Q 恰为 `qmax1Textbook`，该点增益与 Gmax 相对差 0.0000%）。
+ * 物理含义 = **ZVS 安全下限**：越过它就进入容性区。
+ *
+ * ⚠️ 与本站 fmin **定义不同**：本站取**满载增益曲线** M=Gmax 的交点
+ * （`fullLoadGainCrossing`，满载 + 最低母线下的**实际工作频率**，默认参数 88.6 kHz）；
+ * 本式对应「Q 顶到分界判据上限」的最坏情形（默认参数 84.8 kHz）。
+ * 二者均成立 —— 本站值若**高于**自身分界频率（本设计 88.6 > 79.8 kHz）即安全。
+ * 页面并列展示供对照。
  */
 export function fminTextbook(fr: number, k: number, gMax: number): number {
   const g2 = gMax * gMax
