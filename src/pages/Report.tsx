@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useDesign } from '../lib/DesignContext'
+import { boundaryGain } from '../lib/designer/llcMath'
 import {
   FileText,
   Download,
@@ -35,6 +36,13 @@ export default function Report() {
     const r = results
     const p = params
     if (!r) return '# LLC谐振变换器设计报告\n\n> 尚未完成设计计算。请先在 Designer 页面执行计算。\n'
+
+    // 感性区可达增益上限：分界点增益 Mbnd = boundaryGain(k, Q)。
+    // ⚠️ 不能用曲线峰顶 Mpeak 对标 Gmax 算裕量 —— 峰顶恒在容性区，会把裕量高估（v2.10.99 修正）。
+    const mReqMinMd =
+      p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin
+    const mbndMd = boundaryGain(r.k, r.q)
+    const marginMd = Number.isFinite(mbndMd) ? (mbndMd / mReqMinMd - 1) * 100 : NaN
 
     return `# LLC谐振变换器设计报告
 
@@ -80,10 +88,11 @@ export default function Report() {
 
 - **所需增益**（Vinmin 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
 - **所需增益**（Vinmax 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMax : (r.n * (p.vout + p.vd)) / p.vinMax).toFixed(3)}
-- **峰值增益 Mpeak**: ${r.mMax.toFixed(3)}
-- **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin)) - 1) * 100).toFixed(1)}%
+- **峰值增益 Mpeak**: ${r.mMax.toFixed(3)}（曲线峰顶，位于**容性区**，仅作曲线参考）
+- **感性区增益上限 Mbnd**: ${Number.isFinite(mbndMd) ? mbndMd.toFixed(3) : '—'}（感容分界点 Im Zin = 0 处的增益，感性区内可达上限）
+- **设计裕量（按 Mbnd）**: ${Number.isFinite(marginMd) ? `+${marginMd.toFixed(2)}%` : '—'}
 
-${gainMargin < 0 ? '⚠️ 峰值增益不足，需调整 k 或 Q。' : gainMargin < 5 ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。` : '✅ 峰值增益裕量充足，设计可行。'}
+${!Number.isFinite(marginMd) ? '⚠️ 感容分界点无实数解，无法判定增益裕量，请检查 k 与输入电压范围。' : marginMd < 0 ? '⚠️ 感性区增益不足（Mbnd < 所需增益），工作点会被挤进容性区，需调整 k / Q 或收窄最低输入电压。' : marginMd < 5 ? `⚠️ 感性区增益裕量仅 ${marginMd.toFixed(2)}%，低于工程建议的 5%，设计存在量产风险，建议重新优化参数（本流程 Q = m·Qmax1 恒贴增益上限，m=0.95 时该裕量结构性只有约 0.7%，降低 m 可直接换取裕量）。` : '✅ 感性区增益裕量充足，设计可行。'}
 
 ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
 
@@ -212,7 +221,23 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
       ? (2 * r.n * (p.vout + p.vd)) / p.vinMax
       : (r.n * (p.vout + p.vd)) / p.vinMax
     : 0
-  const gainMargin = hasData ? ((r.mMax / mReqMin - 1) * 100) : 0
+  // 感性区可达增益上限（分界点增益）；Mpeak 恒在容性区，不能用来算裕量（v2.10.99 修正）
+  const mbndVal = hasData ? boundaryGain(r.k, r.q) : NaN
+  const gainMargin = hasData && Number.isFinite(mbndVal) ? (mbndVal / mReqMin - 1) * 100 : NaN
+
+  // 设计可行性：同时看两条 —— ① 空载降压约束 r.designFeasible（k/(k+1) ≤ Gmin）；
+  // ② 感性区增益裕量 gainMargin（<0 表示分界点都够不到 Gmax）。
+  // ⚠️ 此前状态列表只看 ① 而概览卡只看 ②，同一页会出现「可行 / 风险」两个结论（v2.10.99 统一）。
+  const feasible = hasData && r.designFeasible !== false && Number.isFinite(gainMargin) && gainMargin >= 5
+  const feasLabel = !hasData
+    ? '—'
+    : r.designFeasible === false || (Number.isFinite(gainMargin) && gainMargin < 0)
+      ? '不可行'
+      : !Number.isFinite(gainMargin)
+        ? '待判定'
+        : gainMargin < 5
+          ? '风险'
+          : '可行'
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -376,7 +401,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       <XCircle className="w-4 h-4 text-danger" />
                     )}
                     <span className="text-sm text-text-primary">
-                      峰值增益 {gainMargin >= 5 ? '充足' : gainMargin >= 0 ? '裕量不足' : '不足'}
+                      感性区增益（Mbnd）{Number.isFinite(gainMargin) ? (gainMargin >= 5 ? '充足' : gainMargin >= 0 ? '裕量不足' : '不足') : '不可判定'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -400,13 +425,15 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {r.designFeasible !== false ? (
+                    {feasible ? (
                       <CheckCircle className="w-4 h-4 text-success" />
+                    ) : feasLabel === '风险' ? (
+                      <AlertTriangle className="w-4 h-4 text-warning" />
                     ) : (
                       <XCircle className="w-4 h-4 text-danger" />
                     )}
                     <span className="text-sm text-text-primary">
-                      设计可行性 {r.designFeasible !== false ? '可行' : '不可行'}
+                      设计可行性 {feasLabel}
                     </span>
                   </div>
                 </>
@@ -664,18 +691,24 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                           {hasData ? r.mMax.toFixed(3) : '—'}
                         </div>
                       </div>
+                      <div>
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">感性区增益上限 Mbnd</div>
+                        <div className="text-xl font-mono font-semibold text-text-primary print:text-black">
+                          {hasData && Number.isFinite(mbndVal) ? mbndVal.toFixed(3) : '—'}
+                        </div>
+                      </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计裕量</div>
-                        <div className={`text-xl font-mono font-semibold ${hasData ? (gainMargin < 0 ? 'text-danger' : gainMargin < 5 ? 'text-warning' : 'text-success') : ''}`}>
-                          {hasData ? `${gainMargin >= 0 ? '+' : ''}${gainMargin.toFixed(1)}%` : '—'}
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计裕量（按 Mbnd）</div>
+                        <div className={`text-xl font-mono font-semibold ${hasData && Number.isFinite(gainMargin) ? (gainMargin < 0 ? 'text-danger' : gainMargin < 5 ? 'text-warning' : 'text-success') : ''}`}>
+                          {hasData && Number.isFinite(gainMargin) ? `${gainMargin >= 0 ? '+' : ''}${gainMargin.toFixed(2)}%` : '—'}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计可行性</div>
-                        <div className={`text-xl font-mono font-semibold ${hasData ? (r.designFeasible !== false && gainMargin >= 5 ? 'text-success' : gainMargin >= 0 ? 'text-warning' : 'text-danger') : ''}`}>
-                          {hasData ? (r.designFeasible !== false && gainMargin >= 5 ? '可行' : gainMargin >= 0 ? '风险' : '不可行') : '—'}
+                        <div className={`text-xl font-mono font-semibold ${hasData ? (feasible ? 'text-success' : feasLabel === '风险' ? 'text-warning' : feasLabel === '不可行' ? 'text-danger' : '') : ''}`}>
+                          {feasLabel}
                         </div>
                       </div>
                     </div>

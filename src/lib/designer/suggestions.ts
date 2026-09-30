@@ -2,10 +2,30 @@
 // 纯函数：由计算结果的标量投影生成建议清单，最多返回 10 条。
 import type { DesignParameters } from '../DesignContext'
 import type { Suggestion, SuggestionInputs } from './types'
+import { boundaryGain, qmax1Boundary } from './llcMath'
 
 /** 非有限值格式化：避免 Infinity 被直接渲染成 "Infinity"（与 ResultsSummaryCard 的显示口径一致） */
 const fmt = (v: number, digits = 3): string =>
   Number.isFinite(v) ? v.toFixed(digits) : Number.isNaN(v) ? '—' : '∞'
+
+/**
+ * 求「m 需要降到多少」才能让**感性区**增益裕量达到目标倍数（默认 1.05 ⇒ +5%）。
+ * 依据：本流程 Q = m·Qmax1，m ↑ ⇒ Q ↑ ⇒ Mbnd=boundaryGain(k,Q) ↓（对 Q 单调递减），故可二分。
+ * 返回 ∈ [0.05, 1]；若即使 m=0.05 也达不到（k 过大）或参数非法，返回 NaN。
+ */
+function solveMarginM(k: number, gMax: number, target: number): number {
+  const q1 = qmax1Boundary(k, gMax)
+  if (!Number.isFinite(q1) || q1 <= 0 || !Number.isFinite(gMax) || gMax <= 1) return NaN
+  if (boundaryGain(k, 0.05 * q1) < target * gMax) return NaN
+  let lo = 0.05
+  let hi = 1
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2
+    if (boundaryGain(k, mid * q1) >= target * gMax) lo = mid
+    else hi = mid
+  }
+  return (lo + hi) / 2
+}
 
 export function generateSuggestions(
   params: DesignParameters,
@@ -30,10 +50,18 @@ export function generateSuggestions(
     s.push({ text: `电感比k=${k.toFixed(2)}满足空载降压约束（kmax=${kMax.toFixed(2)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
   }
 
-  // 2. Qmax对比分析
+  // 2. Qmax 对比：三条上限里哪条最紧
+  //    ⚠️ Qmax1 分支只作**信息**（good）：本工具的 Q 是反算的（Q = m·min(Qmax1,Qmax2,Qmax3)），
+  //       「Qmax1 最紧」在增益受限的设计里几乎是必然结果，本身不需要动作；
+  //       它的后果（增益裕量够不够）由第 4 条按 Mbnd 判定，避免同一件事报两次、且报警无对应动作。
+  //       Qmax2 / Qmax3 最紧时能给出具体杠杆（死区时间 / Coss 器件），故保留 warn。
   const qmaxMin = Math.min(qmax1, qmax2, qmax3)
+  const critLabel = params.qmax1Criterion === 'peak' ? '峰值判据（旧口径，工作点落在容性区）' : '感容分界判据'
   if (qmax1 === qmaxMin) {
-    s.push({ text: `Qmax1(增益限制)=${qmax1.toFixed(3)} 为最小约束，增益范围是设计瓶颈。`, level: 'warn' })
+    s.push({
+      text: `三条约束中最紧的是 Qmax1=${fmt(qmax1)}（${critLabel}）：瓶颈在增益能力（ZVS 侧 Qmax2=${fmt(qmax2)}、寄生电容侧 Qmax3=${fmt(qmax3)} 均宽裕）。`,
+      level: 'good',
+    })
   } else if (qmax2 === qmaxMin) {
     s.push({ text: `Qmax2(ZVS死区限制)=${qmax2.toFixed(3)} 为最小约束，ZVS条件是设计瓶颈。建议增大死区时间或减小Lm。`, level: 'warn' })
   } else if (qmax3 === qmaxMin) {
@@ -41,24 +69,49 @@ export function generateSuggestions(
   }
   s.push({ text: `Qmax分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)}，取 Qmax=${fmt(qmaxMin)}，裕量系数 m=${margin.toFixed(2)} → 设计 Q=${q.toFixed(3)}。`, level: 'good' })
 
-  // 3. Q value
+  // 3. Q 值：本流程里 Q 不是自由变量（Q = m·Qmax），此处只陈述其连带效应，不预判结果。
+  //    连带效应已实测（默认 400V/24V/120W、半桥、k=4）：
+  //      Q 0.897 → 0.538 时，Lr 385.6 → 231.4 µH、Lm 1542 → 925 µH、Er/Ec 3.90 → 6.50、
+  //      fmin 84.8 → 90.3 kHz（调频半跨度 13.5% → 10.7%）
+  //    ⇒ Q 越大 ⇒ Lr、Lm 越大 ⇒ 励磁电流与 ZVS 能量越小、调频跨度越宽。
+  //    ⚠️ 此处**不再声称「频率调节范围可能较宽」**（v2.10.99 修正）：跨度由第 6 条按实测 fmin~fmax 判定，
+  //       两条并存时曾出现「Q 略高 → 范围可能较宽」与「频率范围合理」自相矛盾的输出。
   if (q > 1.0) {
-    s.push({ text: 'Q值偏高（>1.0），谐振阻抗大，频率调节范围可能过宽。', level: 'critical' })
-  } else if (q > 0.7) {
-    s.push({ text: 'Q值略高，负载变化时频率调节范围可能较宽。', level: 'warn' })
+    s.push({
+      text: `Q=${q.toFixed(3)}（>1.0）：特征阻抗已大于满载 R_ac，Lr、Lm 同比例偏大（Lm = k·Q·R_ac/2πfr）⇒ 励磁电流与 ZVS 能量偏小。ZVS 与调频跨度请看下方两条实测判据。`,
+      level: 'warn',
+    })
   } else if (q < 0.2) {
-    s.push({ text: 'Q值偏低（<0.2），谐振电流纹波较大，注意滤波设计。', level: 'warn' })
+    s.push({ text: `Q值偏低（<0.2），谐振电流纹波较大，注意滤波设计。`, level: 'warn' })
   } else {
-    s.push({ text: `Q值=${q.toFixed(3)}处于合理范围（0.2~0.7），谐振特性良好。`, level: 'good' })
+    s.push({
+      text: `Q=${q.toFixed(3)}：由增益上限反算（Q = m·Qmax = ${margin.toFixed(2)}×${fmt(qmaxMin)}），Lm=${(lm * 1e6).toFixed(0)} µH。Q 越大则 Lr/Lm 越大、ZVS 励磁能量越小、调频跨度越宽 —— 本例的 ZVS 与跨度见下方两条实测判据。`,
+      level: 'good',
+    })
   }
 
-  // 4. Peak gain vs required
-  if (mMax < mRequired) {
-    s.push({ text: `峰值增益不足（Mpeak=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
-  } else if (mMax < mRequired * 1.05) {
-    s.push({ text: `峰值增益裕量较小（${((mMax/mRequired - 1)*100).toFixed(1)}%），建议留至少5%裕量。`, level: 'warn' })
+  // 4. 增益裕量 —— 必须按**感容分界点增益 Mbnd**（感性区内真正可达的上限）判定
+  //    ⚠️ 曲线峰顶 Mpeak 恒落在容性区、不能作为工作点，用它对标 Gmax 会**高估**裕量：
+  //       默认算例 Mpeak=1.0627（+0.96%）而 Mbnd=1.0603（+0.73%）——v2.10.99 起统一改用 Mbnd。
+  const mBnd = boundaryGain(k, q)
+  if (!Number.isFinite(mBnd)) {
+    s.push({ text: `增益裕量无法判定：k=${k}、Q=${q.toFixed(3)} 越界，感容分界点无实数解。请检查 k 与输入电压范围。`, level: 'warn' })
+  } else if (mBnd < mRequired) {
+    s.push({
+      text: `感性区增益不足（Mbnd=${mBnd.toFixed(3)} < Gmax=${mRequired.toFixed(3)}）：增益在感容分界点就够不到 Gmax，工作点会被挤进容性区。请减小 k、下调 m（降低 Q）或收窄最低输入电压。`,
+      level: 'critical',
+    })
+  } else if (mBnd < mRequired * 1.05) {
+    const mFor = solveMarginM(k, mRequired, 1.05)
+    s.push({
+      text: `感性区增益裕量偏紧：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}，仅 +${((mBnd / mRequired - 1) * 100).toFixed(2)}%（工程建议 ≥5%）。该裕量几乎完全由 m 决定 —— 本流程 Q = m·Qmax1 恒贴在增益上限，故 m=1.00 时 Mbnd 恰等于 Gmax（+0.00%）${Number.isFinite(mFor) ? `；要拿到 5% 需把 m 降到 ≈${mFor.toFixed(2)}（Q≈${(mFor * qmaxMin).toFixed(3)}）` : `；要拿到 5% 需减小 k（当前 k=${k.toFixed(2)} 下仅靠降 m 不可达）`}。`,
+      level: 'warn',
+    })
   } else {
-    s.push({ text: `峰值增益裕量充足（Mpeak=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
+    s.push({
+      text: `感性区增益裕量充足：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}（+${((mBnd / mRequired - 1) * 100).toFixed(2)}%）。注：曲线峰顶 Mpeak=${mMax.toFixed(3)}（+${((mMax / mRequired - 1) * 100).toFixed(2)}%）位于容性区，仅作曲线参考。`,
+      level: 'good',
+    })
   }
 
   // 5. ZVS分析

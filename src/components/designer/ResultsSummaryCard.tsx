@@ -70,7 +70,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             value={calculated.gMax.toFixed(3)}
             unit=""
             formula="Gmax = Vinnom/Vinmin"
-            highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
+            highlight={!bndOk ? undefined : mBnd >= calculated.gMax * 1.05 ? 'good' : mBnd >= calculated.gMax ? 'warn' : 'critical'}
           />
           <ResultItem
             label="空载增益下限"
@@ -83,8 +83,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="峰值增益 Mpeak"
             value={calculated.mMax.toFixed(3)}
             unit=""
-            formula="数值寻优峰顶（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值 —— 判断「够不够」请看下行的 Mbnd"
-            highlight={calculated.mMax >= calculated.gMax * 1.05 ? 'good' : calculated.mMax >= calculated.gMax ? 'warn' : 'critical'}
+            formula="数值寻优峰顶（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值 —— 判断「够不够」只看下行的 Mbnd，本行不作合格性判定"
           />
           <ResultItem
             label="感性区增益上限 Mbnd"
