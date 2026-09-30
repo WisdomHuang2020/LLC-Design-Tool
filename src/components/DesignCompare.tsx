@@ -21,13 +21,10 @@ import {
   type TooltipProps,
 } from 'recharts'
 import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
+import { gainM } from '../lib/designer/llcMath'
 import { Save, Trash2, BarChart3, TrendingUp, Award, CheckCircle } from 'lucide-react'
 
-function calcGain(fn: number, k: number, q: number): number {
-  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
-  const b = q * (fn - 1 / fn)
-  return 1 / Math.sqrt(a * a + b * b)
-}
+// 增益式统一取自 lib（llcMath.gainM）——v2.10.96 去重（原先此处自带一份逐字相同的实现）。
 
 export default function DesignCompare() {
   const designs = useSyncExternalStore(subscribeSnapshots, getSnapshots)
@@ -46,7 +43,7 @@ export default function DesignCompare() {
     for (let fn = 0.5; fn <= 2.0; fn += 0.02) {
       const row: Record<string, number> = { fn }
       selectedDesigns.forEach((d) => {
-        row[`${d.name}_M`] = calcGain(fn, d.results.k, d.results.q)
+        row[`${d.name}_M`] = gainM(fn, d.results.k, d.results.q)
       })
       data.push(row)
     }
@@ -230,7 +227,7 @@ export default function DesignCompare() {
                     { key: 'q', label: 'Q', fmt: (v: number) => v.toFixed(2) },
                     { key: 'k', label: 'k', fmt: (v: number) => v.toFixed(2) },
                     { key: 'efficiency', label: 'η (%)', fmt: (v: number) => v.toFixed(1) },
-                    { key: 'mMax', label: 'Mmax', fmt: (v: number) => v.toFixed(3) },
+                    { key: 'mMax', label: 'Mpeak', fmt: (v: number) => v.toFixed(3) },
                     { key: 'mRequired', label: 'Mreq', fmt: (v: number) => v.toFixed(3) },
                     { key: 'zvsMargin', label: 'ZVS', fmt: (v: boolean | number) => (v ? '可达' : '不足') },
                   ].map((row) => {

@@ -378,10 +378,10 @@ export default function Fundamentals() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <MathBlock
-                latex="M = \\frac{n \\cdot V_o}{V_{in}} \\quad (全桥)"
+                latex="M = \\frac{n \\cdot V_o}{V_{in}} \\quad \\text{（全桥）}"
               />
               <MathBlock
-                latex="M = \\frac{2n \\cdot V_o}{V_{in}} \\quad (半桥)"
+                latex="M = \\frac{2n \\cdot V_o}{V_{in}} \\quad \\text{（半桥）}"
               />
             </div>
             <p className="text-text-secondary text-sm mt-3 leading-relaxed">

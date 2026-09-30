@@ -12,16 +12,14 @@ import {
   type TooltipProps,
 } from 'recharts'
 import type { NameType, ValueType, Payload } from 'recharts/types/component/DefaultTooltipContent'
+import { gainM } from '../lib/designer/llcMath'
 import { Download } from 'lucide-react'
 
 const Q_PRESETS = [0.2, 0.5, 1.0, 2.0, 5.0]
 const Q_COLORS = ['#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ef4444']
 
-function calcGain(fn: number, k: number, Q: number): number {
-  const a = 1 + (1 / k) * (1 - 1 / (fn * fn))
-  const b = Q * (fn - 1 / fn)
-  return 1 / Math.sqrt(a * a + b * b)
-}
+// 增益式统一取自 lib（llcMath.gainM）——v2.10.96 去重：
+// 此处原先自带一份与 gainM 逐字相同的实现，任一处改动都会静默分叉。
 
 function generateData(k: number, Q: number) {
   const gainData: Array<Record<string, number>> = []
@@ -32,12 +30,12 @@ function generateData(k: number, Q: number) {
 
     const gainPoint: Record<string, number> = { fn: f }
     Q_PRESETS.forEach((q) => {
-      const g = calcGain(f, k, q)
+      const g = gainM(f, k, q)
       const safeG = Number.isFinite(g) ? g : 0
       gainPoint[`Q_${q}`] = safeG
       if (safeG > maxGain) maxGain = safeG
     })
-    const g = calcGain(f, k, Q)
+    const g = gainM(f, k, Q)
     const safeG = Number.isFinite(g) ? g : 0
     gainPoint.currentQ = safeG
     if (safeG > maxGain) maxGain = safeG

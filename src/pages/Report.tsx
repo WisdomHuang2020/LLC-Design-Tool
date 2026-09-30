@@ -80,7 +80,7 @@ export default function Report() {
 
 - **所需增益**（Vinmin 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin).toFixed(3)}（谐振频率处 M = 1）
 - **所需增益**（Vinmax 时）: ${(p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMax : (r.n * (p.vout + p.vd)) / p.vinMax).toFixed(3)}
-- **峰值增益 Mmax**: ${r.mMax.toFixed(3)}
+- **峰值增益 Mpeak**: ${r.mMax.toFixed(3)}
 - **设计裕量**: ${((r.mMax / ((p.topology === 'half-bridge' ? (2 * r.n * (p.vout + p.vd)) / p.vinMin : (r.n * (p.vout + p.vd)) / p.vinMin)) - 1) * 100).toFixed(1)}%
 
 ${gainMargin < 0 ? '⚠️ 峰值增益不足，需调整 k 或 Q。' : gainMargin < 5 ? `⚠️ 峰值增益裕量仅 ${gainMargin.toFixed(1)}%，低于工程建议的5%，设计存在量产风险，建议重新优化参数。` : '✅ 峰值增益裕量充足，设计可行。'}
@@ -659,7 +659,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">峰值增益 Mmax</div>
+                        <div className="text-xs text-text-secondary print:text-gray-600 mb-1">峰值增益 Mpeak</div>
                         <div className="text-xl font-mono font-semibold text-text-primary print:text-black">
                           {hasData ? r.mMax.toFixed(3) : '—'}
                         </div>

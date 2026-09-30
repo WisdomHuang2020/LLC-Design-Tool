@@ -54,11 +54,11 @@ export function generateSuggestions(
 
   // 4. Peak gain vs required
   if (mMax < mRequired) {
-    s.push({ text: `峰值增益不足（Mmax=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
+    s.push({ text: `峰值增益不足（Mpeak=${mMax.toFixed(3)} < Gmax=${mRequired.toFixed(3)}），无法覆盖输入电压下限。建议增大k或降低Q。`, level: 'critical' })
   } else if (mMax < mRequired * 1.05) {
     s.push({ text: `峰值增益裕量较小（${((mMax/mRequired - 1)*100).toFixed(1)}%），建议留至少5%裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `峰值增益裕量充足（Mmax=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
+    s.push({ text: `峰值增益裕量充足（Mpeak=${mMax.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}），设计可行。`, level: 'good' })
   }
 
   // 5. ZVS分析

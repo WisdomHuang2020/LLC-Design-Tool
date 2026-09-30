@@ -286,7 +286,7 @@ export default function Derivations() {
           </div>
 
           <ParamTable>
-            <ParamRow symbol="M" name="电压增益" unit="-" description="输出电压折算值与输入电压基波分量的比值" typical="0.5 ~ 1.5" />
+            <ParamRow symbol="M" name="电压增益" unit="-" description="输出电压折算值与输入电压基波分量的比值。本文与设计工具页统一用「归一化」口径：谐振频率处 M = 1；理论页（工作原理 / 基础）另有「原始直流增益 n·Vo/Vin」的定义，两者不可混用" typical="0.5 ~ 1.5" />
             <ParamRow symbol="fn" name="归一化频率" unit="-" description="fsw / fr1，调频控制的核心变量" typical="0.5 ~ 1.5" />
             <ParamRow symbol="k" name="电感比" unit="-" description="Lm / Lr，影响峰值增益与增益曲线斜率" typical="3 ~ 10" />
             <ParamRow symbol="Q" name="品质因数" unit="-" description="反映负载情况，Q 越大增益曲线越陡峭" typical="0.3 ~ 1.0" />
@@ -300,7 +300,7 @@ export default function Derivations() {
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">空载特性</p>
-              <MathBlock latex="M_{empty}(f_n, k) = \\frac{1}{\\left|1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right|} = \\frac{k f_n^2}{\\left|f_n^2(1 + k) - 1\\right|}" />
+              <MathBlock latex="G_{empty}(f_n, k) = \\frac{1}{\\left|1 + \\frac{1}{k} - \\frac{1}{k f_n^2}\\right|} = \\frac{k f_n^2}{\\left|f_n^2(1 + k) - 1\\right|}" />
               <p className="text-text-secondary text-sm mt-2">Q → 0 时的极限增益：fn → 1/√(1+k)（即 fr2）时趋于无穷大，fn → ∞ 时趋向 k/(k+1)。</p>
             </div>
           </div>
@@ -433,17 +433,29 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="M_{max} = \\frac{V_{in,nom}}{V_{in,min}}, \\qquad M_{min} = \\frac{V_{in,nom}}{V_{in,max}}"
+            latex="G_{max} = \\frac{V_{in,nom}}{V_{in,min}}, \\qquad G_{min} = \\frac{V_{in,nom}}{V_{in,max}}"
             label="所需电压增益范围"
           />
 
           <MathBlock
-            latex="k_{max} = \\frac{M_{min}}{1 - M_{min}} \\; (M_{min} < 1), \\qquad M_{empty}(f_n \\to \\infty) = \\frac{k}{k + 1}"
+            latex="k_{max} = \\frac{G_{min}}{1 - G_{min}} \\; (G_{min} < 1), \\qquad G_{empty}(f_n \\to \\infty) = \\frac{k}{k + 1}"
             label="电感比 k 的空载降压约束"
           />
 
           <p className="text-text-secondary text-sm mt-2">
-            最高输入电压空载时须将增益降至 M<sub>min</sub>：Region 1 空载增益下限为 k/(k+1)，故要求 k/(k+1) ≤ M<sub>min</sub>，即 k ≤ k<sub>max</sub>。若 k 超过该上限，即使频率无限升高输出仍会过压，设计不可行。
+            最高输入电压空载时须将增益降至 G<sub>min</sub>：Region 1 空载增益下限为 k/(k+1)，故要求 k/(k+1) ≤ G<sub>min</sub>，即 k ≤ k<sub>max</sub>。若 k 超过该上限，即使频率无限升高输出仍会过压，设计不可行。
+          </p>
+
+          <MathBlock
+            latex="f_{max} = f_{r1}\\sqrt{\\frac{G_{min}}{G_{min}(k+1) - k}} \\ \\ (G_{min} \\ge \\tfrac{k}{k+1}), \\qquad f_{min} = f_{r1}\\, f_n^{\\ast} \\ \\ \\text{其中}\\ M(f_n^{\\ast}, k, Q_s) = G_{max}"
+            label="边界工作频率 —— fmax 取空载口径、fmin 取满载增益交点"
+          />
+
+          <p className="text-text-secondary text-sm mt-2">
+            两者<b>口径并不对称，且系有意为之</b>：<b>f<sub>max</sub></b> 对应「最高输入电压 + 空载」这一降压最坏工况，
+            由 Region 1 空载增益式反解；<b>f<sub>min</sub></b> 对应「最低输入电压 + 满载」这一升压最坏工况，
+            取满载增益曲线 M = G<sub>max</sub> 与<b>峰值右侧</b>的交点（峰值左侧属折叠区，控制环无法稳定停留；
+            轻载在同一增益要求下所需频率更高，故满载即全工况最低开关频率）。
           </p>
 
           <p className="text-text-secondary mt-4 mb-2">
@@ -451,7 +463,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="Q_{max1}:\\ \\max_{f_n} M(f_n, k, Q) = M_{max}"
+            latex="Q_{max1}:\\ \\max_{f_n} M(f_n, k, Q) = G_{max}"
             label="约束一 · 峰值增益能力（无闭式解，数值二分求解）"
           />
 
@@ -496,16 +508,17 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="Mmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益" typical="1.1 ~ 1.4" />
-            <ParamRow symbol="Mmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益" typical="0.6 ~ 0.9" />
-            <ParamRow symbol="Qmax1" name="峰值增益约束 Q" unit="-" description="满足 Mpeak(k,Q) = Mmax 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
+            <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（V_in,nom / V_in,min）" typical="1.1 ~ 1.4" />
+            <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
+            <ParamRow symbol="Mpeak" name="峰值增益（曲线峰值）" unit="-" description="给定 (k, Q) 下增益曲线的最大值；设计须满足 Mpeak ≥ Gmax" typical="数值求解" />
+            <ParamRow symbol="Qmax1" name="峰值增益约束 Q" unit="-" description="满足 Mpeak(k,Q) = Gmax 的最大 Q；无闭式解，数值二分求解" typical="数值求解" />
             <ParamRow symbol="Qmax2" name="Coss 约束 Q（等效电容口径）" unit="-" description="由原边 Coss,eq / Cj 与最高工作频率决定，不含死区时间" typical="数值求解" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>设计流程：</strong>定义规格 → 计算匝比 n → 计算 R<sub>ac</sub> → 确定 M<sub>max</sub>/M<sub>min</sub> → 选取 k → 求解 Q<sub>max</sub> → 取 Q<sub>s</sub> → 解算 L<sub>r</sub>、C<sub>r</sub>、L<sub>m</sub> → 校验应力、损耗与磁密。
+            <strong>设计流程：</strong>定义规格 → 计算匝比 n → 计算 R<sub>ac</sub> → 确定 G<sub>max</sub>/G<sub>min</sub> → 选取 k → 求解 Q<sub>max</sub> → 取 Q<sub>s</sub> → 解算 L<sub>r</sub>、C<sub>r</sub>、L<sub>m</sub> → 校验应力、损耗与磁密。
           </HighlightBox>
         </FormulaSection>
 
@@ -565,42 +578,77 @@ export default function Derivations() {
             LLC 的高效率得益于软开关，但仍需对 MOSFET、整流、磁性元件等损耗进行估算，以优化热设计和效率。
           </p>
 
+          <p className="text-text-secondary mt-2 mb-2">
+            下列各式与设计工具页「损耗分析」面板<b>逐项对应</b>（同一套口径）：N<sub>sw</sub> 为 MOSFET 数
+            （半桥 2 / 全桥 4），k<sub>T</sub> 为 R<sub>ds(on)</sub> 的温度修正系数，t<sub>ZVS</sub> 见上一节的死区校验式。
+          </p>
+
           <div className="grid md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 导通损耗</p>
-              <MathBlock latex="P_{cond} = I_{p,rms}^2 \\cdot R_{ds(on)}" />
+              <MathBlock latex="P_{cond} = \\tfrac{1}{2}\\, I_{p,rms}^2 R_{ds(on)} k_T N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
-              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">驱动损耗</p>
-              <MathBlock latex="P_{drv} = Q_g \\cdot V_{drv} \\cdot f_{sw}" />
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 开通损耗</p>
+              <MathBlock latex="P_{on} = \\tfrac{1}{2} V_{in} I_{p,peak} t_r f_{sw} N_{sw} \\quad (\\text{ZVS 下} \\approx 0)" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
-              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">二极管整流损耗</p>
-              <MathBlock latex="P_{rect} = N_{diode} \\cdot V_f \\cdot \\frac{I_o}{2}" />
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 关断损耗</p>
+              <MathBlock latex="P_{off} = \\tfrac{1}{2} V_{in} I_{m,off} t_f f_{sw} N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
-              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗</p>
-              <MathBlock latex="P_{core} = C_m \\cdot f_{sw}^{\\alpha} \\cdot B_{peak}^{\\beta} \\cdot V_e" />
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">体二极管导通损耗</p>
+              <MathBlock latex="P_{diode} = V_{sd} I_{m,off} (t_d - t_{ZVS}) f_{sw} N_{sw}" />
+            </div>
+            <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">整流损耗</p>
+              <MathBlock latex="P_{rect} = N_{diode} V_f \\frac{I_o}{2}\\ (\\text{二极管}), \\quad P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)}\\ (\\text{同步})" />
+            </div>
+            <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
+              <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗（默认走手册法）</p>
+              <MathBlock latex="P_{core} = P_{cv} V_e k_{wave} \\ (\\text{手册法，默认}), \\quad P_{core} = C_m f_{sw}^{\\alpha} B_{peak}^{\\beta} V_e \\ (\\text{Steinmetz 对照})" />
             </div>
           </div>
 
           <MathBlock
-            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{ac,pri} + I_{s,rms}^2 R_{ac,sec}"
-            label="磁密与铜损"
+            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{dc,pri}\\left[1 + (f_{sw}/f_0)^2\\right], \\qquad P_{res} = I_{p,rms}^2\\left(R_{dc,Lr} + R_{esr,Cr}\\right)"
+            label="磁密、铜损与谐振元件损耗"
           />
 
+          <HighlightBox type="warning">
+            <strong>与「工具」的两处有意差异：</strong>
+            ① <b>栅极驱动损耗</b> <InlineMath latex="P_{drv} = Q_g V_{drv} f_{sw}" /> 是真实损耗，
+            但本工具的损耗模型<b>未计入该项</b>（需驱动电压与 Q<sub>g</sub>，属器件级细节），此处仅列式供设计参考；
+            ② 磁芯损耗给出<b>两条口径</b> —— 工具默认用「手册 P<sub>cv</sub> 法」（更贴近实测），
+            Steinmetz 拟合作为并列对照值同时显示。
+          </HighlightBox>
+
           <ParamTable>
-            <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="Ω" description="结温下的导通电阻" typical="mΩ 级" />
-            <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="开关一次所需的栅极电荷量" typical=" datasheet 值" />
+            <ParamRow symbol="Rds(on)" name="MOSFET 导通电阻" unit="mΩ" description="25℃ 规格书值；实际导通损耗按 ×kT 折算到结温" typical="mΩ 级" />
+            <ParamRow symbol="kT" name="Rds(on) 温度修正系数" unit="-" description="硅管 100℃ 时约为 25℃ 值的 1.5~2.0 倍，工具默认 1.6" typical="1.5 ~ 2.0" />
+            <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="仅用于驱动损耗参考式；工具损耗模型未计入该项" typical="datasheet 值" />
             <ParamRow symbol="Vf" name="整流管正向压降" unit="V" description="二极管导通压降或同步整流等效压降" typical="0.3 ~ 0.7 V" />
-            <ParamRow symbol="Cm, α, β" name="Steinmetz 系数" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="磁芯材料损耗拟合系数，Cm 典型值约 10⁻⁶ 量级" typical="查磁芯 datasheet" />
-            <ParamRow symbol="Bpeak" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值，Bpeak = Vp / (4 Np Ae fsw)" typical="0.1 ~ 0.3 T" />
+            <ParamRow symbol="Pcv" name="磁芯损耗密度（手册值）" unit="mW/cm³" description="在目标温度/频率/B 下查磁芯手册；工具默认口径" typical="查手册" />
+            <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25" typical="1.2 ~ 1.4" />
+            <ParamRow symbol="Cm, α, β" name="Steinmetz 系数（对照口径）" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="正弦激励拟合系数，方波励磁下有偏差，仅作并列对照" typical="查磁芯 datasheet" />
+            <ParamRow symbol="Bpeak" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值" typical="0.1 ~ 0.3 T" />
             <ParamRow symbol="Np" name="原边匝数" unit="匝" description="变压器原边绕组匝数" typical="按 Ae 与 B 设计" />
-            <ParamRow symbol="Ae" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical=" datasheet 值" />
+            <ParamRow symbol="Ae" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical="datasheet 值" />
+            <ParamRow symbol="td" name="死区时间" unit="ns" description="取自设计参数（单一来源）；决定体二极管净导通时间 td − tZVS" typical="100 ~ 400 ns" />
           </ParamTable>
 
           <HighlightBox type="info">
             <strong>效率估算：</strong>总损耗为各部分损耗之和，η = Po / (Po + Ploss,total) × 100%。实际工程中建议结合热仿真和样机测试进行校准。
+          </HighlightBox>
+
+          <HighlightBox type="info">
+            <strong>本节范围说明：</strong>以上为 FHA 参数与损耗的估算模型。
+            <b>环路补偿设计</b>（功率级传函 G<sub>p</sub>(s)；Type II 补偿器
+            G<sub>c</sub>(s) = K(1 + s/ω<sub>z1</sub>)/[s(1 + s/ω<sub>p1</sub>)]，Type III 为
+            K(1 + s/ω<sub>z1</sub>)(1 + s/ω<sub>z2</sub>)/[s(1 + s/ω<sub>p1</sub>)(1 + s/ω<sub>p2</sub>)]；
+            以及 K-factor 法 f<sub>z</sub> = f<sub>c</sub>/K、f<sub>p</sub> = K·f<sub>c</sub> 与 R/C 反解）
+            属<b>独立子系统</b>，本文未展开 —— 请见设计工具页的「环路补偿设计」面板，那里给出完整传函、
+            补偿器选型与元件反解计算。
           </HighlightBox>
         </FormulaSection>
 

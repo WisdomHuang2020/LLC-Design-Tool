@@ -63,7 +63,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             highlight={calculated.gmaxEmpty <= calculated.gMin * 0.95 ? 'good' : calculated.gmaxEmpty <= calculated.gMin ? 'warn' : 'critical'}
           />
           <ResultItem
-            label="峰值增益 Mmax"
+            label="峰值增益 Mpeak"
             value={calculated.mMax.toFixed(3)}
             unit=""
             formula="数值寻优峰值"
@@ -116,7 +116,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             formula={
               showTextbook
                 ? '教材式 1/(k·Gmax)·√(k+Gmax²/(Gmax²−1))｜近似：峰值增益略高于 Gmax，偏保守'
-                : '数值二分：令峰值增益 Mmax 恰等于 Gmax 的 Q 上限｜更精确'
+                : '数值二分：令峰值增益 Mpeak 恰等于 Gmax 的 Q 上限｜更精确'
             }
             action={
               <div className="flex gap-0.5 shrink-0">
