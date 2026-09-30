@@ -83,12 +83,19 @@ export interface CurvesState {
   q: number
 }
 
+// 默认参数 = 自制计算书 V02 的算例（2026-09-30 对齐，见 research/calcbook_v02_vs_site_20260930.md）
+// 目的：打开设计工具即为一个**完整合格**的算例，与计算书逐项一致（Q/Cr/Lr/Lm/fmax/tZVS 全对上），
+//       不再出现「默认案例还挂着待优化项」。逐项来源（书原文 → 本站字段）：
+//   Vin 380/400/420 V → vinMin/vinNom/vinMax ｜ Vo 24 V → vout ｜ Io 4 A（Po = 96 W）→ pout
+//   η = 0.96 → efficiency 96 ｜ fr = 100 kHz → fsw ｜ k = 4 → k
+//   Coss_eq 35 pF / Coss_er 35 pF / Cj 100 pF → cossEq/cossEr/cj ｜ Td = 300 ns → td
+//   Iomax = 4.8 A（β = 1.2）→ ioMax ｜ Vd = 0 → vd ｜ Q 降额系数 α = 0.857 → qMargin
 const defaultParams: DesignParameters = {
   vinMin: 380,
   vinMax: 420,
   vinNom: 400,
   vout: 24,
-  pout: 120,
+  pout: 96,
   efficiency: 96,
   fsw: 100,
   topology: 'half-bridge',
@@ -96,14 +103,14 @@ const defaultParams: DesignParameters = {
   loadMin: 100,
   loadMax: 100,
   // 新增参数默认值
-  cossEq: 65,
+  cossEq: 35,
   cossEr: 35,
   cj: 100,
   td: 300,
   vd: 0,
   ioMax: 4.8,
   k: 4,
-  qMargin: 0.95,
+  qMargin: 0.857,
   qmax1Criterion: 'boundary',
 }
 

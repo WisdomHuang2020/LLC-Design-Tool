@@ -448,7 +448,7 @@ export default function Derivations() {
           />
 
           <HighlightBox type="success">
-            <strong>ZVS 实现要点：</strong>① 开关频率必须高于感性边界频率；② 死区时间内励磁电感释放的能量须大于开关节点寄生电容所需的充放电能量；③ 死区时间须足够长，能在 t<sub>d</sub> 内完成 C<sub>oss</sub> 充放电（t<sub>ZVS</sub> ≤ t<sub>d</sub>）；④ 实际设计取 Q<sub>s</sub> = m · Q<sub>max</sub> 保留裕量，m 默认 0.95，可在设计工具页调整 —— m 越小，ZVS 能量与时间裕量越大。
+            <strong>ZVS 实现要点：</strong>① 开关频率必须高于感性边界频率；② 死区时间内励磁电感释放的能量须大于开关节点寄生电容所需的充放电能量；③ 死区时间须足够长，能在 t<sub>d</sub> 内完成 C<sub>oss</sub> 充放电（t<sub>ZVS</sub> ≤ t<sub>d</sub>）；④ 实际设计取 Q<sub>s</sub> = m · Q<sub>max</sub> 保留裕量，m 默认 0.857（= 计算书算例的 α），可在设计工具页调整 —— m 越小，ZVS 能量与时间裕量越大。
           </HighlightBox>
         </FormulaSection>
 
@@ -511,7 +511,7 @@ export default function Derivations() {
           <MathBlock
             latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = m \\cdot Q_{max}"
             important
-            label="最大允许 Q 与设计 Q（m 为裕量系数，默认 0.95）"
+            label="最大允许 Q 与设计 Q（m 为裕量系数，默认 0.857）"
           />
 
           <HighlightBox type="warning">
@@ -547,7 +547,7 @@ export default function Derivations() {
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；设计工具页表单可切回【峰值判据】Mpeak = Gmax，该判据更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss,eq + Cj（时间口径）" typical="0.3 ~ 1.5" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
-            <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
+            <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.857 = 计算书算例的 α，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 
           <HighlightBox type="warning">

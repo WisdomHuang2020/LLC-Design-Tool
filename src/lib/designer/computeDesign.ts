@@ -130,7 +130,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
   const qMargin = Number.isFinite(form.qMargin)
     ? Math.min(1, Math.max(0.05, form.qMargin))
-    : 0.95
+    : 0.95 // 旧存档兜底（该字段缺失的年代默认 0.95）；当前默认见 DesignContext.defaultParams
   const q = Math.max(0.001, qmax * qMargin)
 
   // ─── 步骤5：计算谐振参数 ───

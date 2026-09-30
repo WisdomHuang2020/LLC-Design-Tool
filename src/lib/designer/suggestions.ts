@@ -2,40 +2,25 @@
 // 纯函数：由计算结果的标量投影生成建议清单，最多返回 10 条。
 import type { DesignParameters } from '../DesignContext'
 import type { Suggestion, SuggestionInputs } from './types'
-import { boundaryGain, qmax1Boundary } from './llcMath'
+import { boundaryGain, GAIN_RESERVE_FLOOR } from './llcMath'
 
 /** 非有限值格式化：避免 Infinity 被直接渲染成 "Infinity"（与 ResultsSummaryCard 的显示口径一致） */
 const fmt = (v: number, digits = 3): string =>
   Number.isFinite(v) ? v.toFixed(digits) : Number.isNaN(v) ? '—' : '∞'
 
-/**
- * 求「m 需要降到多少」才能让**感性区**增益裕量达到目标倍数（默认 1.05 ⇒ +5%）。
- * 依据：本流程 Q = m·Qmax1，m ↑ ⇒ Q ↑ ⇒ Mbnd=boundaryGain(k,Q) ↓（对 Q 单调递减），故可二分。
- * 返回 ∈ [0.05, 1]；若即使 m=0.05 也达不到（k 过大）或参数非法，返回 NaN。
- */
-function solveMarginM(k: number, gMax: number, target: number): number {
-  const q1 = qmax1Boundary(k, gMax)
-  if (!Number.isFinite(q1) || q1 <= 0 || !Number.isFinite(gMax) || gMax <= 1) return NaN
-  if (boundaryGain(k, 0.05 * q1) < target * gMax) return NaN
-  let lo = 0.05
-  let hi = 1
-  for (let i = 0; i < 60; i++) {
-    const mid = (lo + hi) / 2
-    if (boundaryGain(k, mid * q1) >= target * gMax) lo = mid
-    else hi = mid
-  }
-  return (lo + hi) / 2
-}
+/** 计算书建议的 Q 降额系数区间（书原文：一般 Q 取值降额系数 0.9~0.95 就够了） */
+const BOOK_M_LO = 0.9
+const BOOK_M_HI = 0.95
 
 export function generateSuggestions(
   params: DesignParameters,
   results: SuggestionInputs,
 ): Suggestion[] {
   const s: Suggestion[] = []
-  const { q, k, mMax, mRequired, mRequiredMin, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, qMargin, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
+  const { q, k, mRequired, mRequiredMin, cr, lm, fsw, efficiency, qmax1, qmax2, qmax3, qMargin, gmaxEmpty, zvsMargin, zvsTimeOk, tZvs, er, ec, fmax, fmin, kMax } = results
 
   // 裕量系数兜底：旧存档 / 旧调用点可能未提供该字段
-  const margin = Number.isFinite(qMargin) && qMargin > 0 ? qMargin : 0.95
+  const margin = Number.isFinite(qMargin) && qMargin > 0 ? qMargin : 0.95 // 旧存档兜底
 
   // 1. k值与空载降压约束上限 kMax
   // kMax = Gmin/(1-Gmin)（仅当 Gmin<1 时有约束）：Region 1 空载增益下限 k/(k+1)
@@ -92,8 +77,10 @@ export function generateSuggestions(
 
   // 4. 增益裕量 —— 必须按**感容分界点增益 Mbnd**（感性区内真正可达的上限）判定
   //    ⚠️ 曲线峰顶 Mpeak 恒落在容性区、不能作为工作点，用它对标 Gmax 会**高估**裕量：
-  //       默认算例 Mpeak=1.0627（+0.96%）而 Mbnd=1.0603（+0.73%）——v2.10.99 起统一改用 Mbnd。
+  //       算例 Mpeak=1.0627（+0.96%）而 Mbnd=1.080（+0.73%）——v2.10.99 起统一改用 Mbnd。
+  //    判据口径见 llcMath.GAIN_RESERVE_FLOOR 说明：v2.10.103 起取消自设的 ≥5% 阈值。
   const mBnd = boundaryGain(k, q)
+  const reserveRatio = mBnd / mRequired
   if (!Number.isFinite(mBnd)) {
     s.push({ text: `增益裕量无法判定：k=${k}、Q=${q.toFixed(3)} 越界，感容分界点无实数解。请检查 k 与输入电压范围。`, level: 'warn' })
   } else if (mBnd < mRequired) {
@@ -101,15 +88,20 @@ export function generateSuggestions(
       text: `感性区增益不足（Mbnd=${mBnd.toFixed(3)} < Gmax=${mRequired.toFixed(3)}）：增益在感容分界点就够不到 Gmax，工作点会被挤进容性区。请减小 k、下调 m（降低 Q）或收窄最低输入电压。`,
       level: 'critical',
     })
-  } else if (mBnd < mRequired * 1.05) {
-    const mFor = solveMarginM(k, mRequired, 1.05)
+  } else if (reserveRatio < GAIN_RESERVE_FLOOR) {
+    // 裕量几乎为零 ⇒ 输入几乎不能再跌，给出计算书建议区间（0.90~0.95）的具体后果
+    const gLo = boundaryGain(k, BOOK_M_LO * qmaxMin)
+    const gHi = boundaryGain(k, BOOK_M_HI * qmaxMin)
+    const lever = margin > BOOK_M_LO && Number.isFinite(gLo)
+      ? `把 m 降到 ${BOOK_M_LO.toFixed(2)} 可得 +${((gLo / mRequired - 1) * 100).toFixed(2)}%、降到 ${BOOK_M_HI.toFixed(2)} 可得 +${((gHi / mRequired - 1) * 100).toFixed(2)}%`
+      : `当前 m=${margin.toFixed(2)} 已低于计算书建议区间（${BOOK_M_LO}~${BOOK_M_HI}）仍不足 ⇒ 说明瓶颈不是增益上限，请检查约束 Qmax2（死区）/Qmax3（能量）是否更紧，或减小 k`
     s.push({
-      text: `感性区增益裕量偏紧：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}，仅 +${((mBnd / mRequired - 1) * 100).toFixed(2)}%（工程建议 ≥5%）。该裕量几乎完全由 m 决定 —— 本流程 Q = m·Qmax1 恒贴在增益上限，故 m=1.00 时 Mbnd 恰等于 Gmax（+0.00%）${Number.isFinite(mFor) ? `；要拿到 5% 需把 m 降到 ≈${mFor.toFixed(2)}（Q≈${(mFor * qmaxMin).toFixed(3)}）` : `；要拿到 5% 需减小 k（当前 k=${k.toFixed(2)} 下仅靠降 m 不可达）`}。`,
+      text: `感性区增益裕量几乎为零：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}，仅 +${((reserveRatio - 1) * 100).toFixed(2)}% ⇒ 输入再跌约 ${((reserveRatio - 1) * params.vinMin).toFixed(1)} V 就无法稳压。本流程 Q = m·Qmax 恒贴在增益上限，裕量基本只由 m 决定；计算书建议降额系数 α 取 ${BOOK_M_LO}~${BOOK_M_HI}（当前 m=${margin.toFixed(2)}），${lever}。`,
       level: 'warn',
     })
   } else {
     s.push({
-      text: `感性区增益裕量充足：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}（+${((mBnd / mRequired - 1) * 100).toFixed(2)}%）。注：曲线峰顶 Mpeak=${mMax.toFixed(3)}（+${((mMax / mRequired - 1) * 100).toFixed(2)}%）位于容性区，仅作曲线参考。`,
+      text: `感性区增益裕量 +${((reserveRatio - 1) * 100).toFixed(2)}%：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)} ⇒ 输入可再跌至 ${(params.vinMin * reserveRatio).toFixed(1)} V 仍能稳压（规格下限 ${params.vinMin} V）。`,
       level: 'good',
     })
   }

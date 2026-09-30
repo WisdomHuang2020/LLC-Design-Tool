@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useDesign } from '../lib/DesignContext'
-import { boundaryGain } from '../lib/designer/llcMath'
+import { boundaryGain, GAIN_RESERVE_FLOOR } from '../lib/designer/llcMath'
 import {
   FileText,
   Download,
@@ -92,7 +92,7 @@ export default function Report() {
 - **感性区增益上限 Mbnd**: ${Number.isFinite(mbndMd) ? mbndMd.toFixed(3) : '—'}（感容分界点 Im Zin = 0 处的增益，感性区内可达上限）
 - **设计裕量（按 Mbnd）**: ${Number.isFinite(marginMd) ? `+${marginMd.toFixed(2)}%` : '—'}
 
-${!Number.isFinite(marginMd) ? '⚠️ 感容分界点无实数解，无法判定增益裕量，请检查 k 与输入电压范围。' : marginMd < 0 ? '⚠️ 感性区增益不足（Mbnd < 所需增益），工作点会被挤进容性区，需调整 k / Q 或收窄最低输入电压。' : marginMd < 5 ? `⚠️ 感性区增益裕量仅 ${marginMd.toFixed(2)}%，低于工程建议的 5%，设计存在量产风险，建议重新优化参数（本流程 Q = m·Qmax1 恒贴增益上限，m=0.95 时该裕量结构性只有约 0.7%，降低 m 可直接换取裕量）。` : '✅ 感性区增益裕量充足，设计可行。'}
+${!Number.isFinite(marginMd) ? '⚠️ 感容分界点无实数解，无法判定增益裕量，请检查 k 与输入电压范围。' : marginMd < 0 ? '⚠️ 感性区增益不足（Mbnd < 所需增益），工作点会被挤进容性区，需调整 k / Q 或收窄最低输入电压。' : marginMd < (GAIN_RESERVE_FLOOR - 1) * 100 ? `⚠️ 感性区增益裕量仅 ${marginMd.toFixed(2)}%，几乎贴在增益上限上（输入几乎不能再跌）；本流程 Q = m·Qmax 恒贴增益上限，计算书建议降额系数 α 取 0.90~0.95，下调 m 可直接换取裕量。` : '✅ 感性区增益裕量充足，设计可行。'}
 
 ${r.designFeasible === false ? '⚠️ **设计不可行**：高输入电压下所需最小增益低于 Region 1 空载极限 k/(k+1)。请增大电感比 k 或缩窄输入电压上限。' : ''}
 
@@ -228,14 +228,16 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
   // 设计可行性：同时看两条 —— ① 空载降压约束 r.designFeasible（k/(k+1) ≤ Gmin）；
   // ② 感性区增益裕量 gainMargin（<0 表示分界点都够不到 Gmax）。
   // ⚠️ 此前状态列表只看 ① 而概览卡只看 ②，同一页会出现「可行 / 风险」两个结论（v2.10.99 统一）。
-  const feasible = hasData && r.designFeasible !== false && Number.isFinite(gainMargin) && gainMargin >= 5
+  // 裕量门槛取自 llcMath.GAIN_RESERVE_FLOOR（v2.10.103 起取消旧的「≥5%」自设阈值，理由见该常量注释）。
+  const marginFloorPct = (GAIN_RESERVE_FLOOR - 1) * 100 // 0.5（%）
+  const feasible = hasData && r.designFeasible !== false && Number.isFinite(gainMargin) && gainMargin >= marginFloorPct
   const feasLabel = !hasData
     ? '—'
     : r.designFeasible === false || (Number.isFinite(gainMargin) && gainMargin < 0)
       ? '不可行'
       : !Number.isFinite(gainMargin)
         ? '待判定'
-        : gainMargin < 5
+        : gainMargin < marginFloorPct
           ? '风险'
           : '可行'
 
@@ -393,7 +395,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
               {hasData ? (
                 <>
                   <div className="flex items-center gap-2">
-                    {gainMargin >= 5 ? (
+                    {gainMargin >= marginFloorPct ? (
                       <CheckCircle className="w-4 h-4 text-success" />
                     ) : gainMargin >= 0 ? (
                       <AlertTriangle className="w-4 h-4 text-warning" />
@@ -401,7 +403,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                       <XCircle className="w-4 h-4 text-danger" />
                     )}
                     <span className="text-sm text-text-primary">
-                      感性区增益（Mbnd）{Number.isFinite(gainMargin) ? (gainMargin >= 5 ? '充足' : gainMargin >= 0 ? '裕量不足' : '不足') : '不可判定'}
+                      感性区增益（Mbnd）{Number.isFinite(gainMargin) ? (gainMargin >= marginFloorPct ? '充足' : gainMargin >= 0 ? '裕量不足' : '不足') : '不可判定'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -701,7 +703,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <div className="text-xs text-text-secondary print:text-gray-600 mb-1">设计裕量（按 Mbnd）</div>
-                        <div className={`text-xl font-mono font-semibold ${hasData && Number.isFinite(gainMargin) ? (gainMargin < 0 ? 'text-danger' : gainMargin < 5 ? 'text-warning' : 'text-success') : ''}`}>
+                        <div className={`text-xl font-mono font-semibold ${hasData && Number.isFinite(gainMargin) ? (gainMargin < 0 ? 'text-danger' : gainMargin < marginFloorPct ? 'text-warning' : 'text-success') : ''}`}>
                           {hasData && Number.isFinite(gainMargin) ? `${gainMargin >= 0 ? '+' : ''}${gainMargin.toFixed(2)}%` : '—'}
                         </div>
                       </div>

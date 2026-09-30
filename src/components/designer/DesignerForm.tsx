@@ -142,7 +142,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             min="0.3"
             max="1"
           />
-          <span className="text-xs text-text-muted mt-1 block">Q = m · Qmax，默认 0.95</span>
+          <span className="text-xs text-text-muted mt-1 block">Q = m · Qmax，默认 0.857（= 计算书算例的降额系数 α）</span>
           <span className="text-xs text-text-muted mt-1 block">
             调小 m（如 0.85）→ Q 更小 → ZVS 能量与时间裕量更大，但 Lr 更小 / Cr 更大、环流损耗上升
           </span>

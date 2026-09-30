@@ -4,7 +4,7 @@ import { TrendingUp } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import CollapsibleCard from './CollapsibleCard'
 import ResultItem from './ResultItem'
-import { boundaryFn, boundaryGain, fminTextbook, qmax1Boundary, qmax1Peak } from '../../lib/designer/llcMath'
+import { boundaryFn, boundaryGain, fminTextbook, qmax1Boundary, qmax1Peak, GAIN_RESERVE_FLOOR } from '../../lib/designer/llcMath'
 import type { CalculatedData } from '../../lib/designer/types'
 
 interface ResultsSummaryCardProps {
@@ -41,6 +41,17 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
   const fnBnd = boundaryFn(calculated.k, calculated.q)
   const mBnd = boundaryGain(calculated.k, calculated.q)
   const bndOk = Number.isFinite(mBnd)
+  // 增益裕量着色（v2.10.103）：取消旧的「≥5% 才算 good」自设阈值 —— 本流程 Q = m·Qmax 恒贴在增益上限，
+  // 裕量几乎只由 m 决定，计算书建议的降额区间 0.90~0.95 只对应 +0.7%~+1.6%，5% 属过严自设判据。
+  // 现口径：够不到 Gmax → critical；裕量 < 0.5%（输入几乎不能再跌）→ warn；其余 good（裕量在 tooltip 里如实报出）。
+  const bndReserve = bndOk ? mBnd / calculated.gMax : NaN
+  const bndHl: 'good' | 'warn' | 'critical' | undefined = !bndOk
+    ? undefined
+    : mBnd < calculated.gMax
+      ? 'critical'
+      : bndReserve < GAIN_RESERVE_FLOOR
+        ? 'warn'
+        : 'good'
 
   return (
     <CollapsibleCard
@@ -70,7 +81,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             value={calculated.gMax.toFixed(3)}
             unit=""
             formula="Gmax = Vinnom/Vinmin"
-            highlight={!bndOk ? undefined : mBnd >= calculated.gMax * 1.05 ? 'good' : mBnd >= calculated.gMax ? 'warn' : 'critical'}
+            highlight={bndHl}
           />
           <ResultItem
             label="空载增益下限"
@@ -91,10 +102,10 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             unit=""
             formula={
               bndOk
-                ? `分界点（Im Zin = 0，fn=${fnBnd.toFixed(3)}）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限（须 ≥ Gmax=${calculated.gMax.toFixed(3)}）`
+                ? `分界点（Im Zin = 0，fn=${fnBnd.toFixed(3)}）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限（须 ≥ Gmax=${calculated.gMax.toFixed(3)}）。当前裕量 +${((bndReserve - 1) * 100).toFixed(2)}%（输入可再跌至 ${(calculated.vinMin * bndReserve).toFixed(1)} V）`
                 : '分界点不可解（参数越界）'
             }
-            highlight={!bndOk ? undefined : mBnd >= calculated.gMax * 1.05 ? 'good' : mBnd >= calculated.gMax ? 'warn' : 'critical'}
+            highlight={bndHl}
           />
           <ResultItem label="fmax（高输入）" value={Number.isFinite(calculated.fmax) ? (calculated.fmax / 1000).toFixed(1) : '—'} unit={Number.isFinite(calculated.fmax) ? 'kHz' : ''} formula="fmax = fr·√[Gmin/(Gmin·(k+1)-k)]（空载推导口径；与 fmin 不对称）" />
           <ResultItem label="fmin（满载低输入）" value={(calculated.fmin / 1000).toFixed(1)} unit="kHz" formula="满载增益曲线 M=Gmax 的交点（感性区，最坏工况）" />
