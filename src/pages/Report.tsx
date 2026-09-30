@@ -149,7 +149,7 @@ ${tolRes ? `${tolLines.join('\n\n')}
 
 | 组合 | fr (kHz) | k | Q | Mbnd | f_min (kHz) | f_max (kHz) | Er/Ec | t_ZVS (ns) | 判定 |
 |---|---|---|---|---|---|---|---|---|---|
-${tolRes.rows.map((x) => `| ${x.label} | ${(x.fr / 1000).toFixed(1)} | ${x.k.toFixed(3)} | ${x.q.toFixed(4)} | ${Number.isFinite(x.mbnd) ? x.mbnd.toFixed(4) : '—'} | ${Number.isFinite(x.fmin) ? (x.fmin / 1000).toFixed(1) : '—'} | ${Number.isFinite(x.fmax) ? (x.fmax / 1000).toFixed(1) : '—'} | ${(x.er / x.ec).toFixed(2)} | ${(x.tZvs * 1e9).toFixed(1)} | ${x.okAll ? '✔ 通过' : `✘ ${[!x.okGain ? '增益不足' : '', !x.okZvsE ? 'ZVS 能量不足' : '', !x.okZvsT ? '死区不足' : ''].filter(Boolean).join('、')}`} |`).join('\n')}
+${tolRes.rows.map((x) => `| ${x.label} | ${(x.fr / 1000).toFixed(1)} | ${x.k.toFixed(3)} | ${x.q.toFixed(3)} | ${Number.isFinite(x.mbnd) ? x.mbnd.toFixed(4) : '—'} | ${Number.isFinite(x.fmin) ? (x.fmin / 1000).toFixed(1) : '—'} | ${Number.isFinite(x.fmax) ? (x.fmax / 1000).toFixed(1) : '—'} | ${(x.er / x.ec).toFixed(2)} | ${(x.tZvs * 1e9).toFixed(1)} | ${x.okAll ? '✔ 通过' : `✘ ${[!x.okGain ? '增益不足' : '', !x.okZvsE ? 'ZVS 能量不足' : '', !x.okZvsT ? '死区不足' : ''].filter(Boolean).join('、')}`} |`).join('\n')}
 
 > 说明：本项只扫 Lr / Cr / Lm（变压器感量）三项 —— Coss / Cj / 死区时间未扫；匝比 n 与 Gmax/Gmin 由电压规格决定、不随元件容差变化。
 ` : '（无设计数据）'}
@@ -446,7 +446,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                 <div className="flex justify-between">
                   <span className="text-text-secondary">k</span>
                   <span className="text-text-primary font-mono">
-                    {hasData ? r.k.toFixed(2) : '—'}
+                    {hasData ? r.k.toFixed(3) : '—'}
                   </span>
                 </div>
               </div>
@@ -1028,7 +1028,7 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                               <td className="py-1.5 px-2 whitespace-nowrap text-text-primary print:text-black">{x.label}</td>
                               <td className="py-1.5 px-2">{(x.fr / 1000).toFixed(1)}</td>
                               <td className="py-1.5 px-2">{x.k.toFixed(3)}</td>
-                              <td className="py-1.5 px-2">{x.q.toFixed(4)}</td>
+                              <td className="py-1.5 px-2">{x.q.toFixed(3)}</td>
                               <td className="py-1.5 px-2">{Number.isFinite(x.mbnd) ? x.mbnd.toFixed(4) : '—'}</td>
                               <td className="py-1.5 px-2">{Number.isFinite(x.fmin) ? (x.fmin / 1000).toFixed(1) : '—'}</td>
                               <td className="py-1.5 px-2">{Number.isFinite(x.fmax) ? (x.fmax / 1000).toFixed(1) : '—'}</td>

@@ -28,11 +28,11 @@ export function generateSuggestions(
   if (!Number.isFinite(kMax)) {
     s.push({ text: `Gmin=${mRequiredMin.toFixed(3)}≥1，空载降压约束不存在，k 取值不受高输入电压限制。`, level: 'good' })
   } else if (k > kMax) {
-    s.push({ text: `电感比k=${k.toFixed(2)}超过空载降压约束上限kmax=${kMax.toFixed(2)}：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} > Gmin=${mRequiredMin.toFixed(3)}，最高输入电压空载时无法将增益降至所需值，输出过压。建议减小k至≤${kMax.toFixed(2)}或缩窄输入电压上限。`, level: 'critical' })
+    s.push({ text: `电感比k=${k.toFixed(3)}超过空载降压约束上限kmax=${kMax.toFixed(3)}：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} > Gmin=${mRequiredMin.toFixed(3)}，最高输入电压空载时无法将增益降至所需值，输出过压。建议减小k至≤${kMax.toFixed(2)}或缩窄输入电压上限。`, level: 'critical' })
   } else if (k > kMax * 0.8) {
-    s.push({ text: `电感比k=${k.toFixed(2)}接近空载降压约束上限kmax=${kMax.toFixed(2)}（裕量<20%）。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的空载降压裕量。`, level: 'warn' })
+    s.push({ text: `电感比k=${k.toFixed(3)}接近空载降压约束上限kmax=${kMax.toFixed(3)}（裕量<20%）。建议减小k至≤${(kMax * 0.5).toFixed(2)}以获得更充裕的空载降压裕量。`, level: 'warn' })
   } else {
-    s.push({ text: `电感比k=${k.toFixed(2)}满足空载降压约束（kmax=${kMax.toFixed(2)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
+    s.push({ text: `电感比k=${k.toFixed(3)}满足空载降压约束（kmax=${kMax.toFixed(3)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
   }
 
   // 2. Qmax 对比：三条上限里哪条最紧

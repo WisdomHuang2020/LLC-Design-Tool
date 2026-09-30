@@ -183,7 +183,7 @@ export default function DesignCompare() {
                   </div>
                   <div className="text-xs text-text-secondary space-y-0.5 font-mono">
                     <p>Vin: {d.params.vinNom}V, Vo: {d.params.vout}V</p>
-                    <p>fr: {(d.results.fr / 1000).toFixed(1)}kHz, Q: {d.results.q.toFixed(2)}</p>
+                    <p>fr: {(d.results.fr / 1000).toFixed(1)}kHz, Q: {d.results.q.toFixed(3)}</p>
                     <p>η: {d.params.efficiency}%</p>
                   </div>
                   <div className="mt-2 flex items-center gap-1">
@@ -348,7 +348,7 @@ export default function DesignCompare() {
                             stroke={COLORS[i % COLORS.length]}
                             strokeWidth={2}
                             dot={false}
-                            name={`${d.name} (Q=${d.results.q.toFixed(2)}, k=${d.results.k.toFixed(2)})`}
+                            name={`${d.name} (Q=${d.results.q.toFixed(3)}, k=${d.results.k.toFixed(3)})`}
                           />
                         ))}
                       </LineChart>

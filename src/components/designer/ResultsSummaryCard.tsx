@@ -62,13 +62,13 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
     >
       <div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-          <ResultItem label="匝比 n" value={calculated.n.toFixed(2)} unit="" formula="n = Vinnom/(2·(Vo+Vf)) 或 Vinnom/(Vo+Vf)" />
+          <ResultItem label="匝比 n" value={calculated.n.toFixed(3)} unit="" formula="n = Vinnom/(2·(Vo+Vf)) 或 Vinnom/(Vo+Vf)" />
           <ResultItem label="谐振频率 fr" value={(calculated.fr / 1000).toFixed(1)} unit="kHz" formula="fr = 1/(2π√(Lr·Cr))" />
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
           <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
           <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1~3)）；等价定义 Q = Zr / Rac" />
-          <ResultItem label="电感比 k" value={calculated.k.toFixed(2)} unit="" formula="k = Lm / Lr" />
+          <ResultItem label="电感比 k" value={calculated.k.toFixed(3)} unit="" formula="k = Lm / Lr" />
           <ResultItem
             label="所需增益 Gmin"
             value={calculated.gMin.toFixed(3)}
@@ -252,7 +252,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
         <div className="mt-6 pt-4 border-t border-border">
           <h3 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-primary-light" />
-            增益-频率特性曲线（k={calculated.k.toFixed(1)}, Q满载={calculated.q.toFixed(3)}）
+            增益-频率特性曲线（k={calculated.k.toFixed(3)}, Q满载={calculated.q.toFixed(3)}）
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

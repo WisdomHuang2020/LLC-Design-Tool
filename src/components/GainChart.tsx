@@ -99,7 +99,7 @@ export default function GainChart({
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
       const url = canvas.toDataURL('image/png')
       const link = document.createElement('a')
-      link.download = `gain_curve_k${k.toFixed(2)}_Q${Q.toFixed(1)}.png`
+      link.download = `gain_curve_k${k.toFixed(3)}_Q${Q.toFixed(3)}.png`
       link.href = url
       link.click()
     }
@@ -245,7 +245,7 @@ export default function GainChart({
                 strokeWidth={2.5}
                 strokeDasharray="8 4"
                 dot={false}
-                name={`当前 Q=${Q.toFixed(1)}`}
+                name={`当前 Q=${Q.toFixed(3)}`}
               />
             )}
           </LineChart>

@@ -146,7 +146,7 @@ export default function Curves() {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-3 text-sm font-mono text-text-secondary">
-              <span>k = {results.k.toFixed(2)}</span>
+              <span>k = {results.k.toFixed(3)}</span>
               <span>Q = {results.q.toFixed(3)}</span>
               <span className="text-text-muted">|</span>
               <span>fr = {(results.fr / 1000).toFixed(1)} kHz</span>
@@ -178,7 +178,7 @@ export default function Curves() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-sm font-medium text-text-primary font-mono">
-                k = {k.toFixed(2)}
+                k = {k.toFixed(3)}
               </label>
               <span className="text-xs text-text-muted">电感比 Lm/Lr</span>
             </div>
@@ -186,7 +186,7 @@ export default function Curves() {
               type="range"
               min={2.0}
               max={10.0}
-              step={0.1}
+              step={0.01}
               value={k}
               onInput={(e) => setK(parseFloat((e.target as HTMLInputElement).value))}
               className="w-full h-2 bg-surface-elevated rounded-lg cursor-pointer accent-teal-500"
@@ -201,7 +201,7 @@ export default function Curves() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-sm font-medium text-text-primary font-mono">
-                Q = {Q.toFixed(1)}
+                Q = {Q.toFixed(3)}
               </label>
               <span className="text-xs text-text-muted">品质因数</span>
             </div>
@@ -209,7 +209,7 @@ export default function Curves() {
               type="range"
               min={0.1}
               max={5.0}
-              step={0.1}
+              step={0.01}
               value={Q}
               onInput={(e) => setQ(parseFloat((e.target as HTMLInputElement).value))}
               className="w-full h-2 bg-surface-elevated rounded-lg cursor-pointer accent-teal-500"
@@ -233,7 +233,7 @@ export default function Curves() {
           {hasResults && (
             <div className="flex items-center gap-2 text-primary-light">
               <span className="w-3 h-3 rounded-full bg-primary animate-pulse" />
-              <span>设计点: k = {results.k.toFixed(2)}, Q = {results.q.toFixed(3)}</span>
+              <span>设计点: k = {results.k.toFixed(3)}, Q = {results.q.toFixed(3)}</span>
             </div>
           )}
         </div>
@@ -263,7 +263,7 @@ export default function Curves() {
               onClick={() =>
                 exportChart(
                   impedanceChartRef,
-                  `impedance_mag_k${k.toFixed(2)}_Q${Q.toFixed(1)}.png`
+                  `impedance_mag_k${k.toFixed(3)}_Q${Q.toFixed(3)}.png`
                 )
               }
               className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary-light transition-colors"
