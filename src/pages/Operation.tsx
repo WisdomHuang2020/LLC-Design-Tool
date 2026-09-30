@@ -928,9 +928,10 @@ export default function Operation() {
                 />
                 <p className="text-text-secondary text-xs mt-1 leading-relaxed">
                   其中 Lm 为励磁电感，I<sub>m,off</sub> 为关断时刻的励磁电流峰值，
-                  V<sub>in,max</sub> 为最高输入电压（最恶劣工况）；C<sub>oss,total</sub> 为开关节点等效总输出电容
-                  —— 半桥时 C<sub>oss,total</sub> = 2·C<sub>oss</sub>（上下两个开关管的输出电容之和，
-                  即死区内需被充/放电的电容），<span className="text-primary-light">这与本站「公式推导」页的 ZVS 能量判据完全一致</span>。
+                  V<sub>in,max</sub> 为最高输入电压（最恶劣工况）；右边是开关节点等效总输出电容的储能
+                  —— 半桥时为 2·C<sub>oss,er</sub> + C<sub>j</sub>（两只开关管的输出电容之和 + 变压器/PCB 寄生），
+                  <b>必须用能量相关等效电容 C<sub>oss,er</sub>（≡ 规格书 Co(er)）</b>，
+                  <span className="text-primary-light">这与本站「公式推导」页的 ZVS 能量判据完全一致</span>。
                   关断时刻励磁电流峰值 I<sub>m,off</sub> = V<sub>in,min</sub> / (8 f<sub>max</sub> Lm)（半桥）。
                 </p>
               </div>

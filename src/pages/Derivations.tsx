@@ -516,7 +516,7 @@ export default function Derivations() {
 
           <HighlightBox type="warning">
             <strong>死区时间约束现在是「约束二（Q<sub>max2</sub>）」本身，不再是额外一条。</strong>
-            Q<sub>max2</sub> 的含义就是「死区内刚好把 C<sub>oss,zvs</sub> 充放电用完 t<sub>d</sub>」所对应的 Q，
+            Q<sub>max2</sub> 的含义就是「死区内刚好把 C<sub>总</sub> 充放电用完 t<sub>d</sub>」所对应的 Q，
             所以 <b>t<sub>ZVS</sub> = m·t<sub>d</sub> ≤ t<sub>d</sub></b> 在 Q<sub>max2</sub> 生效时按构造成立，
             下面的 t<sub>ZVS</sub> 公式退化为一致性复核（不生效时才是唯一的把关项）：
           </HighlightBox>
