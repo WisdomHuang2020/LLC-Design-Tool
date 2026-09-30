@@ -61,9 +61,16 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const tOffQgd = toffNs(losses.qPlateauQgd)
   const tOffCrss = toffNs(losses.qPlateauCrss)
   const qRatio = qCrss > 1e-12 ? qQgd / qCrss : NaN
-  const ratioNote = Number.isFinite(qRatio) && Math.abs(qRatio - 1) > 0.5
-    ? `（相差 ${qRatio > 1 ? qRatio.toFixed(1) : (1 / qRatio).toFixed(1)}×，${qRatio > 1 ? 'Crss 法的等效值可能取了单点、偏小' : 'Qgd 法取值待核对'}）`
-    : '（两法一致）'
+  // 两法差值的分级提示（按倍数，不按百分比 —— 1.33× 与 0.75× 是同一件事）
+  const ratioNote = !Number.isFinite(qRatio)
+    ? ''
+    : qRatio > 3
+      ? `（Qgd 法比 Crss 法大 ${qRatio.toFixed(1)}× ⇒ 高度怀疑 Crss 等效值误取了单点，请按曲线积分复核）`
+      : qRatio < 1 / 3
+        ? `（Qgd 法比 Crss 法小 ${(1 / qRatio).toFixed(1)}× ⇒ 请复核 Qgd / 摆幅取值）`
+        : Math.abs(qRatio - 1) > 0.25
+          ? `（两法相差 ${(qRatio > 1 ? qRatio : 1 / qRatio).toFixed(2)}×，同一量级）`
+          : '（两法相差 <25%，一致）'
 
   return (
     <CollapsibleCard
