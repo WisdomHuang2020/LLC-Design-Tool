@@ -81,6 +81,12 @@ export function generateSuggestions(
   //    判据口径见 llcMath.GAIN_RESERVE_FLOOR 说明：v2.10.103 起取消自设的 ≥5% 阈值。
   const mBnd = boundaryGain(k, q)
   const reserveRatio = mBnd / mRequired
+  // 由裕量反推「还能容忍输入跌到多少 V」：
+  //   谐振腔所需增益 M(V) = 2n(Vo+Vd)/V = Vin,nom/V（本工具 n 由 Vin,nom 定义），设计可交付上限为 Mbnd
+  //   ⇒ 能稳压的最低输入 = Vin,nom / Mbnd = Vin,min / 裕量比
+  //   ★ 必须**除以**裕量比（裕量越大 ⇒ 能撑到越低的输入）；乘以裕量比方向就写反了（会算出高于 Vin,min 的值）。
+  const sagFloor = params.vinMin / reserveRatio
+  const sagTolerance = params.vinMin - sagFloor
   if (!Number.isFinite(mBnd)) {
     s.push({ text: `增益裕量无法判定：k=${k}、Q=${q.toFixed(3)} 越界，感容分界点无实数解。请检查 k 与输入电压范围。`, level: 'warn' })
   } else if (mBnd < mRequired) {
@@ -96,12 +102,12 @@ export function generateSuggestions(
       ? `把 m 降到 ${BOOK_M_LO.toFixed(2)} 可得 +${((gLo / mRequired - 1) * 100).toFixed(2)}%、降到 ${BOOK_M_HI.toFixed(2)} 可得 +${((gHi / mRequired - 1) * 100).toFixed(2)}%`
       : `当前 m=${margin.toFixed(2)} 已低于计算书建议区间（${BOOK_M_LO}~${BOOK_M_HI}）仍不足 ⇒ 说明瓶颈不是增益上限，请检查约束 Qmax2（死区）/Qmax3（能量）是否更紧，或减小 k`
     s.push({
-      text: `感性区增益裕量几乎为零：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}，仅 +${((reserveRatio - 1) * 100).toFixed(2)}% ⇒ 输入再跌约 ${((reserveRatio - 1) * params.vinMin).toFixed(1)} V 就无法稳压。本流程 Q = m·Qmax 恒贴在增益上限，裕量基本只由 m 决定；计算书建议降额系数 α 取 ${BOOK_M_LO}~${BOOK_M_HI}（当前 m=${margin.toFixed(2)}），${lever}。`,
+      text: `感性区增益裕量几乎为零：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)}，仅 +${((reserveRatio - 1) * 100).toFixed(2)}% ⇒ 输入只能再跌约 ${sagTolerance.toFixed(1)} V（至 ${sagFloor.toFixed(1)} V）就无法稳压。本流程 Q = m·Qmax 恒贴在增益上限，裕量基本只由 m 决定；计算书建议降额系数 α 取 ${BOOK_M_LO}~${BOOK_M_HI}（当前 m=${margin.toFixed(2)}），${lever}。`,
       level: 'warn',
     })
   } else {
     s.push({
-      text: `感性区增益裕量 +${((reserveRatio - 1) * 100).toFixed(2)}%：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)} ⇒ 输入可再跌至 ${(params.vinMin * reserveRatio).toFixed(1)} V 仍能稳压（规格下限 ${params.vinMin} V）。`,
+      text: `感性区增益裕量 +${((reserveRatio - 1) * 100).toFixed(2)}%：Mbnd=${mBnd.toFixed(3)} vs Gmax=${mRequired.toFixed(3)} ⇒ 输入可再跌至 ${sagFloor.toFixed(1)} V 仍能稳压（规格下限 ${params.vinMin} V，即还有 ${sagTolerance.toFixed(1)} V 余量）。`,
       level: 'good',
     })
   }

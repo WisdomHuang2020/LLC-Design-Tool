@@ -102,7 +102,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             unit=""
             formula={
               bndOk
-                ? `分界点（Im Zin = 0，fn=${fnBnd.toFixed(3)}）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限（须 ≥ Gmax=${calculated.gMax.toFixed(3)}）。当前裕量 +${((bndReserve - 1) * 100).toFixed(2)}%（输入可再跌至 ${(calculated.vinMin * bndReserve).toFixed(1)} V）`
+                ? `分界点（Im Zin = 0，fn=${fnBnd.toFixed(3)}）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限（须 ≥ Gmax=${calculated.gMax.toFixed(3)}）。当前裕量 +${((bndReserve - 1) * 100).toFixed(2)}%（输入可再跌至 ${(calculated.vinMin / bndReserve).toFixed(1)} V）`
                 : '分界点不可解（参数越界）'
             }
             highlight={bndHl}
