@@ -56,7 +56,8 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const qCrss = losses.qPlateauCrss * 1e9
   const rgUse = Number.isFinite(params.rgTotal) ? params.rgTotal : 12
   const vPlatUse = Number.isFinite(params.vPlateau) ? params.vPlateau : 4.5
-  const toffNs = (qC: number) => ((qC * 1e-9 * rgUse) / vPlatUse) * 1e9
+  // ⚠️ losses.qPlateau* 的单位是**库仑(C)**，不是纳库仑 —— 换算 t = Q·R/ΔV 时不要再乘 1e-9
+  const toffNs = (qC: number) => ((qC * rgUse) / vPlatUse) * 1e9
   const tOffQgd = toffNs(losses.qPlateauQgd)
   const tOffCrss = toffNs(losses.qPlateauCrss)
   const qRatio = qCrss > 1e-12 ? qQgd / qCrss : NaN
