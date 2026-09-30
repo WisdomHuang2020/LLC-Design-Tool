@@ -82,7 +82,7 @@ export function generateSuggestions(
   const mBnd = boundaryGain(k, q)
   const reserveRatio = mBnd / mRequired
   // 由裕量反推「还能容忍输入跌到多少 V」：
-  //   谐振腔所需增益 M(V) = 2n(Vo+Vd)/V = Vin,nom/V（本工具 n 由 Vin,nom 定义），设计可交付上限为 Mbnd
+  //   谐振腔所需增益 M(V) = 2n(Vo+Vf)/V = Vin,nom/V（本工具 n 由 Vin,nom 定义），设计可交付上限为 Mbnd
   //   ⇒ 能稳压的最低输入 = Vin,nom / Mbnd = Vin,min / 裕量比
   //   ★ 必须**除以**裕量比（裕量越大 ⇒ 能撑到越低的输入）；乘以裕量比方向就写反了（会算出高于 Vin,min 的值）。
   const sagFloor = params.vinMin / reserveRatio

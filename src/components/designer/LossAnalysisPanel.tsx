@@ -48,7 +48,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
   const effDiff = losses.efficiency - calc.efficiency
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
   // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
-  // 整流分支的联动显示：整流方式来自**设计参数**，面板据此切换输入项与公式（二极管用的 Vd 也是设计参数）
+  // 整流分支的联动显示：整流方式来自**设计参数**，面板据此切换输入项与公式（二极管用的 Vf 也是设计参数，内部字段名 vd）
   const isSyncRect = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
   const isCtRect = calc.rectifier === 'center-tapped' || calc.rectifier === 'sync-center-tapped'
   const nRectVal = isCtRect ? 2 : 4

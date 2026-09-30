@@ -337,7 +337,7 @@ export default function Derivations() {
             <ParamRow symbol="n" name="变压器匝比" unit="-" description="原边匝数与副边匝数之比（中心抽头按半绕组计算）" typical="按输入输出电压设计" />
             <ParamRow symbol="Vin,nom" name="额定输入电压" unit="V" description="变换器标称直流输入电压" typical="380 V / 400 Vdc" />
             <ParamRow symbol="Vo" name="输出电压" unit="V" description="额定输出直流电压" typical="12 V / 24 V / 48 V" />
-            <ParamRow symbol="Vf" name="输出整流压降" unit="V" description="★ 单一来源：设计参数里的「输出整流压降」，**同时用于**匝比 n 与二极管整流的损耗（Nrect·Vd·(Io/2)）。二极管取 0.6~1.2 V，同步整流填 0" typical="0（同步）/ 0.6~1.2 V（二极管）" />
+            <ParamRow symbol="Vf" name="输出整流压降" unit="V" description="★ 单一来源：设计参数里的「输出整流压降」，同时用于匝比 n 与二极管整流的损耗（Nrect·Vf·(Io/2)）。二极管取 0.6~1.2 V，同步整流填 0" typical="0（同步）/ 0.6~1.2 V（二极管）" />
             <ParamRow symbol="RL" name="直流负载电阻" unit="Ω" description="RL = Vo² / Po" typical="随输出功率变化" />
             <ParamRow symbol="Rac" name="等效交流电阻" unit="Ω" description="折算到原边的交流负载，用于 FHA 等效电路" typical="数十 Ω ~ 数百 Ω" />
           </ParamTable>
@@ -551,7 +551,7 @@ export default function Derivations() {
             <ParamRow symbol="Er" name="可提供的 ZVS 储能" unit="J" description="关断时刻励磁电感储存的能量 Er = ½·Lm·I_m,off²（用 V_in,min 求 I_m,off，取最坏）" typical="数十 μJ" />
             <ParamRow symbol="Ec" name="ZVS 所需能量" unit="J" description="把开关节点电容 C总 从 0 充/放到 V_in 所需能量 Ec = ½·(2·Coss,er + Cj)·V_in,max²（用 V_in,max，取最坏）；Er ≥ Ec 才够 ZVS" typical="数 μJ ~ 数十 μJ" />
             <ParamRow symbol="fmin" name="调频下限（满载低输入）" unit="Hz" description="满载增益曲线与 M = Gmax 的交点频率 —— 最低母线满载是最坏工况，需要最低频率" typical="数十 ~ 百余 kHz" />
-            <ParamRow symbol="fmax" name="调频上限（空载降压）" unit="Hz" description="空载（Q→0）曲线与 M = Gmin 的交点频率；⚠ 与 fmin 取不同工况是**有意为之**（降压最坏在空载）" typical="百余 ~ 数百 kHz" />
+            <ParamRow symbol="fmax" name="调频上限（空载降压）" unit="Hz" description="空载（Q→0）曲线与 M = Gmin 的交点频率；⚠ 与 fmin 取不同工况是有意为之（降压最坏在空载）" typical="百余 ~ 数百 kHz" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.857 = 计算书算例的 α，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 

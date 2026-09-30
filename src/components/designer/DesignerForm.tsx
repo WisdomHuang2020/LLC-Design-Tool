@@ -111,7 +111,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             className={inputClass}
             value={form.rectifier}
             onChange={(e) => {
-              // 与「输出整流压降 Vd」联动：整流损耗直接用这个 Vd（单一来源），
+              // 与「输出整流压降 Vf」联动：整流损耗直接用这个 Vf（单一来源；内部字段名 vd），
               // 所以换整流方式时给出与类型匹配的默认压降，避免"选了二极管却按 0 V 算成无损耗"。
               const next = e.target.value as DesignParameters['rectifier']
               const sync = next === 'synchronous' || next === 'sync-center-tapped'
