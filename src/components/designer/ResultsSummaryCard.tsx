@@ -214,16 +214,16 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             <div className="mt-2">
               <div className="space-y-1 font-mono text-text-secondary">
                 <div>分界判据（推荐／本站默认）Qmax1 = {Number.isFinite(qmax1BndVal) ? qmax1BndVal.toFixed(5) : '—'} —— 令分界点 Mbnd = Gmax</div>
-                <div>峰值判据（旧口径，仅对照）Qmax1 = {Number.isFinite(qmax1PeakVal) ? qmax1PeakVal.toFixed(5) : '—'} —— 令峰顶 Mpeak = Gmax</div>
+                <div>峰值判据（备选，仅对照）Qmax1 = {Number.isFinite(qmax1PeakVal) ? qmax1PeakVal.toFixed(5) : '—'} —— 令峰顶 Mpeak = Gmax</div>
                 <div>峰值判据比分界判据宽松 {Number.isFinite(qmax1PeakVal) && Number.isFinite(qmax1BndVal) && qmax1BndVal > 0 ? ((qmax1PeakVal - qmax1BndVal) / qmax1BndVal * 100).toFixed(2) : '—'}%（Q 偏大 ⇒ 感性区内够不到）</div>
                 <div>本设计分界点 fn = {Number.isFinite(fnBnd) ? fnBnd.toFixed(4) : '—'}，该点 Mbnd = {bndOk ? mBnd.toFixed(5) : '—'}，Mpeak = {calculated.mMax.toFixed(5)}</div>
                 <div>感性区可用裕量 = {bndOk ? ((mBnd - calculated.gMax) / calculated.gMax * 100).toFixed(3) : '—'}%（按 Mbnd），曲线峰顶显示裕量 = {((calculated.mMax - calculated.gMax) / calculated.gMax * 100).toFixed(3)}%</div>
               </div>
               <div className="mt-2 space-y-1.5 text-text-muted">
                 <p>
-                  <b className="text-text-secondary">两者不是同一个东西。</b>
+                  <b className="text-text-secondary">两条判据不是同一个东西。</b>
                   计算书（教材）用的是<b className="text-text-secondary">感容分界点增益</b>，
-                  网站早期用的是<b className="text-text-secondary">峰值增益</b> —— 这是两条不同的限制条件：
+                  另一条常见做法是用<b className="text-text-secondary">峰值增益</b> —— 两者是两条不同的限制条件：
                 </p>
                 <p>
                   ① <b className="text-text-secondary">感容分界点在峰值增益点的右边一点点</b>（实测右移 2%~15%，Q 越小差得越多），
@@ -240,8 +240,8 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
                   Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1)) 的精确含义（不是近似式）。
                 </p>
                 <p>
-                  本站 v2.10.97 起默认采用分界判据；如需复现旧口径或与既有设计逐位对齐，
-                  可在左侧表单「Qmax1 判据」切到「峰值增益判据」。
+                  本站默认采用分界判据；若需改用另一条判据，
+                  可在左侧表单「Qmax1 判据」切换为「峰值增益判据」。
                 </p>
               </div>
             </div>

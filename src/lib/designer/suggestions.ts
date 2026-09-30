@@ -41,7 +41,7 @@ export function generateSuggestions(
   //       它的后果（增益裕量够不够）由第 4 条按 Mbnd 判定，避免同一件事报两次、且报警无对应动作。
   //       Qmax2 / Qmax3 最紧时能给出具体杠杆（死区时间 / Coss 器件），故保留 warn。
   const qmaxMin = Math.min(qmax1, qmax2, qmax3)
-  const critLabel = params.qmax1Criterion === 'peak' ? '峰值判据（旧口径，工作点落在容性区）' : '感容分界判据'
+  const critLabel = params.qmax1Criterion === 'peak' ? '峰值判据（备选，工作点落在容性区）' : '感容分界判据'
   if (qmax1 === qmaxMin) {
     s.push({
       text: `三条约束中最紧的是 Qmax1=${fmt(qmax1)}（${critLabel}）：瓶颈在增益能力（ZVS 侧 Qmax2=${fmt(qmax2)}、寄生电容侧 Qmax3=${fmt(qmax3)} 均宽裕）。`,

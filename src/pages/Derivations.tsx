@@ -402,7 +402,7 @@ export default function Derivations() {
             <strong className="text-text-primary">半桥拓扑</strong>下，
             总电容 = 2·C<sub>oss,er</sub>（上下两个开关管输出电容之和）+
             C<sub>j</sub>（变压器原边等效寄生结电容），即
-            <InlineMath latex="2C_{oss,er} + C_j" />，本站按能量口径<b>直接写开</b>、不再另起符号；
+            <InlineMath latex="2C_{oss,er} + C_j" />（本站按能量口径直接写开，不另起符号）；
             <b>能量判据必须用 Co(er)</b>（能量相关等效），不能用 Co(tr) 或规格书标称 Coss。
             全桥拓扑同理为四个管子的输出电容折算值。电压取 V<sub>in,max</sub>（最恶劣工况）。
             <span className="text-primary-light">本节判据与本站「工作原理」页的 ZVS 能量条件一致。</span>
@@ -495,7 +495,7 @@ export default function Derivations() {
 
           <MathBlock
             latex="Q_{max1} = \\frac{1}{k\\,G_{max}}\\sqrt{k + \\frac{G_{max}^2}{G_{max}^2 - 1}} \\quad\\Longleftarrow\\quad M_{bnd}(f_n,k,Q) = G_{max}"
-            label="约束一 · 感性区增益能力（默认：感容分界判据；旧口径为 max M = Gmax，峰值落在容性区）"
+            label="约束一 · 感性区增益能力（默认：感容分界判据——令分界点增益 Mbnd = Gmax）"
           />
 
           <MathBlock
@@ -515,10 +515,10 @@ export default function Derivations() {
           />
 
           <HighlightBox type="warning">
-            <strong>死区时间约束现在是「约束二（Q<sub>max2</sub>）」本身，不再是额外一条。</strong>
+            <strong>死区时间约束即「约束二（Q<sub>max2</sub>）」本身。</strong>
             Q<sub>max2</sub> 的含义就是「死区内刚好把 C<sub>总</sub> 充放电用完 t<sub>d</sub>」所对应的 Q，
             所以 <b>t<sub>ZVS</sub> = m·t<sub>d</sub> ≤ t<sub>d</sub></b> 在 Q<sub>max2</sub> 生效时按构造成立，
-            下面的 t<sub>ZVS</sub> 公式退化为一致性复核（不生效时才是唯一的把关项）：
+            下面的 t<sub>ZVS</sub> 公式即退化为一致性复核（Q<sub>max2</sub> 未生效时它才是唯一把关项）：
           </HighlightBox>
 
           <MathBlock
@@ -544,7 +544,7 @@ export default function Derivations() {
             <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
-            <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；设计工具页表单可切回【峰值判据】Mpeak = Gmax，该判据更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
+            <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；表单可切换为【峰值判据】Mpeak = Gmax —— 该判据数值更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss,eq + Cj（时间口径）" typical="0.3 ~ 1.5" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.857 = 计算书算例的 α，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
@@ -553,12 +553,12 @@ export default function Derivations() {
           <HighlightBox type="warning">
             <strong>Q<sub>max1</sub> 必须由「感容分界点增益 ∩ G<sub>max</sub>」给出 —— 峰值增益点在容性区，不能用来限制：</strong>
             ① <b>感容分界点在峰值增益点的右边一点点</b>（实测右移 2%~15%，Q 越小差得越多）；分界点左侧为容性区、右侧为感性区。
-            ② <b>峰值判据</b>（本站 v2.10.95 及更早的默认）：令增益曲线<b>峰顶</b> M<sub>peak</sub> = G<sub>max</sub>，
+            ② <b>峰值判据</b>（备选做法）：令增益曲线<b>峰顶</b> M<sub>peak</sub> = G<sub>max</sub>，
             只能保证「增益数值达标」，但那个峰顶本身已处于<b>容性区</b>，容性区<b>不允许工作</b>（无法 ZVS、环路不能稳定停留）。
             ③ 因此要<b>确保工作在感性区</b>，限制条件必须取<b>感容分界判据</b>：令分界点（Im Z<sub>in</sub> = 0）增益
             M<sub>bnd</sub> = G<sub>max</sub>；其精确解析解即教材闭式
             Q<sub>max1</sub> = 1/(k·G<sub>max</sub>)·√(k + G<sub>max</sub>²/(G<sub>max</sub>²−1)) —— <b>不是近似式</b>。
-            本站 v2.10.97 起默认采用分界判据；需复现旧口径时，在设计工具页表单「Qmax1 判据」切到「峰值增益判据」。
+            本站默认采用分界判据；如需改用峰值判据，可在设计工具页表单「Qmax1 判据」切换。
           </HighlightBox>
 
           <HighlightBox type="info">
@@ -670,25 +670,24 @@ export default function Derivations() {
           />
 
           <HighlightBox type="warning">
-            <strong>整流与谐振元件损耗的三处易错口径（v2.10.98 厘清）：</strong>
+            <strong>整流与谐振元件损耗的三处易错口径：</strong>
             ① <b>N<sub>rect</sub> 与 I<sub>s,sw</sub> 必须同一口径</b> —— I<sub>s,sw</sub> 是「每个整流器件整周期的 RMS」，
             两种拓扑下都等于 (π/4)·I<sub>o</sub>：中心抽头绕组本身只导通半波（RMS = π·I<sub>o</sub>/4，直接就是每管值），
             全波桥的<b>绕组</b> RMS 是 π·I<sub>o</sub>/(2√2)，但每个管只导半周 ⇒ 再除 √2 后同样落到 π·I<sub>o</sub>/4。
-            历史上若把中心抽头按「绕组 RMS 再除一次 √2」处理，功率会<b>整整少算一半</b>；
+            若把中心抽头按「绕组 RMS 再除一次 √2」处理，功率会<b>整整少算一半</b>；
             ② <b>同步整流的 R<sub>ds(on)</sub> 同为 25℃ 值</b>，须与原边一样乘 k<sub>T</sub>；
             ③ <b>Lr 铁损不乘 k<sub>wave</sub></b> —— 谐振电感是正弦激励，手册 P<sub>cv</sub> 曲线本就按正弦标定，
             k<sub>wave</sub> 修的是「手册正弦标定 vs 变压器方波励磁」的差异，套到 Lr 上只会虚增。
           </HighlightBox>
 
           <HighlightBox type="warning">
-            <strong>Coss 损耗的电容口径（v2.10.101 厘清）：</strong>
+            <strong>Coss 损耗的电容口径：</strong>
             硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散，
             <b>必须用能量相关等效电容 C<sub>oss,er</sub>（≡ 规格书 Co(er)）</b>：
             <InlineMath latex="E_{oss} = \frac{1}{2} C_{oss,er} V_{DS}^2" />
             是 C<sub>oss,er</sub> 的<b>定义式</b>，不需要任何「非线性修正系数」。
             用时间口径的 Co(tr)、或规格书标称 Coss（多为 0 V 值）都会算错。
-            本站 C<sub>oss,er</sub> 取自<b>设计参数</b>（单一来源，与死区时间 t<sub>d</sub> 同一做法），
-            损耗面板不再单独输入 Coss。
+            本站 C<sub>oss,er</sub> 取自<b>设计参数</b>（单一来源，与死区时间 t<sub>d</sub> 同一做法）。
           </HighlightBox>
 
           <HighlightBox type="warning">

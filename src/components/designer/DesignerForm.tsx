@@ -155,7 +155,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             onChange={(e) => update('qmax1Criterion', e.target.value as DesignParameters['qmax1Criterion'])}
           >
             <option value="boundary">感容分界判据（推荐／默认）</option>
-            <option value="peak">峰值增益判据（旧口径，仅供对照）</option>
+            <option value="peak">峰值增益判据（备选，仅供对照）</option>
           </select>
           <span className="text-xs text-text-muted mt-1 block">
             感容分界点在峰值点<b className="text-text-secondary">右侧</b>；峰值点位于容性区，
