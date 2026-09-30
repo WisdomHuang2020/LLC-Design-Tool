@@ -340,3 +340,17 @@ svg text {
     text-decoration: none !important;
   }
 }
+
+/* ── 损耗面板字段网格：让同一行的输入框对齐 ──────────────────────────
+   各字段是「label + 输入框 + 注释小字」。label 行数（1~2 行）与注释行数（0~4 行）都不一致，
+   默认布局下同一行的输入框会参差不齐。做法：
+     ① 每个字段变成纵向 flex（行高由该行最高的字段决定，不影响原外观）；
+     ② 在隐藏注释的档位下，让 label 吸收行高差 ⇒ 输入框被推到同一行的底部，横向对齐。
+   仅作用于带 .loss-field-grid 的容器，不波及其它面板。 */
+.loss-field-grid > div {
+  display: flex;
+  flex-direction: column;
+}
+.loss-field-grid.hide-notes > div > label {
+  flex: 1 1 auto;
+}

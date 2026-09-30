@@ -1,9 +1,12 @@
 // 损耗分析面板：器件/磁芯参数输入 + 损耗汇总 + 饼图/柱图 + 分项明细表。
-import { Flame } from 'lucide-react'
+import { useState } from 'react'
+import type { ReactNode } from 'react'
+import { Eye, EyeOff, Flame } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import CollapsibleCard from './CollapsibleCard'
 import { calculateLosses } from '../../lib/designer/losses'
 import type { CalculatedData, LossParameters } from '../../lib/designer/types'
+import { loadLossNotesHidden, saveLossNotesHidden } from '../../lib/designer/persistence'
 
 interface LossAnalysisPanelProps {
   calc: CalculatedData
@@ -16,10 +19,29 @@ interface LossAnalysisPanelProps {
 const inputClass = 'input-field w-full'
 const labelClass = 'block text-xs font-medium text-text-secondary mb-1'
 
+/**
+ * 参数下方的注释小字。注释整体可由标题栏的「注释」开关隐藏（见 notesHidden）——
+ * 各字段注释行数差别很大，隐藏后同一行输入框才能规整对齐。
+ */
+function Note({ hidden, children }: { hidden: boolean; children: ReactNode }) {
+  if (hidden) return null
+  return <div className="text-[10px] text-text-muted mt-0.5">{children}</div>
+}
+
 export default function LossAnalysisPanel({ calc, params, setParams, collapsed, onToggle }: LossAnalysisPanelProps) {
   const losses = calculateLosses(calc, params)
   const update = <K extends keyof LossParameters>(key: K, value: LossParameters[K]) => {
     setParams({ ...params, [key]: value })
+  }
+
+  // 参数下方注释小字是否隐藏：纯显示偏好（持久化，不参与计算）。
+  // 注释长短不一会撑出参差行高；隐藏后配合 .loss-field-grid 的 CSS 让同一行输入框对齐。
+  const [notesHidden, setNotesHidden] = useState(loadLossNotesHidden)
+  const toggleNotes = () => {
+    setNotesHidden((v) => {
+      saveLossNotesHidden(!v)
+      return !v
+    })
   }
 
   const effDiff = losses.efficiency - calc.efficiency
@@ -36,10 +58,23 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
       title="损耗分析"
       collapsed={collapsed}
       onToggle={onToggle}
+      headerExtra={
+        // 注释开关：与折叠按钮平级，点击只切换注释显示，不会收起卡片。
+        // 隐藏后各字段等高（label 吸收行高差），同一行输入框横向对齐。
+        <button
+          type="button"
+          onClick={toggleNotes}
+          title={notesHidden ? '显示各参数下方的注释小字' : '隐藏各参数下方的注释小字（输入框可横向对齐）'}
+          className="shrink-0 flex items-center gap-1 text-xs px-2 py-1 rounded-md border border-border text-text-secondary hover:text-text-primary hover:border-primary-light/60 transition-colors"
+        >
+          {notesHidden ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          {notesHidden ? '显示注释' : '隐藏注释'}
+        </button>
+      }
     >
       <div className="mt-3 space-y-5">
         {/* Input parameters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 loss-field-grid${notesHidden ? ' hide-notes' : ''}`}>
           <div>
             <label className={labelClass}>MOSFET Rds(on) (mΩ, 25℃)</label>
             <input type="number" className={inputClass} value={params.mosfetRdsOn} onChange={(e) => update('mosfetRdsOn', Number(e.target.value))} />
@@ -47,27 +82,27 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>Rds(on) 温度修正系数 kT</label>
             <input type="number" step="0.1" className={inputClass} value={params.rdsonTempFactor} onChange={(e) => update('rdsonTempFactor', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">原边 MOSFET 与同步整流共用；硅管 100℃ 典型 1.5~2.0</div>
+            <Note hidden={notesHidden}>原边 MOSFET 与同步整流共用；硅管 100℃ 典型 1.5~2.0</Note>
           </div>
           <div>
             <label className={labelClass}>Qgd 米勒电荷 (nC)</label>
             <input type="number" step="0.1" className={inputClass} value={params.qgd} onChange={(e) => update('qgd', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">取规格书栅荷曲线 Q<sub>gd</sub></div>
+            <Note hidden={notesHidden}>取规格书栅荷曲线 Q<sub>gd</sub></Note>
           </div>
           <div>
             <label className={labelClass}>Vplat 平台电压 (V)</label>
             <input type="number" step="0.1" className={inputClass} value={params.vPlateau} onChange={(e) => update('vPlateau', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">同一条曲线的平台电压</div>
+            <Note hidden={notesHidden}>同一条曲线的平台电压</Note>
           </div>
           <div>
             <label className={labelClass}>Rg 栅极回路总电阻 (Ω)</label>
             <input type="number" step="0.1" className={inputClass} value={params.rgTotal} onChange={(e) => update('rgTotal', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗</div>
+            <Note hidden={notesHidden}>内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗</Note>
           </div>
           <div>
             <label className={labelClass}>Vdrv 驱动电平 (V)</label>
             <input type="number" step="0.1" className={inputClass} value={params.vDrv} onChange={(e) => update('vDrv', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">开通交叉时间用；关断按 0</div>
+            <Note hidden={notesHidden}>开通交叉时间用；关断按 0</Note>
           </div>
           <div>
             <label className={labelClass}>交叉时间 t_cr（由上式算出）</label>
@@ -75,10 +110,10 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
               <span className="font-mono text-xs text-text-primary">关断 {tCrossOffNs} ns ｜ 开通 {tCrossOnNs} ns</span>
               <span className="text-[10px] text-text-muted">t_cr = Qgd·Rg/ΔV</span>
             </div>
-            <div className="text-[10px] text-text-muted mt-0.5">
+            <Note hidden={notesHidden}>
               ⚠️ 不要直接填规格书 t<sub>r</sub>/t<sub>f</sub>：那是特定测试条件（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω）下测的
               <b>漏极电流 10%↔90% 过渡时间</b>，既非本机工况、也不是损耗积分所需的 V·I 重叠时长
-            </div>
+            </Note>
           </div>
           <div>
             <label className={labelClass}>Coss,er (pF)</label>
@@ -165,12 +200,12 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
               <div>
                 <label className={labelClass}>Cr 1kHz 损耗角正切</label>
                 <input type="number" step="0.0001" className={inputClass} value={params.crDf1k} onChange={(e) => update('crDf1k', Number(e.target.value))} />
-                <div className="text-[10px] text-text-muted mt-0.5">规格书惯例值（如 0.001）</div>
+                <Note hidden={notesHidden}>规格书惯例值（如 0.001）</Note>
               </div>
               <div>
                 <label className={labelClass}>Cr DF 频率修正倍数</label>
                 <input type="number" step="0.1" className={inputClass} value={params.crDfK} onChange={(e) => update('crDfK', Number(e.target.value))} />
-                <div className="text-[10px] text-text-muted mt-0.5">1kHz → fsw 的 tanδ 倍数</div>
+                <Note hidden={notesHidden}>1kHz → fsw 的 tanδ 倍数</Note>
               </div>
             </>
           )}
@@ -184,22 +219,22 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
           <div>
             <label className={labelClass}>P_cv (mW/cm³)</label>
             <input type="number" className={inputClass} value={params.corePcv} onChange={(e) => update('corePcv', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">目标温度/频率/B 下查手册</div>
+            <Note hidden={notesHidden}>目标温度/频率/B 下查手册</Note>
           </div>
           <div>
             <label className={labelClass}>波形修正 k_wave</label>
             <input type="number" step="0.05" className={inputClass} value={params.coreWaveK} onChange={(e) => update('coreWaveK', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">方波励磁相对正弦，默认 1.25</div>
+            <Note hidden={notesHidden}>方波励磁相对正弦，默认 1.25</Note>
           </div>
           <div>
             <label className={labelClass}>Lr 磁芯 P_cv (mW/cm³)</label>
             <input type="number" className={inputClass} value={params.lrCorePcv} onChange={(e) => update('lrCorePcv', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">默认按 B_Lr≈0.15 T 查 PC95 手册；须按实际磁芯重查（填 0 则不计）</div>
+            <Note hidden={notesHidden}>默认按 B_Lr≈0.15 T 查 PC95 手册；须按实际磁芯重查（填 0 则不计）</Note>
           </div>
           <div>
             <label className={labelClass}>Lr 磁芯 Ve (cm³)</label>
             <input type="number" step="0.1" className={inputClass} value={params.lrCoreVe} onChange={(e) => update('lrCoreVe', Number(e.target.value))} />
-            <div className="text-[10px] text-text-muted mt-0.5">默认取变压器 Ve 的 1/4；正弦激励，不乘 k_wave</div>
+            <Note hidden={notesHidden}>默认取变压器 Ve 的 1/4；正弦激励，不乘 k_wave</Note>
           </div>
         </div>
 
