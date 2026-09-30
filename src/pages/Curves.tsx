@@ -290,10 +290,11 @@ export default function Curves() {
                     fontSize: 12,
                   }}
                   tickCount={9}
+                  height={52}
                   label={{
                     value: '归一化频率 fn',
                     position: 'insideBottom',
-                    offset: -10,
+                    offset: 0,
                     fill: '#a3a3a3',
                     fontSize: 13,
                   }}
@@ -304,7 +305,7 @@ export default function Curves() {
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
-                  }}
+                  }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <ReferenceLine
@@ -368,10 +369,11 @@ export default function Curves() {
                     fontSize: 12,
                   }}
                   tickCount={9}
+                  height={52}
                   label={{
                     value: '归一化频率 fn',
                     position: 'insideBottom',
-                    offset: -10,
+                    offset: 0,
                     fill: '#a3a3a3',
                     fontSize: 13,
                   }}
@@ -382,7 +384,7 @@ export default function Curves() {
                     fill: '#a3a3a3',
                     fontFamily: 'JetBrains Mono',
                     fontSize: 12,
-                  }}
+                  }}
                 />
                 <Tooltip content={<CustomTooltip />} />
                 <ReferenceLine
