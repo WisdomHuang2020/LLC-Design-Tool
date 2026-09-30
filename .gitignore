@@ -17,3 +17,7 @@ build_log.txt
 *.swo
 *~
 .workbuddy/
+
+# 外部意见的复核 / 审核报告：仅本地存档，不提交、不随站发布
+# （2026-09-30 用户决定：《LLC网站修改意见9.28》复核报告不发布）
+research/review_928_doc_recheck_20260930.*
