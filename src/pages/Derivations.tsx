@@ -546,7 +546,7 @@ export default function Derivations() {
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；表单可切换为【峰值判据】Mpeak = Gmax —— 该判据数值更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss,eq + Cj（时间口径）" typical="0.3 ~ 1.5" />
-            <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
+            <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量（2Coss,er + Cj：两只管之和 + 寄生）决定，Coss,er 为单管值" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.857 = 计算书算例的 α，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
 

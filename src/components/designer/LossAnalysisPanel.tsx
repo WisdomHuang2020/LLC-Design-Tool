@@ -121,6 +121,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
               <span className="font-mono text-sm text-text-primary">{cossErP}</span>
               <span className="text-[10px] text-text-muted">取自设计参数</span>
             </div>
+            <Note hidden={notesHidden}>单管值（≡ 规格书 Co(er)）；能量判据与损耗按 2·Coss,er + Cj / ×N<sub>sw</sub> 计入两只管</Note>
           </div>
           <div>
             <label className={labelClass}>Vsd (V)</label>
@@ -335,7 +336,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">E_oss = ½·C<sub>oss,er</sub>·V<sub>in,nom</sub>²·f<sub>sw</sub>·N<sub>sw</sub>（C<sub>oss,er</sub> ≡ 规格书 Co(er)，定义式无需 2/3 修正；ZVS 下 ≈0，储能被谐振腔回收）</td>
+                <td className="py-2 text-text-secondary">E_oss = ½·C<sub>oss,er</sub>·V<sub>in,nom</sub>²·f<sub>sw</sub>·N<sub>sw</sub>（C<sub>oss,er</sub> ≡ 规格书 Co(er) <b>单管值</b>，N<sub>sw</sub> = 半桥 2 / 全桥 4 只管各计一次；定义式无需 2/3 修正；ZVS 下 ≈0，储能被谐振腔回收）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>

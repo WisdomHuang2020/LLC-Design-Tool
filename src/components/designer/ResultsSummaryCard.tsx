@@ -113,7 +113,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="ZVS能量裕量"
             value={calculated.zvsMargin ? '可达' : '不足'}
             unit=""
-            formula={`Er=${(calculated.zvsEr * 1e6).toFixed(3)}μJ / Ec=${(calculated.zvsEc * 1e6).toFixed(3)}μJ`}
+            formula={`Er = ½·Lm·Im,off² = ${(calculated.zvsEr * 1e6).toFixed(3)}μJ ／ Ec = ½·(2Coss,er + Cj)·Vin,max² = ${(calculated.zvsEc * 1e6).toFixed(3)}μJ（总电容含两只管 ×2）`}
             highlight={calculated.zvsMargin ? 'good' : 'critical'}
           />
           <ResultItem
@@ -176,7 +176,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             }
           />
           <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 C总 充放电（t_dead = γ·fmax·Lm·C总 = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C总)，C总 = 2·Coss,eq + Cj（时间口径，Coss,eq ≡ 规格书 Co(tr)）" />
-          <ResultItem label="Qmax3（ZVS 能量约束）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量，用 Coss,er / Cj 口径" />
+          <ResultItem label="Qmax3（ZVS 能量约束）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量：½·Lm·Im,off² ≥ ½·(2Coss,er + Cj)·Vin,max² —— 总电容为两只管之和（2Coss,er）加寄生 Cj，Coss,er ≡ 规格书 Co(er) 单管值" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>
 
