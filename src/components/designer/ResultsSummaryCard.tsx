@@ -113,7 +113,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="ZVS能量裕量"
             value={calculated.zvsMargin ? '可达' : '不足'}
             unit=""
-            formula={`Er = ½·Lm·Im,off² = ${(calculated.zvsEr * 1e6).toFixed(3)}μJ ／ Ec = ½·(2Coss,er + Cj)·Vin,max² = ${(calculated.zvsEc * 1e6).toFixed(3)}μJ（总电容含两只管 ×2）`}
+            formula={`Er（励磁电感可提供的储能）= ½·Lm·Im,off² = ${(calculated.zvsEr * 1e6).toFixed(3)}μJ ／ Ec（为 C总 充/放电所需的最小储能）= ½·(2Coss,er + Cj)·Vin,max² = ${(calculated.zvsEc * 1e6).toFixed(3)}μJ（总电容含两只管 ×2）`}
             highlight={calculated.zvsMargin ? 'good' : 'critical'}
           />
           <ResultItem

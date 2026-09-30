@@ -247,7 +247,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             <span className="text-xs text-text-muted mt-1 block">驱动死区</span>
           </div>
           <div>
-            <label className={labelClass}>二极管压降 Vf (V)</label>
+            <label className={labelClass}>输出整流压降 Vf (V)</label>
             <input
               type="number"
               className={inputClass}
@@ -256,7 +256,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               step="0.1"
               placeholder="整流二极管"
             />
-            <span className="text-xs text-text-muted mt-1 block">输出整流压降：<b>同时用于</b>匝比 n 与整流损耗（二极管 0.6~1.2 V；同步整流填 0）</span>
+            <span className="text-xs text-text-muted mt-1 block">输出整流压降 V<sub>f</sub>：<b>同时用于</b>匝比 n 与整流损耗（二极管 0.6~1.2 V；同步整流填 0）</span>
           </div>
           <div>
             <label className={labelClass}>最大输出电流 Iomax (A)</label>

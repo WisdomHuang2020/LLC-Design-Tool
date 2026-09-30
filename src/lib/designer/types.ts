@@ -64,7 +64,9 @@ export interface CalculatedData {
   vinMax: number
   topology: string
   rectifier: string
-  /** 设计参数里的输出整流压降 Vd (V)：既用于匝比 n，也用于二极管整流的整流损耗（单一来源） */
+  /** 输出整流压降 Vf (V)：既用于匝比 n，也用于二极管整流的整流损耗（单一来源）。
+   *  ⚠️ 内部字段名沿用 `vd`，但**界面符号统一写作 Vf** —— Vf 才是二极管正向压降的通用符号；
+   *  `Vd` 在电力电子里惯例指漏极电压，勿用于本量。 */
   vd: number
   rac: number
   zr: number

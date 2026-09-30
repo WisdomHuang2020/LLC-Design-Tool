@@ -258,7 +258,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.skinF0} onChange={(e) => update('skinF0', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>{isSyncRect ? '同步整流 Rds(on) (mΩ)' : '整流压降 Vd (V)'}</label>
+            <label className={labelClass}>{isSyncRect ? '同步整流 Rds(on) (mΩ)' : '整流压降 Vf (V)'}</label>
             {isSyncRect ? (
               <input type="number" step="0.1" className={inputClass} value={params.syncRectRdsOn} onChange={(e) => update('syncRectRdsOn', Number(e.target.value))} />
             ) : (
@@ -271,8 +271,8 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
               当前整流方式：<b>{rectLabel}</b>（由上方「设计参数」决定）⇒
               {isSyncRect
                 ? ` 按 P_rect = Nrect·Is,sw²·Rds(on)·kT 计（Nrect = ${nRectVal}）`
-                : ` 按 P_rect = Nrect·Vd·(Io/2) 计（Nrect = ${nRectVal}）；Vd 与匝比 n 用的是同一个压降，改它请到「设计参数」区的「输出整流压降 Vd」`}
-              {!isSyncRect && vdDesign < 0.2 ? ' ⚠️ 当前 Vd ≈ 0 ⇒ 整流损耗会被算成 0，二极管应填 0.6~1.2 V' : ''}
+                : ` 按 P_rect = Nrect·Vf·(Io/2) 计（Nrect = ${nRectVal}）；Vf 与匝比 n 用的是同一个压降，改它请到「设计参数」区的「输出整流压降」`}
+              {!isSyncRect && vdDesign < 0.2 ? ' ⚠️ 当前 Vf ≈ 0 ⇒ 整流损耗会被算成 0，二极管应填 0.6~1.2 V' : ''}
             </Note>
           </div>
           <div>
@@ -463,7 +463,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                   <b>{rectLabel}</b>：
                   {isSyncRect
                     ? `P = Nrect(${losses.nRect})·Is,sw²·Rds(on)·kT；Is,sw = ${losses.isSw.toFixed(2)} A = (π/4)·Io（每个整流管整周期 RMS）`
-                    : `P = Nrect(${losses.nRect})·Vd(${vdDesign.toFixed(2)} V)·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A（Vd 取自设计参数）`}
+                    : `P = Nrect(${losses.nRect})·Vf(${vdDesign.toFixed(2)} V)·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A（Vf 取自设计参数）`}
                 </td>
               </tr>
               <tr className="border-b border-border/50">

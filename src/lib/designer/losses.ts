@@ -240,9 +240,9 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     rectLoss = nRect * isSw * isSw * (lp.syncRectRdsOn / 1000) * kT
   } else {
     // 二极管口径：每个管子平均电流 Io/2（Iavg），Nrect 个管子的 Vf·Iavg 之和。
-    //   ★ 整流压降取**设计参数**里的 Vd（单一来源）—— 它与匝比 n 用的是同一个压降，
+    //   ★ 整流压降取**设计参数**里的 Vf（单一来源；内部字段名仍为 vd）—— 它与匝比 n 用的是同一个压降，
     //     避免"设计参数里填了一个 Vf、损耗面板又填一个"，两处不一致导致看起来没联动。
-    //     ⚠️ 因此：选二极管整流时务必把设计参数区的「输出整流压降 Vd」填成实际值（0.6~1.2 V）；
+    //     ⚠️ 因此：选二极管整流时务必把设计参数区的「输出整流压降 Vf」填成实际值（0.6~1.2 V）；
     //        若仍为 0（默认给同步整流用），整流损耗会被算成 0 —— UI 会就此给出提示。
     rectLoss = nRect * vdUse * (io / 2)
   }
