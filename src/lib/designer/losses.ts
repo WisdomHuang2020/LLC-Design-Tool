@@ -8,7 +8,6 @@ export const defaultLossParams: LossParameters = {
   rdsonTempFactor: 1.6,
   mosfetTr: 15,
   mosfetTf: 10,
-  mosfetCoss: 150,
   mosfetVsd: 1.2,
   primaryTurns: 30,
   coreMaterial: 'PC95',
@@ -111,12 +110,20 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // 而非原边总电流峰值 ipPeak。
   const switchOff = 0.5 * switchV * imOff * (lp.mosfetTf / 1e9) * fsw * nSwitches
 
-  // 3. Coss loss (non-linear model, simplified)
-  // 系数 2/3 考虑了 MOSFET 结电容 C_oss 随 V_ds 的非线性变化
-  // 不同厂商/型号的 C_oss 非线性特性不同，精确损耗建议查手册 E_oss 曲线
-  // ZVS 下 Coss 储能被谐振电流回收，损耗近似为 0
-  const cossF = lp.mosfetCoss / 1e12
-  const ecoss = 0.5 * cossF * vin * vin * (2 / 3)
+  // 3. Coss loss —— 硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散
+  //   Coss 随 V_ds 非线性变化，故必须用**能量相关等效电容 C_oss,er**（≡ 规格书 Co(er)）：
+  //     按定义 C_oss,er(V) = 2·E_oss(V)/V²  ⇒  E_oss = ½·C_oss,er·V_DS²，**无需任何非线性修正系数**。
+  //   ⚠️ 与「时间相关等效 C_oss,eq（≡ Co(tr)）」不是同一个量：C_er < C_tr（Coss 单调递减时），
+  //      Co(tr) 只用于死区**电荷/时间**约束（→ qmax2 / tZVS），不可拿来算损耗。
+  //   ⚠️ 规格书里的标称 Coss（常标 0V 或低压处）既不是 Co(tr) 也不是 Co(er)，不能直接用。
+  //   C_oss,er 取自**设计参数**（单一来源，与 td 同一做法），旧存档缺该字段时按典型值 35 pF 兜底。
+  //   V_DS 取额定输入 V_in,nom（效率标称点）；若要评估最坏工况应按 V_in,max 另计。
+  //   注：qmax2/qmax3 把 ZVS 条件写进了 Q 约束，多数设计点下 zvsMargin/zvsTimeOk 自动成立、
+  //       本项为 0；但 q 有 0.001 下限、fmax 又随压差放大，扫参实测仍有约 9% 的配置会触发这两个
+  //       校验（此时本项非 0），因此这里用 Co(er) 的取值是决定性的，不是摆设。
+  const cossErIn = Number(calc.cossEr)
+  const cossErP = Number.isFinite(cossErIn) && cossErIn > 0 ? cossErIn : 35
+  const ecoss = 0.5 * (cossErP / 1e12) * vin * vin
   const cossLoss = zvsOn ? 0 : ecoss * fsw * nSwitches
 
   // 4. Body diode conduction loss
@@ -220,7 +227,7 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
     mosfetCond,
     mosfetSwitchOn: switchOn,
     mosfetSwitchOff: switchOff,
-    mosfetCoss: cossLoss,
+    mosfetCoss: cossLoss, // 与 mosfetCond/mosfetSwitchOn/mosfetDiode 同族命名；此处是损耗（W），不再是电容参数
     mosfetDiode: diodeLoss,
     coreLoss,
     coreLossSteinmetz,

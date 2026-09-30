@@ -247,6 +247,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
     zvsTimeOk,
     tZvs,
     td,
+    cossEr: form.cossEr, // 能量相关等效电容（pF，单管）——供损耗模型的硬开关 Coss 损耗取用（单一来源）
     zvsPhase: zvsPhaseDeg,
     ipRms,
     irRms,

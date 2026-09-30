@@ -66,6 +66,12 @@ export interface CalculatedData {
   rectifier: string
   rac: number
   zr: number
+  /**
+   * 能量相关等效输出电容 C_oss,er（pF，单管，≡ 规格书 Co(er)），随设计参数带入计算数据，
+   * 供损耗模型直接取用（硬开关 Coss 损耗 E_oss = ½·C_oss,er·V²）。
+   * ⚠️ 旧存档（localStorage）可能缺该字段 ⇒ 使用时必须兜底（losses.ts 按典型值 35 pF）。
+   */
+  cossEr?: number
   // 新增计算结果
   fmax: number
   fmin: number
@@ -120,7 +126,9 @@ export interface LossParameters {
   rdsonTempFactor: number
   mosfetTr: number // ns
   mosfetTf: number // ns
-  mosfetCoss: number // pF @ 0V
+  // 注：Coss 相关电容**不在此处**——损耗面板不再单独输入 Coss。
+  //     硬开关 Coss 损耗与 ZVS 能量判据统一取设计参数 `DesignParameters.cossEr`（C_oss,er ≡ Co(er)，
+  //     能量相关等效电容），死区时间/电荷判据取 `cossEq`（C_oss,eq ≡ Co(tr)）。单一来源，避免同一物理量两处输入。
   mosfetVsd: number // V body diode
   primaryTurns: number
   coreMaterial: string

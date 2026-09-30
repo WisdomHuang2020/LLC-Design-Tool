@@ -203,7 +203,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               onChange={(e) => update('cossEq', Number(e.target.value))}
               placeholder="等效输出电容"
             />
-            <span className="text-xs text-text-muted mt-1 block">等效Coss（谐振腔）</span>
+            <span className="text-xs text-text-muted mt-1 block">时间相关等效（≡ 规格书 Co(tr)）：恒流充到 V<sub>DS</sub> 的<b>电荷/时间</b>与真实 Coss 相同 → 用于死区时间约束</span>
           </div>
           <div>
             <label className={labelClass}>MOSFET Coss,er (pF)</label>
@@ -214,7 +214,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               onChange={(e) => update('cossEr', Number(e.target.value))}
               placeholder="能量相关Coss"
             />
-            <span className="text-xs text-text-muted mt-1 block">能量相关Coss（ZVS）</span>
+            <span className="text-xs text-text-muted mt-1 block">能量相关等效（≡ 规格书 Co(er)）：充到 V<sub>DS</sub> 的<b>储能</b>与真实 Coss 相同 → 用于 ZVS 能量判据与硬开关 Coss 损耗</span>
           </div>
           <div>
             <label className={labelClass}>PCB 寄生电容 Cj (pF)</label>

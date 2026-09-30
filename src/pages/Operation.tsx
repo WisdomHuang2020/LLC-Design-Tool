@@ -923,7 +923,7 @@ export default function Operation() {
                   ZVS 能量条件（半桥）：
                 </p>
                 <MathBlock
-                  latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss,total} V_{in,max}^2"
+                  latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2"
                   important
                 />
                 <p className="text-text-secondary text-xs mt-1 leading-relaxed">

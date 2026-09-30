@@ -164,7 +164,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
               </div>
             }
           />
-          <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 Coss,zvs 充放电（t_dead = γ·fmax·Lm·C_oss,zvs = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C_oss,zvs)" />
+          <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 C总 充放电（t_dead = γ·fmax·Lm·C总 = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C总)，C总 = 2·Coss,eq + Cj（时间口径，Coss,eq ≡ 规格书 Co(tr)）" />
           <ResultItem label="Qmax3（ZVS 能量约束）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量，用 Coss,er / Cj 口径" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>

@@ -24,6 +24,8 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
 
   const effDiff = losses.efficiency - calc.efficiency
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
+  // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
+  const cossErP = Number.isFinite(Number(calc.cossEr)) && Number(calc.cossEr) > 0 ? Number(calc.cossEr) : 35
 
   return (
     <CollapsibleCard
@@ -53,8 +55,11 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <input type="number" className={inputClass} value={params.mosfetTf} onChange={(e) => update('mosfetTf', Number(e.target.value))} />
           </div>
           <div>
-            <label className={labelClass}>Coss (pF, 0V 标称/能量等效)</label>
-            <input type="number" className={inputClass} value={params.mosfetCoss} onChange={(e) => update('mosfetCoss', Number(e.target.value))} />
+            <label className={labelClass}>Coss,er (pF)</label>
+            <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
+              <span className="font-mono text-sm text-text-primary">{cossErP}</span>
+              <span className="text-[10px] text-text-muted">取自设计参数</span>
+            </div>
           </div>
           <div>
             <label className={labelClass}>Vsd (V)</label>
@@ -269,7 +274,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Ecoss ≈ 0.5·Coss·Vin²·(2/3)·fsw·Nsw，ZVS 下≈0</td>
+                <td className="py-2 text-text-secondary">E_oss = ½·C<sub>oss,er</sub>·V<sub>in,nom</sub>²·f<sub>sw</sub>·N<sub>sw</sub>（C<sub>oss,er</sub> ≡ 规格书 Co(er)，定义式无需 2/3 修正；ZVS 下 ≈0，储能被谐振腔回收）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>

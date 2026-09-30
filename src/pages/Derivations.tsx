@@ -392,7 +392,7 @@ export default function Derivations() {
 
           <p className="text-text-secondary mt-4 mb-2 font-medium">ZVS 能量条件</p>
           <MathBlock
-            latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss,total} V_{in,max}^2"
+            latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2"
             important
             label="ZVS 能量判据"
           />
@@ -400,12 +400,43 @@ export default function Derivations() {
           <p className="text-text-secondary mt-2 mb-2 text-sm leading-relaxed">
             判据左侧为死区内励磁电感释放的能量，右侧为开关节点电容需被充/放电的能量。
             <strong className="text-text-primary">半桥拓扑</strong>下，
-            C<sub>oss,total</sub> = 2·C<sub>oss</sub>（上下两个开关管输出电容之和）+
+            总电容 = 2·C<sub>oss,er</sub>（上下两个开关管输出电容之和）+
             C<sub>j</sub>（变压器原边等效寄生结电容），即
-            <InlineMath latex="C_{oss,total} = 2C_{oss,er} + C_j" />；
+            <InlineMath latex="2C_{oss,er} + C_j" />，本站按能量口径<b>直接写开</b>、不再另起符号；
+            <b>能量判据必须用 Co(er)</b>（能量相关等效），不能用 Co(tr) 或规格书标称 Coss。
             全桥拓扑同理为四个管子的输出电容折算值。电压取 V<sub>in,max</sub>（最恶劣工况）。
             <span className="text-primary-light">本节判据与本站「工作原理」页的 ZVS 能量条件一致。</span>
           </p>
+
+          <HighlightBox type="info">
+            <strong>三个容易混淆的 Coss 口径（选用前必读）：</strong>
+            ① <b>Coss,eq ≡ 规格书 Co(tr)</b>（时间/电荷相关等效）：恒流充电下充到 V<sub>DS</sub> 所需
+            <b>电荷相同</b>（故时间也相同），对应真实 Q<sub>oss</sub>(V)；
+            <b>只用于死区的电荷/时间约束</b>（本站 Q<sub>max2</sub> 与 t<sub>ZVS</sub>）。
+            ② <b>Coss,er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
+            用于<b>能量型判据与损耗</b>（本站 E<sub>r</sub> ≥ E<sub>c</sub> 与硬开关 Coss 损耗
+            E<sub>oss</sub> = ½·C<sub>oss,er</sub>V²）。
+            ③ <b>规格书标称的 Coss</b>（多标在 0 V 或低压处）既不是①也不是②，数值明显偏大，
+            <b>不能直接代入</b>。
+          </HighlightBox>
+
+          <p className="text-text-secondary mt-2 mb-2 text-sm leading-relaxed">
+            对单调递减的 C<sub>oss</sub>(V) 恒有 <b>Coss,er &lt; Coss,eq</b>：两者都是 C<sub>oss</sub>(V) 的加权平均，
+            但 Coss,er 的权重 2v/V² 偏向高压段、而高压段 C<sub>oss</sub> 更小。
+            两者相等只出现在手册恰好如此或刻意简化时，<b>比值须查规格书各自的 Co(tr)/Co(er)，不要互相代替</b>。
+            <br />
+            ⚠️ <b>「Co(eq)」本身是个有歧义的符号</b>：有的规格书把它等同于 Co(tr)，有的计算书用它表示
+            「2·C<sub>tr</sub> + 寄生」这样的<b>整桥总量</b>。本站一律不用「Coss,eq」表示总量 ——
+            总量统一写作计算书的 <b>C总 = 2·Coss,eq + Cj</b>（死区用）；能量侧不另起符号，直接写开
+            <InlineMath latex="2C_{oss,er} + C_j" />。
+          </p>
+
+          <ParamTable>
+            <ParamRow symbol="Coss,eq" name="时间相关等效输出电容（≡ Co(tr)）" unit="pF" description="单管值。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
+            <ParamRow symbol="Coss,er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss,er·V²，定义式无需修正系数）" typical="查规格书 Co(er)" />
+            <ParamRow symbol="Cj" name="PCB / 变压器寄生电容" unit="pF" description="经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="50 ~ 150 pF" />
+            <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss,eq + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss,er + Cj，两者不是同一个电容" typical="数值求解" />
+          </ParamTable>
 
           <p className="text-text-secondary mt-4 mb-2">
             其中关断时刻励磁电流峰值 I<sub>m,off</sub> 与最高工作频率 f<sub>max</sub> 相关：
@@ -468,13 +499,13 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{oss,zvs}\\,R_{ac}}, \\qquad C_{oss,zvs} = 2C_{oss,eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
-            label="约束二 · 死区时间约束（死区内恰好完成 Coss 充放电：t_dead = γ·f_max·L_m·C_oss,zvs = t_d）"
+            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{\\text{总}}\\,R_{ac}}, \\qquad C_{\\text{总}} = 2C_{oss,eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
+            label="约束二 · 死区时间约束（死区内恰好完成 Coss 充放电：t_dead = γ·f_max·L_m·C总 = t_d）"
           />
 
           <MathBlock
-            latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,C_{oss,total}\\,V_{in,max}^2\\,R_{ac}}, \\qquad C_{oss,total} = 2C_{oss,er} + C_j"
-            label="约束三 · ZVS 能量约束（γ = 8 半桥 / 4 全桥）"
+            latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,(2C_{oss,er}+C_j)\\,V_{in,max}^2\\,R_{ac}}"
+            label="约束三 · ZVS 能量约束（γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss,er + Cj）"
           />
 
           <MathBlock
@@ -491,8 +522,8 @@ export default function Derivations() {
           </HighlightBox>
 
           <MathBlock
-            latex="t_{ZVS} = \\frac{C_{oss,zvs}\\,V_{in}}{I_{m,off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{oss,zvs} \\le t_d"
-            label="死区时间校核：分子分母同为 V_in，V_in 精确相消 ⇒ t_ZVS 与输入电压无关"
+            latex="t_{ZVS} = \\frac{C_{\\text{总}}\\,V_{in}}{I_{m,off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{\\text{总}} \\le t_d"
+            label="死区时间校核：分子分母同为 V_in，V_in 精确相消 ⇒ t_ZVS 与输入电压无关；C总 = 2Coss,eq + Cj 用时间口径"
           />
 
           <p className="text-text-secondary text-sm mt-2">
@@ -514,7 +545,7 @@ export default function Derivations() {
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；设计工具页表单可切回【峰值判据】Mpeak = Gmax，该判据更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
-            <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 Coss,zvs 充放电（t_dead = td）对应的 Q；由 td、Coss,eq/Cj、fmax、Rac 共同决定" typical="0.3 ~ 1.5" />
+            <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss,eq + Cj（时间口径）" typical="0.3 ~ 1.5" />
             <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量决定，用 Coss,er / Cj" typical="数值求解" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.95，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
           </ParamTable>
@@ -650,6 +681,17 @@ export default function Derivations() {
           </HighlightBox>
 
           <HighlightBox type="warning">
+            <strong>Coss 损耗的电容口径（v2.10.101 厘清）：</strong>
+            硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散，
+            <b>必须用能量相关等效电容 C<sub>oss,er</sub>（≡ 规格书 Co(er)）</b>：
+            <InlineMath latex="E_{oss} = \frac{1}{2} C_{oss,er} V_{DS}^2" />
+            是 C<sub>oss,er</sub> 的<b>定义式</b>，不需要任何「非线性修正系数」。
+            用时间口径的 Co(tr)、或规格书标称 Coss（多为 0 V 值）都会算错。
+            本站 C<sub>oss,er</sub> 取自<b>设计参数</b>（单一来源，与死区时间 t<sub>d</sub> 同一做法），
+            损耗面板不再单独输入 Coss。
+          </HighlightBox>
+
+          <HighlightBox type="warning">
             <strong>与「工具」的两处有意差异：</strong>
             ① <b>栅极驱动损耗</b> <InlineMath latex="P_{drv} = Q_g V_{drv} f_{sw}" /> 是真实损耗，
             但本工具的损耗模型<b>未计入该项</b>（需驱动电压与 Q<sub>g</sub>，属器件级细节），此处仅列式供设计参考；
@@ -768,7 +810,7 @@ export default function Derivations() {
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">ZVS 能量</td>
-                  <td className="px-4 py-3"><InlineMath latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} C_{oss,total} V_{in,max}^2" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2" /></td>
                   <td className="px-4 py-3">确保零电压开通</td>
                 </tr>
               </tbody>
