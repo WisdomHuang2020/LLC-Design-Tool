@@ -109,7 +109,7 @@ export const SYMBOL_GROUPS: SymbolGroup[] = [
   {
     group: '磁芯、绕组与整流',
     rows: [
-      { symbol: 'Pcv,Lr', name: 'Lr 磁芯损耗密度（手册值）', unit: 'mW/cm³', desc: '按 Lr 实际磁牌号与 B_Lr 查手册；随「磁芯材料」按 P_cv,ref×(B_Lr/0.2 T)^β 自动折算（B_Lr≈0.165 T；默认牌号 PC95 ⇒ 179）。正弦激励，不乘 k_wave', typical: '查手册' },
+      { symbol: 'Pcv,Lr', name: 'Lr 磁芯损耗密度（手册值）', unit: 'mW/cm³', desc: '按 Lr 实际磁牌号与 B_Lr 查手册；随「磁芯材料」按 P_cv,ref×(B_Lr/0.2 T)^β 自动折算（B_Lr≈0.165 T；默认牌号 PC95 ⇒ 173）。正弦激励，不乘 k_wave', typical: '查手册' },
       { symbol: 'Ve,Lr', name: 'Lr 磁芯有效体积', unit: 'cm³', desc: '默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）', typical: '1 ~ 2 cm³' },
       { symbol: 'k_wave', name: '波形修正系数', unit: '-', desc: '手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25；⚠ 仅用于变压器磁芯，Lr 不用', typical: '1.2 ~ 1.4' },
       { symbol: 'Cm, α, β', name: 'Steinmetz 系数（对照口径）', unit: 'mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ', desc: '正弦激励拟合系数，方波励磁下有偏差，仅作并列对照', typical: '查磁芯 datasheet' },

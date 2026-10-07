@@ -139,7 +139,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
               <span className="font-mono text-sm text-text-primary truncate">关断 {tCrossOffNs} ｜ 开通 {tCrossOnNs} ns</span>
             </div>
             <Note hidden={notesHidden}>
-              t_cr = Q<sub>plat</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
+              t_cr = Q<sub>gd</sub>·R<sub>g</sub>/ΔV（关断 ΔV = V<sub>plat</sub>、开通 ΔV = V<sub>drv</sub> − V<sub>plat</sub>）。
               ⚠️ 不要直接填规格书 t<sub>r</sub>/t<sub>f</sub>：那是特定测试条件（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω）下测的
               <b>漏极电流 10%↔90% 过渡时间</b>，既非本机工况、也不是损耗积分所需的 V·I 重叠时长
             </Note>
@@ -438,13 +438,13 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>plat</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
+                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>gd</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>plat</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
+                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>gd</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>

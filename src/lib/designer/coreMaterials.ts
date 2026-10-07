@@ -8,26 +8,29 @@
 //     ⚠️ **必须同一温度**：PC40 在 25 ℃ 是 600、100 ℃ 只有 410 —— 混温度会算出错比例
 //     （初版就因此把 PC95/PC40 算成 48%，正确约 71%）。
 //   · **出处（逐项可查）**：
-//     - TDK：**《材质标准特性表（变压器・扼流圈用）》**（100 ℃ / 100 kHz / 200 mT 正弦列）——
-//       PC40 **410**、PC44 **300**、PC47 **250**、PC95 **290**、PC90 **320** ⇒ 本站据此取值。
-//       ⚠️ TDK 另一份文档《Mn-Zn 系铁氧体 材质特性》官方目录（20260420）与之略有出入：
-//       **PC40 给了 420、PC95 给了 280**（PC44/PC47/PC90 三档一致）—— 两份均为 TDK 官方，
-//       差异源于测量版本；**本站统一采用《材质标准特性表》的 410 / 290**。换版本时须重核并把结论写回这里。
+//     - TDK：**《Mn-Zn 系铁氧体 材质特性》**，TDK 股份有限公司编制，文档编号
+//       `20260420 / ferrite_material_characteristics_zh`，封面版次 **April 2026**，共 18 页，
+//       PDF 内嵌创建/修改时间 **2026-04-20 16:48:15 (+09:00)**（文件名 `tdk_material.pdf`）。
+//       取数页：**p3「材质特性一览」**（开关电源用）+ **p4「开关电源用 PC95 系列 ■材质特性」**
+//       （试验样品 T20×5×10，条件 100 kHz / 200 mT 正弦）。
+//       ⇒ 100 ℃ 列：PC40 **420**、PC44 **300**、PC47 **250**、PC95 **280**、PC90 **320**。**本站据此取值**。
+//       ⚠️ TDK 另有《材质标准特性表（变压器・扼流圈用）》给 PC40 410 / PC95 290（PC44/PC47/PC90 一致）。
+//          **两份均为 TDK 官方、数值不等，差异源于测量版本**；本站**统一采用上表 20260420 版**
+//          （其 PC95 覆盖 25/60/100/120 ℃ 四档，温度信息更全）。换版本时须重核并把结论写回这里。
 //     - Ferroxcube：**官方材料册**（ferroxcube.com 下载页，id 94 = 3C95/3C97、id 90 = 3C96/3C98）——
 //       3C95 **290**、3C96 **300**、3C97 **320**、3C98 **250**（100 ℃/100 kHz/200 mT），已逐项与手册表格核对一致；
 //       3C90 **450** / 3C94 **350** 来自 Ferroxcube 材料表（经其代理商页面转载），标注为 `vendor-table`。
 //   · ⚠️ **不在官方材质表内的牌号一律不预设**：PC45、PC46（TDK 现行表未列）与 Epcos N87/N97（未查到同条件
 //     官方数据）均已移除 —— **宁可留空也不编**，这类材料走「自定义 / 其他牌号」按手册手填。
-//   · ⚠️ **温度曲线形状**：PC47 的损耗谷在 100 ℃ 附近（250，本表最低）；PC95 是"全程低"（100 ℃ 时 290）。
+//   · ⚠️ **温度曲线形状**：PC47 的损耗谷在 100 ℃ 附近（250，本表最低）；PC95 是"全程低"（100 ℃ 时 280）。
 //     选型要看实际工作温度区间，别只比一个点。
-//   · **PC95 温度序列（与 `pcvRef` 同源，取自本站所用的同一份 TDK 原件）**：
-//     **25 / 100 / 120 ℃ = 350 / 290 / 350**（该表 60 ℃ 格为空）。
-//     注意 25 ℃ 与 120 ℃ 都是 350 —— 这正是 PC95「宽温平坦」的体现，也是它相对
-//     PC47/PC44（谷在 100 ℃ 附近、单点更低）的差异所在。
-//   ⚠️ **note 里写温度序列时必须与 `pcvRef` 同源**：曾给 PC95 抄了另一份文档的
-//      「25/60/100/120 ℃ = 350/300/280/330」（100 ℃ 写 280），而本表 pcvRef 取 290 ⇒ 界面自相矛盾。
-//     判别要点：**本站采用的那份《材质标准特性表》里 PC95 只有 25/100/120 三格、无 60 ℃**；
-//      凡出现「60 ℃」或「100 ℃ = 280」的序列，都来自另一份文档，**不要混用**。
+//   · **PC95 温度序列（与 `pcvRef` 同源，取自上面那份 TDK 20260420 原件 p4）**：
+//     **25 / 60 / 100 / 120 ℃ = 350 / 300 / 280 / 330**。谷值在 100 ℃，两端各升约 18~25%，
+//     这正是 PC95「宽温平坦」的体现，也是它相对 PC47/PC44（谷更深、但只窄温区好）的差异所在。
+//   ⚠️ **note 里写温度序列时必须与 `pcvRef` 同源**：曾给 PC95 抄过《材质标准特性表》的
+//      「25/100/120 ℃ = 350/290/350」（100 ℃ 写 290、且无 60 ℃），与本表 pcvRef 不一致 ⇒ 界面自相矛盾。
+//     判别要点：**本站采用的 20260420 版里 PC95 是 25/60/100/120 四档、100 ℃ = 280**；
+//      凡出现「100 ℃ = 290」或「只有三格、无 60 ℃」的序列，都来自另一份文档，**不要混用**。
 //   · `alpha`/`beta` 是 Steinmetz 指数（f 用 kHz、B 用 mT 口径），典型范围 α≈1.3~1.7、β≈2.4~2.9；
 //     Steinmetz 系数 `Cm` **由 pcvRef 反推**（`steinmetzCm()`），使两条口径在参考点自洽、可互校。
 import type { LossParameters } from './types'
@@ -51,11 +54,11 @@ export interface CoreMaterial {
 }
 
 export const CORE_MATERIALS: CoreMaterial[] = [
-  { id: 'PC40', name: 'PC40', family: 'TDK MnZn', pcvRef: 410, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '通用牌号，损耗偏高、价格低' },
-  { id: 'PC44', name: 'PC44', family: 'TDK MnZn', pcvRef: 300, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '损耗谷在 100 ℃ 附近' },
-  { id: 'PC47', name: 'PC47', family: 'TDK MnZn', pcvRef: 250, alpha: 1.4, beta: 2.6, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '100 ℃ 单点损耗最低（谷温在 100 ℃ 附近）' },
-  { id: 'PC95', name: 'PC95', family: 'TDK MnZn', pcvRef: 290, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '宽温低损耗：25/100/120 ℃ = 350/290/350（工作温区内损耗平坦），站内默认' },
-  { id: 'PC90', name: 'PC90', family: 'TDK MnZn', pcvRef: 320, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《材质标准特性表（变压器・扼流圈用）》100 ℃/100 kHz/200 mT', note: '高 Bs、低损耗' },
+  { id: 'PC40', name: 'PC40', family: 'TDK MnZn', pcvRef: 420, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《Mn-Zn系铁氧体 材质特性》20260420 版 p3/p4（100 ℃/100 kHz/200 mT 正弦）', note: '通用牌号，损耗偏高、价格低' },
+  { id: 'PC44', name: 'PC44', family: 'TDK MnZn', pcvRef: 300, alpha: 1.35, beta: 2.5, verified: 'official', source: 'TDK《Mn-Zn系铁氧体 材质特性》20260420 版 p3（100 ℃/100 kHz/200 mT 正弦）', note: '损耗谷在 100 ℃ 附近' },
+  { id: 'PC47', name: 'PC47', family: 'TDK MnZn', pcvRef: 250, alpha: 1.4, beta: 2.6, verified: 'official', source: 'TDK《Mn-Zn系铁氧体 材质特性》20260420 版 p3（100 ℃/100 kHz/200 mT 正弦）', note: '100 ℃ 单点损耗最低（谷温在 100 ℃ 附近）' },
+  { id: 'PC95', name: 'PC95', family: 'TDK MnZn', pcvRef: 280, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《Mn-Zn系铁氧体 材质特性》20260420 版 p4（100 ℃/100 kHz/200 mT 正弦）', note: '宽温低损耗：25/60/100/120 ℃ = 350/300/280/330（100 ℃ 谷值，工作温区内损耗平坦），站内默认' },
+  { id: 'PC90', name: 'PC90', family: 'TDK MnZn', pcvRef: 320, alpha: 1.4, beta: 2.5, verified: 'official', source: 'TDK《Mn-Zn系铁氧体 材质特性》20260420 版 p3（100 ℃/100 kHz/200 mT 正弦）', note: '高 Bs、低损耗' },
   { id: '3C90', name: '3C90', family: 'Ferroxcube MnZn', pcvRef: 450, alpha: 1.35, beta: 2.5, verified: 'vendor-table', source: 'Ferroxcube 材料表（经代理转载）', note: '损耗谷在 100 ℃' },
   { id: '3C94', name: '3C94', family: 'Ferroxcube MnZn', pcvRef: 350, alpha: 1.4, beta: 2.6, verified: 'vendor-table', source: 'Ferroxcube 材料表（经代理转载）', note: '低成本低损耗牌号' },
   { id: '3C95', name: '3C95', family: 'Ferroxcube MnZn', pcvRef: 290, alpha: 1.4, beta: 2.6, verified: 'official', source: 'Ferroxcube《3C95/3C97》官方材料册', note: '宽温（25/100 ℃ = 350/290）' },
@@ -84,7 +87,7 @@ export const LR_CORE_B_T = 0.165
 /**
  * 由某牌号的参考点损耗密度，按 B^β 折算到 Lr 工作磁密，得到 **Lr 磁芯的 P_cv**（mW/cm³）。
  *   P_cv,Lr = P_cv,ref × (B_Lr / B_ref)^β
- * 例：PC95（290 @0.2 T、β=2.5）⇒ 290×(0.165/0.2)^2.5 ≈ 179。
+ * 例：PC95（280 @0.2 T、β=2.5）⇒ 280×(0.165/0.2)^2.5 ≈ 173。
  * ⚠️ 必须**随所选牌号**折算（β 也随牌号取），不能写死成某个牌号的值。
  */
 export function lrCorePcvFrom(m: CoreMaterial): number {
