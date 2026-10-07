@@ -21,6 +21,15 @@ import {
   Info,
 } from 'lucide-react'
 
+/* ── 蒙特卡洛直方图的尺寸口径（屏幕与打印共用一套像素值） ──────────────────
+   历史问题：柱区与刻度标签曾被塞进同一个 h-24（96px）容器里，
+   而内容实际需要 88（最高柱）+ 4（间距）+ 13.5（标签）≈ 105.5px ⇒
+   最高的柱顶出容器上沿约 9.5px、压到上方标题文字，标签也被挤在容器底边。
+   现在把「柱区高度」与「标签高度」拆成两个显式常量，容器高度 = 两者之和，
+   柱区内部再做一次 items-end 对齐 ⇒ 任何数据分布下都不会互相重叠。 */
+const HIST_BAR_PX = 88
+const HIST_LABEL_PX = 14
+
 export default function Report() {
   const { params, results, suggestions } = useDesign()
   const [notes, setNotes] = useState('')
@@ -223,8 +232,19 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                 e.style.width = '100%'
                 e.style.maxWidth = 'none'
               })
+              // 直方图在导出时按比例缩到 ~0.55 倍，但**必须保持「柱区 : 标签区」的比例**，
+              // 否则柱会盖住标签（这里两个子层的像素高度也一并等比缩放）。
               doc.querySelectorAll('.mc-hist').forEach((el) => {
-                ;(el as HTMLElement).style.height = '58px'
+                const k = 0.55
+                const box = el as HTMLElement
+                box.style.height = `${Math.round((HIST_BAR_PX + HIST_LABEL_PX) * k)}px`
+                const barArea = box.querySelector(':scope > div > div') as HTMLElement | null
+                if (barArea) barArea.style.height = `${Math.round(HIST_BAR_PX * k)}px`
+                box.querySelectorAll(':scope > div > span').forEach((sp) => {
+                  const s = sp as HTMLElement
+                  s.style.height = `${Math.round(HIST_LABEL_PX * k)}px`
+                  s.style.lineHeight = `${Math.round(HIST_LABEL_PX * k)}px`
+                })
               })
             },
           },
@@ -1125,16 +1145,24 @@ ${notes ? `## 备注\n\n${notes}\n` : ''}
                         </div>
 
                         <p className="text-xs text-text-muted mb-1">t_ZVS / td 余量分布（左端 &lt; 1 即死区不足；每格为一箱，数字为该箱样本数占比）</p>
-                        <div className="flex items-end gap-1 h-24 mc-hist">
+                        {/* 直方图：柱区（固定 88px）+ 刻度标签区（固定 14px）分成两段。
+                            容器高度必须 **显式等于** 两者之和，并给柱区留出 0 余量以上，
+                            否则最高的柱会顶出容器上沿、压到上方标题；标签也会被挤到容器底边。 */}
+                        <div className="flex items-start gap-1 mc-hist" style={{ height: `${HIST_BAR_PX + HIST_LABEL_PX}px` }}>
                           {mcRes.histTime.map((b, i) => {
                             const maxN = Math.max(...mcRes.histTime.map((x) => x.n)) || 1
+                            const hPx = Math.max(2, (b.n / maxN) * HIST_BAR_PX)
                             return (
-                              <div key={i} className="flex-1 flex flex-col items-center justify-end" title={`${b.lo.toFixed(3)} ~ ${b.hi.toFixed(3)}：${b.n} 个样本`}>
-                                <div
-                                  className={`w-full rounded-t ${b.lo < 1 ? 'bg-amber-500/70' : 'bg-primary/60'}`}
-                                  style={{ height: `${Math.max(2, (b.n / maxN) * 88)}px` }}
-                                />
-                                <span className="text-[9px] text-text-muted mt-1">{b.lo.toFixed(2)}</span>
+                              <div key={i} className="flex-1 flex flex-col items-center" title={`${b.lo.toFixed(3)} ~ ${b.hi.toFixed(3)}：${b.n} 个样本`}>
+                                {/* 柱区：定高 88px、底部对齐 —— 柱高按像素写死（百分比高在导出/打印时会塌成 0） */}
+                                <div className="w-full flex items-end" style={{ height: `${HIST_BAR_PX}px` }}>
+                                  <div
+                                    className={`w-full rounded-t ${b.lo < 1 ? 'bg-amber-500/70' : 'bg-primary/60'}`}
+                                    style={{ height: `${hPx}px` }}
+                                  />
+                                </div>
+                                {/* 标签区：紧随柱区下方，自成一行，不会与柱重叠 */}
+                                <span className="text-[9px] leading-none text-text-muted" style={{ height: `${HIST_LABEL_PX}px`, lineHeight: `${HIST_LABEL_PX}px` }}>{b.lo.toFixed(2)}</span>
                               </div>
                             )
                           })}
