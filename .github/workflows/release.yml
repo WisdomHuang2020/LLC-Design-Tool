@@ -1,0 +1,79 @@
+name: Create Release
+
+# 由 tag 自动创建 GitHub Release。
+#
+# 背景：本仓库历史上从未用过 Release（2026-10-07 核查 Releases 数为 0），
+#       打了 tag 只会在 Tags 列表里出现一条，不会自动生成 Release 页面/附件。
+#       本工作流把「打 tag」这一步补齐为「打 tag → 自动建 Release」，无需任何人工 token。
+#
+# 两种触发方式：
+#   1. push tag（如 `git push origin v2.10.134`）→ 自动触发，release 名与 tag 同名。
+#   2. 手动 dispatch 并填 `tag` → 补建历史 tag 的 Release（用于回填既有 tag）。
+#
+# 权限：GITHUB_TOKEN 由 Actions 自动注入，`contents: write` 足以建 Release，
+#       不需要 PAT、不需要在仓库里存任何密钥。
+#
+# 注意：GitHub 自带的「Generate release notes」需要 API 调用，本工作流用最简形态
+#       （把 tag 的提交信息作为正文），避免额外权限与网络依赖。
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要为其创建 Release 的 tag（留空则用当前 ref）'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag name
+        id: resolve
+        # push tag 时用 github.ref_name；dispatch 时优先用用户填的 tag。
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG="${{ github.ref_name }}"
+          fi
+          # 校验 tag 真实存在，避免建出指向不存在引用的 Release
+          git rev-parse -q --verify "refs/tags/$TAG" >/dev/null \
+            || { echo "::error::tag '$TAG' 不存在"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "解析到 tag: $TAG"
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # 幂等：已存在同名 Release 则跳过，不报错（避免重跑把工作流变红）
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::notice::Release $TAG 已存在，跳过"
+            exit 0
+          fi
+          # 正文用该 tag 指向提交的完整信息
+          NOTES=$(git log -1 --pretty=%B "$TAG")
+          printf '%s\n' "$NOTES" > /tmp/notes.md
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file /tmp/notes.md \
+            --verify-tag
+          echo "::notice::Release $TAG 创建完成"
