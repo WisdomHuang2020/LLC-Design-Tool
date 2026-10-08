@@ -31,11 +31,11 @@ export interface ToleranceBase {
   gMin: number
   vinMin: number
   topology: string
-  /** 死区用总电容 C总 = 2·Coss,eq + Cj */
+  /** 死区用总电容 C总 = 2·Coss_tr + Cj */
   cossZvs: number
   /** 预设死区时间 s */
   td: number
-  /** 标称 ZVS 所需能量（Ec，与 Coss/Cj/Vin,max 有关，不随 Lr/Cr/Lm 容差变化） */
+  /** 标称 ZVS 所需能量（Ec，与 Coss/Cj/Vin_max 有关，不随 Lr/Cr/Lm 容差变化） */
   zvsEc: number
   /** 标称调频上下限，仅用于小结文字 */
   fmin: number

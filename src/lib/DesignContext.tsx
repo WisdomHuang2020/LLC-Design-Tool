@@ -21,7 +21,7 @@ export interface DesignParameters {
   ioMax: number
   k: number
   /**
-   * Q 裕量系数 m ∈ (0,1]，实际设计 Q = m · Qmax（Qmax = min(Qmax1,Qmax2,Qmax3)）。
+   * Q 裕量系数 m ∈ (0,1]，实际设计 Q = m · Qmax（Qmax = min(Qmax1,Qmax2)；Qmax3 为空载 ZVS 能量校核，不参与取小）。
    * m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量更大；
    * 代价是 Zr=Q·Rac 更小 ⇒ Lr 更小、Cr 更大，励磁环流占比与导通损耗上升。
    * 默认 0.95。
@@ -58,7 +58,7 @@ export interface CalculatedResults {
   topology: string
   vinMin: number
   td: number
-  /** 死区用总电容 C总 = 2·Coss,eq + Cj */
+  /** 死区用总电容 C总 = 2·Coss_tr + Cj */
   cossZvs: number
   zvsEr: number
   zvsEc: number
@@ -90,12 +90,13 @@ export interface CurvesState {
 }
 
 // 默认参数 = 自制计算书 V02 的算例（2026-09-30 对齐，见 research/calcbook_v02_vs_site_20260930.md）
-// 目的：打开设计工具即为一个**完整合格**的算例，与计算书逐项一致（Q/Cr/Lr/Lm/fmax/tZVS 全对上），
-//       不再出现「默认案例还挂着待优化项」。逐项来源（书原文 → 本站字段）：
+// 逐项来源（书原文 → 本站字段）：
 //   Vin 380/400/420 V → vinMin/vinNom/vinMax ｜ Vo 24 V → vout ｜ Io 4 A（Po = 96 W）→ pout
 //   η = 0.96 → efficiency 96 ｜ fr = 100 kHz → fsw ｜ k = 4 → k
-//   Coss_eq 35 pF / Coss_er 35 pF / Cj 100 pF → cossEq/cossEr/cj ｜ Td = 300 ns → td
-//   Iomax = 4.8 A（β = 1.2）→ ioMax ｜ Vd = 0 → vd ｜ Q 降额系数 α = 0.857 → qMargin
+//   Coss_tr 170 pF（2026-10-08 用户指定，取较大器件的单管值）/ Coss_er 35 pF / Cj 100 pF → cossEq/cossEr/cj
+//   Td = 300 ns → td ｜ Iomax = 4.8 A（β = 1.2）→ ioMax ｜ Vd = 0 → vd ｜ Q 降额系数 α = 0.857 → qMargin
+// ⚠️ 因 Coss_tr = 170 pF（单管），死区总电容 C总 = 2×170 + 100 = 440 pF ⇒ 本默认算例的 ZVS 死区约束
+//    （Qmax2 = 0.355）成为最紧约束，会带 1 条 warn —— 这是 2026-10-08 用户明确要求的结果，**不是回归缺陷**。
 const defaultParams: DesignParameters = {
   vinMin: 380,
   vinMax: 420,
@@ -109,7 +110,7 @@ const defaultParams: DesignParameters = {
   loadMin: 100,
   loadMax: 100,
   // 新增参数默认值
-  cossEq: 35,
+  cossEq: 170,
   cossEr: 35,
   cj: 100,
   td: 300,

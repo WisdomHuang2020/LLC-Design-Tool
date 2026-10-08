@@ -13,7 +13,7 @@ export const defaultLossParams: LossParameters = {
   mosfetRdsOn: 30,
   rdsonTempFactor: 1.6,
   // 开关损耗的**交叉时间**参数（默认取 600 V / 0.3 Ω 级器件的典型量级；换器件必须改）
-  // 默认 ⇒ 平台电荷 8 nC、R_g = 12 Ω ⇒ t_cr,off = 8 nC × 12 Ω / 4.5 V = 21.3 ns
+  // 默认 ⇒ 平台电荷 8 nC、R_g = 12 Ω ⇒ tcr_off = 8 nC × 12 Ω / 4.5 V = 21.3 ns
   qgd: 8,
   vPlateau: 4.5,
   rgTotal: 12,
@@ -21,7 +21,7 @@ export const defaultLossParams: LossParameters = {
   // 平台电荷取法：默认 Q_gd 法（规格书实测的 ∫Crss dV，最准）；Crss 法为备选（见 types.ts 说明）
   tcrMethod: 'qgd',
   crssEq: 15, // pF，等效 Crss = ∫Crss dV / V_DS —— 十几个 pF 是 400 V 级器件的典型量级
-  vdsSwing: 400, // V，一般填母线电压 V_in
+  vdsSwing: 400, // V，一般填母线电压 Vin
   mosfetVsd: 1.2,
   primaryTurns: 30,
   coreMaterial: defaultCoreMaterial.id,
@@ -42,7 +42,7 @@ export const defaultLossParams: LossParameters = {
   coreWaveK: 1.25,
 
   // 谐振电感铁损：默认给出有依据的量级值，而不是留 0
-  //  · P_cv,Lr = **随所选牌号折算**（lrCorePcvFrom）：P_cv,ref × (B_Lr / 0.2 T)^β，取 B_Lr ≈ 0.165 T。
+  //  · Pcv_Lr = **随所选牌号折算**（lrCorePcvFrom）：Pcv_ref × (B_Lr / 0.2 T)^β，取 B_Lr ≈ 0.165 T。
   //    默认牌号 PC95（280 @0.2 T、β=2.5）⇒ 280×(0.165/0.2)^2.5 ≈ 173 mW/cm³。
   //    ⚠️ 它在 applyCoreMaterial() 里会随「磁芯材料」下拉一起重算 —— 换牌号时 Lr 损耗必须跟着变。
   //  · Ve   = 1.25 cm³   —— 取变压器 Ve（默认 5.0 cm³）的 1/4（谐振电感体积通常为变压器的 1/5~1/4）
@@ -85,7 +85,7 @@ export interface LossResult {
   rectLoss: number
   /** 整流器件数 Nrect：中心抽头 2 / 全波（桥）4 */
   nRect: number
-  /** 每个整流器件在整周期内的电流有效值 Is,sw = (π/4)·Io */
+  /** 每个整流器件在整周期内的电流有效值 Is_sw = (π/4)·Io */
   isSw: number
   resonantLoss: number
   /** 谐振电感铜损 */
@@ -144,7 +144,7 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   //      (A) Q_gd 法（默认）：Q_plat = Q_gd。规格书栅荷曲线的 Q_gd **本身即厂商实测的 ∫Crss dV**
   //          （平台段电荷），且其测试电压（如 V_DD = 520 V）通常贴近实际母线。
   //          实例（LSD65R380GF，650 V）：Q_gd = 6.3 nC @520 V ⇒ 折算到 400 V 母线约 6.1 nC。
-  //      (B) Crss 法：Q_plat = Crss_eq · V_DS,swing，其中 Crss_eq 必须是「∫Crss(V)dV / V_DS」（面积÷电压）。
+  //      (B) Crss 法：Q_plat = Crss_eq · VDS_swing，其中 Crss_eq 必须是「∫Crss(V)dV / V_DS」（面积÷电压）。
   //          ⚠️ 若偷懒直接填规格书**某一点**的 Crss（该器件 100 V 处 0.86 pF、600 V 处约 2 pF），
   //             Q 只有 0.34~0.8 nC ⇒ 比真值小 **7~18 倍** ⇒ t_cr 与关断损耗同步低估。
   //             根因：Crss 在近 0 V 段极大（该器件 0 V 附近可达 ~2000 pF），积分主要由那一段贡献，
@@ -167,18 +167,18 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const tCrossOn = vDrv > vPlat ? (qPlateau * rgTotal) / (vDrv - vPlat) : tCrossOff
   const switchV = vin
   const switchOn = zvsOn ? 0 : 0.5 * switchV * ipPeak * tCrossOn * fsw * nSwitches
-  // 关断瞬间电流 = 励磁电流峰值 Im,off（此刻负载折算分量已归零，原边只剩励磁电流），
+  // 关断瞬间电流 = 励磁电流峰值 Im_off（此刻负载折算分量已归零，原边只剩励磁电流），
   // 而非原边总电流峰值 ipPeak。关断损耗与 ZVS 无关，任何工况都存在。
   const switchOff = 0.5 * switchV * imOff * tCrossOff * fsw * nSwitches
 
   // 3. Coss loss —— 硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散
-  //   Coss 随 V_ds 非线性变化，故必须用**能量相关等效电容 C_oss,er**（≡ 规格书 Co(er)）：
-  //     按定义 C_oss,er(V) = 2·E_oss(V)/V²  ⇒  E_oss = ½·C_oss,er·V_DS²，**无需任何非线性修正系数**。
-  //   ⚠️ 与「时间相关等效 C_oss,eq（≡ Co(tr)）」不是同一个量：C_er < C_tr（Coss 单调递减时），
+  //   Coss 随 V_ds 非线性变化，故必须用**能量相关等效电容 Coss_er**（≡ 规格书 Co(er)）：
+  //     按定义 Coss_er(V) = 2·E_oss(V)/V²  ⇒  E_oss = ½·Coss_er·V_DS²，**无需任何非线性修正系数**。
+  //   ⚠️ 与「时间相关等效 Coss_tr（≡ Co(tr)）」不是同一个量：C_er < C_tr（Coss 单调递减时），
   //      Co(tr) 只用于死区**电荷/时间**约束（→ qmax2 / tZVS），不可拿来算损耗。
   //   ⚠️ 规格书里的标称 Coss（常标 0V 或低压处）既不是 Co(tr) 也不是 Co(er)，不能直接用。
-  //   C_oss,er 取自**设计参数**（单一来源，与 td 同一做法），旧存档缺该字段时按典型值 35 pF 兜底。
-  //   V_DS 取额定输入 V_in,nom（效率标称点）；若要评估最坏工况应按 V_in,max 另计。
+  //   Coss_er 取自**设计参数**（单一来源，与 td 同一做法），旧存档缺该字段时按典型值 35 pF 兜底。
+  //   V_DS 取额定输入 Vin_nom（效率标称点）；若要评估最坏工况应按 Vin_max 另计。
   //   注：qmax2/qmax3 把 ZVS 条件写进了 Q 约束，多数设计点下 zvsMargin/zvsTimeOk 自动成立、
   //       本项为 0；但 q 有 0.001 下限、fmax 又随压差放大，扫参实测仍有约 9% 的配置会触发这两个
   //       校验（此时本项非 0），因此这里用 Co(er) 的取值是决定性的，不是摆设。
@@ -190,7 +190,7 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   // 4. Body diode conduction loss
   // 死区内分两段：前段 tZVS 内电流用于给 Coss 充/放电，体二极管**尚未导通**；
   // 电压完成翻转后的剩余时间 (td − tZVS) 电流才经体二极管续流。
-  // 故导通时间取「净放电时间」而非整个死区，电流取励磁电流峰值 Im,off。
+  // 故导通时间取「净放电时间」而非整个死区，电流取励磁电流峰值 Im_off。
   // ⚠️ 死区时间取自**设计参数**（calc.td），不再由损耗面板单独输入（v2.10.91 起单一来源）：
   //    此前两处各自取值，会出现「损耗模型说体二极管导通 0 ns、而 zvsTimeOk 判定死区充裕」这种自相矛盾。
   const td = Number.isFinite(calc.td) && calc.td > 0 ? calc.td : 0
@@ -228,13 +228,13 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
 
   // 7. Rectifier loss
   // ⌾ 口径（v2.10.98 厘清，此前两处串味导致中心抽头少算一半）：
-  //    Is,sw = **每个整流器件在整周期内的电流有效值**；Nrect = 同时计数的器件数。
+  //    Is_sw = **每个整流器件在整周期内的电流有效值**；Nrect = 同时计数的器件数。
   //    · 中心抽头（含同步）：每个绕组/整流管半波导通，波形是半波正弦，
   //      峰值 π·Io/2 ⇒ RMS = 峰值/2 = π·Io/4 ≈ 0.785 Io，Nrect = 2
   //    · 全波/整流桥（含同步）：副边绕组整周期正弦，RMS = π·Io/(2√2) ≈ 1.11 Io；
-  //      但每个整流管只导通半周 ⇒ Is,sw = 绕组 RMS / √2 = π·Io/4 ⇒ **同样是 π·Io/4**，Nrect = 4
-  //    ⟹ 两种拓扑下 Is,sw 同为 (π/4)·Io，差别只在 Nrect（2 / 4）；整流桥导通损耗恰为中心抽头的 2 倍。
-  //    ⚠️ 旧实现统一按 calc.isRms/√2 取 Is,sw —— 对全波口径正确，却把中心抽头的
+  //      但每个整流管只导通半周 ⇒ Is_sw = 绕组 RMS / √2 = π·Io/4 ⇒ **同样是 π·Io/4**，Nrect = 4
+  //    ⟹ 两种拓扑下 Is_sw 同为 (π/4)·Io，差别只在 Nrect（2 / 4）；整流桥导通损耗恰为中心抽头的 2 倍。
+  //    ⚠️ 旧实现统一按 calc.isRms/√2 取 Is_sw —— 对全波口径正确，却把中心抽头的
   //       「本就是每管 RMS」的量又除了一次 √2 ⇒ 功率少算 2 倍（v2.10.98 修正）。
   //    ⚠️ 同步整流的 Rds(on) 与原边一样是 25℃ 值，必须同乘温度修正 kT（v2.10.98 补）。
   // 整流压降：取自设计参数（单一来源，见下方二极管分支说明）

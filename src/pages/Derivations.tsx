@@ -336,7 +336,7 @@ export default function Derivations() {
 
           <ParamTable>
             <ParamRow symbol="n" name="变压器匝比" unit="-" description="原边匝数与副边匝数之比（中心抽头按半绕组计算）" typical="按输入输出电压设计" />
-            <ParamRow symbol="Vin,nom" name="额定输入电压" unit="V" description="变换器标称直流输入电压" typical="380 V / 400 Vdc" />
+            <ParamRow symbol="Vin_nom" name="额定输入电压" unit="V" description="变换器标称直流输入电压" typical="380 V / 400 Vdc" />
             <ParamRow symbol="Vo" name="输出电压" unit="V" description="额定输出直流电压" typical="12 V / 24 V / 48 V" />
             <ParamRow symbol="Vf" name="输出整流压降" unit="V" description="★ 单一来源：设计参数里的「输出整流压降」，同时用于匝比 n 与二极管整流的损耗（Nrect·Vf·(Io/2)）。二极管取 0.6~1.2 V，同步整流填 0" typical="0（同步）/ 0.6~1.2 V（二极管）" />
             <ParamRow symbol="RL" name="直流负载电阻" unit="Ω" description="RL = Vo² / Po" typical="随输出功率变化" />
@@ -411,10 +411,10 @@ export default function Derivations() {
 
           <HighlightBox type="info">
             <strong>三个容易混淆的 Coss 口径（选用前必读）：</strong>
-            ① <b>Coss,eq ≡ 规格书 Co(tr)</b>（时间/电荷相关等效）：恒流充电下充到 V<sub>DS</sub> 所需
+            ① <b>Coss_tr ≡ 规格书 Co(tr)</b>（时间/电荷相关等效）：恒流充电下充到 V<sub>DS</sub> 所需
             <b>电荷相同</b>（故时间也相同），对应真实 Q<sub>oss</sub>(V)；
             <b>只用于死区的电荷/时间约束</b>（本站 Q<sub>max2</sub> 与 t<sub>ZVS</sub>）。
-            ② <b>Coss,er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
+            ② <b>Coss_er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
             用于<b>能量型判据与损耗</b>（本站 E<sub>r</sub> ≥ E<sub>c</sub> 与硬开关 Coss 损耗
             E<sub>oss</sub> = ½·C<sub>oss,er</sub>V²）。
             ③ <b>规格书标称的 Coss</b>（多标在 0 V 或低压处）既不是①也不是②，数值明显偏大，
@@ -422,21 +422,29 @@ export default function Derivations() {
           </HighlightBox>
 
           <p className="text-text-secondary mt-2 mb-2 text-sm leading-relaxed">
-            对单调递减的 C<sub>oss</sub>(V) 恒有 <b>Coss,er &lt; Coss,eq</b>：两者都是 C<sub>oss</sub>(V) 的加权平均，
-            但 Coss,er 的权重 2v/V² 偏向高压段、而高压段 C<sub>oss</sub> 更小。
-            两者相等只出现在手册恰好如此或刻意简化时，<b>比值须查规格书各自的 Co(tr)/Co(er)，不要互相代替</b>。
+            <b>两个等效值都不是器件给出的独立参数，而是对同一条 C<sub>oss</sub>(V) 曲线积分得到的</b>：
+            <b>Coss_tr = (1/V)·∫<sub>0</sub><sup>V</sup>C<sub>oss</sub>(v) dv</b>（等权平均 ⇒ 由<b>低压段主导</b>，
+            因为低压处 C<sub>oss</sub> 最大）；<b>Coss_er = (2/V²)·∫<sub>0</sub><sup>V</sup>C<sub>oss</sub>(v)·v dv</b>
+            （权重随 v 线性增大 ⇒ <b>向高压段偏移</b>，而高压处 C<sub>oss</sub> 最小）。
+            因 C<sub>oss</sub> 随 V 单调递减，故恒有 <b>Coss_er &lt; Coss_tr</b>（实测比值约 0.4 ~ 0.7）；
+            两者相等只出现在 C<sub>oss</sub> 与电压无关的极端理想情形，<b>比值须查规格书各自的 Co(tr)/Co(er)，不要互相代替</b>。
+            <br />
+            ⇒ 规格书若标注 <b>Co(tr)/Co(er)</b>，两者各自直接对应；若只给<b>单点 Coss</b>，
+            则取自<b>高压 / 工作电压段</b>的那个值与 <b>Coss_er</b> 同侧（两者都偏重高压段），
+            而标在 0 V / 低压处的大值两种口径都不是。
             <br />
             ⚠️ <b>「Co(eq)」本身是个有歧义的符号</b>：有的规格书把它等同于 Co(tr)，有的计算书用它表示
-            「2·C<sub>tr</sub> + 寄生」这样的<b>整桥总量</b>。本站一律不用「Coss,eq」表示总量 ——
-            总量统一写作计算书的 <b>C总 = 2·Coss,eq + Cj</b>（死区用）；能量侧不另起符号，直接写开
+            「2·C<sub>tr</sub> + 寄生」这样的<b>整桥总量</b>。本站因此回避 <b>eq</b> 记法 ——
+            时间口径统一写作 <b>Coss_tr</b>（≡ Co(tr)），总量统一写作计算书的 <b>C总 = 2·Coss_tr + Cj</b>（死区用）；
+            能量侧不另起符号，直接写开
             <InlineMath latex="2C_{oss,er} + C_j" />。
           </p>
 
           <ParamTable>
-            <ParamRow symbol="Coss,eq" name="时间相关等效输出电容（≡ Co(tr)）" unit="pF" description="单管值。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
-            <ParamRow symbol="Coss,er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss,er·V²，定义式无需修正系数）" typical="查规格书 Co(er)" />
+            <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
+            <ParamRow symbol="Coss_er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_er = (2/V²)·∫Coss·v dv（按 v 加权，偏向高压段）。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss_er·V²，定义式无需修正系数）。恒有 Coss_er < Coss_tr" typical="查规格书 Co(er)" />
             <ParamRow symbol="Cj" name="PCB / 变压器寄生电容" unit="pF" description="经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="50 ~ 150 pF" />
-            <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss,eq + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss,er + Cj，两者不是同一个电容" typical="数值求解" />
+            <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss_tr + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss_er + Cj，两者不是同一个电容" typical="数值求解" />
           </ParamTable>
 
           <p className="text-text-secondary mt-4 mb-2">
@@ -491,7 +499,8 @@ export default function Derivations() {
           </p>
 
           <p className="text-text-secondary mt-4 mb-2">
-            Q<sub>max</sub> 由三条约束取最严者得到，三条定义式如下（与本工具计算引擎的实现逐字对应）：
+            Q<sub>max</sub> 由两条<b>设计约束</b>（Q<sub>max1</sub> 增益能力、Q<sub>max2</sub> 死区时间）取最严者得到；
+            第三条 ZVS 能量式（Q<sub>max3</sub>）是<b>空载 / 轻载校核</b>、不参与取小。三条定义式如下（与本工具计算引擎的实现逐字对应）：
           </p>
 
           <MathBlock
@@ -506,14 +515,24 @@ export default function Derivations() {
 
           <MathBlock
             latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,(2C_{oss,er}+C_j)\\,V_{in,max}^2\\,R_{ac}}"
-            label="约束三 · ZVS 能量约束（γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss,er + Cj）"
+            label="约束三 · ZVS 能量校核（空载 / 轻载条件，不参与 Q_max 取小；γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss_er + Cj）"
           />
 
           <MathBlock
-            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = m \\cdot Q_{max}"
+            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}), \\qquad Q_s = m \\cdot Q_{max}"
             important
             label="最大允许 Q 与设计 Q（m 为裕量系数，默认 0.857）"
           />
+
+          <p className="text-text-secondary text-sm mt-2 mb-2">
+            <b>Q<sub>max</sub> 为什么只取 Q<sub>max1</sub>、Q<sub>max2</sub>：</b>
+            Q<sub>max1</sub>（增益能力）与 Q<sub>max2</sub>（死区时间）都是<b>设计点（满载）</b>的约束；
+            而 <b>Q<sub>max3</sub> 是空载 / 轻载的 ZVS 能量条件</b>（E<sub>r</sub> ≥ E<sub>c</sub>：用 f<sub>max</sub>
+            即空载频率，并以 V<sub>in,min</sub> 求励磁电流、V<sub>in,max</sub> 求所需电荷，取最坏组合），
+            它不属于设计点，故<b>不作设计约束</b>，只作为<b>独立校核</b>（其结论即 E<sub>r</sub> ≥ E<sub>c</sub> 的判定）。
+            对物理上成立的输入（Coss_er ≤ Coss_tr）恒有 Q<sub>max3</sub> ≳ 3·Q<sub>max2</sub>
+            ⇒ 它从不成为瓶颈，移出 min 不改变任何数值，只是把语义摆正。
+          </p>
 
           <HighlightBox type="warning">
             <strong>死区时间约束即「约束二（Q<sub>max2</sub>）」本身。</strong>
@@ -524,7 +543,7 @@ export default function Derivations() {
 
           <MathBlock
             latex="t_{ZVS} = \\frac{C_{\\text{总}}\\,V_{in}}{I_{m,off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{\\text{总}} \\le t_d"
-            label="死区时间校核：分子分母同为 V_in，V_in 精确相消 ⇒ t_ZVS 与输入电压无关；C总 = 2Coss,eq + Cj 用时间口径"
+            label="死区时间校核：分子分母同为 Vin，Vin 精确相消 ⇒ t_ZVS 与输入电压无关；C总 = 2Coss_tr + Cj 用时间口径"
           />
 
           <p className="text-text-secondary text-sm mt-2">
@@ -556,15 +575,15 @@ export default function Derivations() {
 
           <ParamTable>
 <ParamRow symbol="Gempty" name="空载增益下限" unit="-" description="空载（Q→0）时 Region 1 的增益下限 k/(k+1)；Gmin 必须 ≥ 它，否则高输入空载降压不了（对应 k ≤ kmax）" typical="≈ 0.75 ~ 0.9" />
-            <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（V_in,nom / V_in,min）" typical="1.1 ~ 1.4" />
-            <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（V_in,nom / V_in,max）" typical="0.6 ~ 0.9" />
+            <ParamRow symbol="Gmax" name="最大增益需求" unit="-" description="最低输入电压时所需的电压增益（Vin_nom / Vin_min）" typical="1.1 ~ 1.4" />
+            <ParamRow symbol="Gmin" name="最小增益需求" unit="-" description="最高输入电压时所需的电压增益（Vin_nom / Vin_max）" typical="0.6 ~ 0.9" />
             <ParamRow symbol="Mpeak" name="峰值增益（曲线峰顶）" unit="-" description="给定 (k, Q) 下增益曲线的最大值（dM/dfn = 0）；⚠ 峰顶恒落在容性区，感性区内取不到此值" typical="数值求解" />
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；表单可切换为【峰值判据】Mpeak = Gmax —— 该判据数值更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
-            <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss,eq + Cj（时间口径）" typical="0.3 ~ 1.5" />
-            <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q" unit="-" description="由励磁电感储能 ≥ 结电容总能量（2Coss,er + Cj：两只管之和 + 寄生）决定，Coss,er 为单管值" typical="数值求解" />
-            <ParamRow symbol="Er" name="可提供的 ZVS 储能" unit="J" description="关断时刻励磁电感储存的能量 Er = ½·Lm·I_m,off²（用 V_in,min 求 I_m,off，取最坏）" typical="数十 μJ" />
-            <ParamRow symbol="Ec" name="ZVS 所需能量" unit="J" description="把开关节点电容 C总 从 0 充/放到 V_in 所需能量 Ec = ½·(2·Coss,er + Cj)·V_in,max²（用 V_in,max，取最坏）；Er ≥ Ec 才够 ZVS" typical="数 μJ ~ 数十 μJ" />
+            <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss_tr + Cj（时间口径）" typical="0.3 ~ 1.5" />
+            <ParamRow symbol="Qmax3" name="ZVS 能量校核 Q（空载 / 轻载）" unit="-" description="由励磁电感储能 ≥ 结电容总能量（2Coss_er + Cj：两只管之和 + 寄生）决定，Coss_er 为单管值。⚠️ 它是【空载/轻载】条件的独立校核，不参与 Qmax = min(Qmax1,Qmax2) 的取小" typical="数值求解" />
+            <ParamRow symbol="Er" name="可提供的 ZVS 储能" unit="J" description="关断时刻励磁电感储存的能量 Er = ½·Lm·Im_off²（用 Vin_min 求 Im_off，取最坏）" typical="数十 μJ" />
+            <ParamRow symbol="Ec" name="ZVS 所需能量" unit="J" description="把开关节点电容 C总 从 0 充/放到 Vin 所需能量 Ec = ½·(2·Coss_er + Cj)·Vin_max²（用 Vin_max，取最坏）；Er ≥ Ec 才够 ZVS" typical="数 μJ ~ 数十 μJ" />
             <ParamRow symbol="fmin" name="调频下限（满载低输入）" unit="Hz" description="满载增益曲线与 M = Gmax 的交点频率 —— 最低母线满载是最坏工况，需要最低频率" typical="数十 ~ 百余 kHz" />
             <ParamRow symbol="fmax" name="调频上限（空载降压）" unit="Hz" description="空载（Q→0）曲线与 M = Gmin 的交点频率；⚠ 与 fmin 取不同工况是有意为之（降压最坏在空载）" typical="百余 ~ 数百 kHz" />
             <ParamRow symbol="Qs" name="设计品质因数" unit="-" description="Qs = m · Qmax，m 为可设定裕量系数（默认 0.857 = 计算书算例的 α，在设计工具页「Q 裕量系数 m」调整）" typical="0.3 ~ 0.8" />
@@ -618,13 +637,13 @@ export default function Derivations() {
           />
 
           <ParamTable>
-            <ParamRow symbol="Vds,max" name="MOSFET 耐压" unit="V" description="关断时承受的最大漏源电压" typical="等于输入电压最大值" />
-            <ParamRow symbol="Ip,rms" name="原边总电流有效值" unit="A" description="流过 Lr、Cr 与变压器原边绕组的电流（Ir,rms 与 Im,rms 的方和根）" typical="-" />
-            <ParamRow symbol="Ir,rms" name="谐振电流有效值" unit="A" description="FHA 等效模型中流入负载支路（Rac）的电流分量；非 Lr/Cr 支路的实际电流" typical="-" />
-            <ParamRow symbol="Im,rms" name="励磁电流有效值" unit="A" description="仅流过变压器励磁电感的电流" typical="-" />
-            <ParamRow symbol="Im,off" name="关断时刻励磁电流峰值" unit="A" description="副边换流完毕后原边只剩励磁电流，关断就发生在这一刻 ⇒ 它既用于 ZVS 储能 Er，也用于关断损耗 P_off（不是谐振峰值电流）" typical="0.2 ~ 0.5 A" />
+            <ParamRow symbol="Vds_max" name="MOSFET 耐压" unit="V" description="关断时承受的最大漏源电压" typical="等于输入电压最大值" />
+            <ParamRow symbol="Ip_rms" name="原边总电流有效值" unit="A" description="流过 Lr、Cr 与变压器原边绕组的电流（Ir_rms 与 Im_rms 的方和根）" typical="-" />
+            <ParamRow symbol="Ir_rms" name="谐振电流有效值" unit="A" description="FHA 等效模型中流入负载支路（Rac）的电流分量；非 Lr/Cr 支路的实际电流" typical="-" />
+            <ParamRow symbol="Im_rms" name="励磁电流有效值" unit="A" description="仅流过变压器励磁电感的电流" typical="-" />
+            <ParamRow symbol="Im_off" name="关断时刻励磁电流峰值" unit="A" description="副边换流完毕后原边只剩励磁电流，关断就发生在这一刻 ⇒ 它既用于 ZVS 储能 Er，也用于关断损耗 P_off（不是谐振峰值电流）" typical="0.2 ~ 0.5 A" />
             <ParamRow symbol="VRRM" name="整流管反向耐压" unit="V" description="二极管/同步整流管关断时承受的反向电压" typical="2Vo 或 Vo" />
-            <ParamRow symbol="Isec,rms" name="副边电流有效值" unit="A" description="每个副边绕组或整流支路的电流" typical="0.785 Io 或 1.11 Io" />
+            <ParamRow symbol="Isec_rms" name="副边电流有效值" unit="A" description="每个副边绕组或整流支路的电流" typical="0.785 Io 或 1.11 Io" />
           </ParamTable>
 
           <HighlightBox type="warning">
@@ -814,13 +833,13 @@ export default function Derivations() {
             <ParamRow symbol="Rg" name="栅极回路总电阻" unit="Ω" description="器件内部 R_G + 外部 R_g + 驱动上/下拉阻抗；⚠ 不是规格书 t_r/t_f 测试条件里的 10 Ω" typical="5 ~ 20 Ω" />
             <ParamRow symbol="Vdrv" name="驱动电平" unit="V" description="开通交叉时间用 ΔV = V_drv − V_plat；关断按栅极被拉到 0 处理" typical="10 ~ 15 V" />
             <ParamRow symbol="Crss_eq" name="等效反向传输电容（Crss 积分法用）" unit="pF" description="= ∫Crss(V)dV ÷ V_DS（面积÷电压）。★ 不是规格书某一点的 Crss：低压段 Crss 可达成百上千 pF，积分主要由 0~25 V 段贡献，等效值通常有十几 pF；填高压段单点值（0.5~2 pF）会把平台电荷低估近一个数量级" typical="10 ~ 20 pF" />
-            <ParamRow symbol="VDS,swing" name="平台对应的 V_DS 摆幅（Crss 积分法用）" unit="V" description="关断时器件由 0 承压到母线电压，故一般就填母线 V_in；保守可取器件耐压（会偏保守）" typical="= V_in" />
+            <ParamRow symbol="VDS_swing" name="平台对应的 V_DS 摆幅（Crss 积分法用）" unit="V" description="关断时器件由 0 承压到母线电压，故一般就填母线 Vin；保守可取器件耐压（会偏保守）" typical="= Vin" />
             <ParamRow symbol="Qg" name="栅极电荷" unit="nC" description="仅用于驱动损耗参考式；工具损耗模型未计入该项" typical="datasheet 值" />
             <ParamRow symbol="Nrect" name="整流器件数" unit="个" description="同时参与导通的整流器件总数：中心抽头 2 / 全波桥 4（二极管与同步整流同一套数）" typical="2 或 4" />
-            <ParamRow symbol="Is,sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
+            <ParamRow symbol="Is_sw" name="单个整流器件电流 RMS" unit="A" description="整周期内每个整流器件的电流有效值；两种拓扑同为 (π/4)·Io ≈ 0.785 Io" typical="0.785 Io" />
             <ParamRow symbol="Vf" name="整流管压降（= 设计参数值）" unit="V" description="单管压降；与匝比 n 用的是同一个数（单一来源）。二极管 0.6~1.2 V，同步整流按 Io·Rds(on) 折算后通常填 0" typical="0 / 0.6 ~ 1.2 V" />
-            <ParamRow symbol="Pcv,Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；随「磁芯材料」按 P_cv,ref×(B_Lr/0.2 T)^β 自动折算（B_Lr≈0.165 T；默认牌号 PC95 ⇒ 173）。正弦激励，不乘 k_wave" typical="查手册" />
-            <ParamRow symbol="Ve,Lr" name="Lr 磁芯有效体积" unit="cm³" description="默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）" typical="1 ~ 2 cm³" />
+            <ParamRow symbol="Pcv_Lr" name="Lr 磁芯损耗密度（手册值）" unit="mW/cm³" description="按 Lr 实际磁牌号与 B_Lr 查手册；随「磁芯材料」按 Pcv_ref×(B_Lr/0.2 T)^β 自动折算（B_Lr≈0.165 T；默认牌号 PC95 ⇒ 173）。正弦激励，不乘 k_wave" typical="查手册" />
+            <ParamRow symbol="Ve_Lr" name="Lr 磁芯有效体积" unit="cm³" description="默认取变压器 Ve 的 1/4（谐振电感体积通常为变压器的 1/5~1/4）" typical="1 ~ 2 cm³" />
             <ParamRow symbol="k_wave" name="波形修正系数" unit="-" description="手册曲线多为正弦标定，LLC 变压器为方波励磁，工具默认 1.25；⚠ 仅用于变压器磁芯，Lr 不用" typical="1.2 ~ 1.4" />
             <ParamRow symbol="Cm, α, β" name="Steinmetz 系数（对照口径）" unit="mW·cm⁻³·kHz⁻ᵃ·mT⁻ᵝ" description="正弦激励拟合系数，方波励磁下有偏差，仅作并列对照" typical="查磁芯 datasheet" />
             <ParamRow symbol="Bpeak" name="磁芯峰值磁通密度" unit="T" description="变压器磁芯中的磁通密度峰值" typical="0.1 ~ 0.3 T" />
@@ -828,11 +847,11 @@ export default function Derivations() {
             <ParamRow symbol="Ns" name="副边匝数" unit="匝" description="副边半绕组匝数（中心抽头按半绕组计）；n = Np/Ns" typical="按 n 与整流拓扑确定" />
             <ParamRow symbol="Ae" name="磁芯有效截面积" unit="m²" description="磁芯几何有效截面积" typical="datasheet 值" />
             <ParamRow symbol="td" name="死区时间" unit="ns" description="取自设计参数（单一来源）；决定体二极管净导通时间 td − tZVS" typical="100 ~ 400 ns" />
-            <ParamRow symbol="tZVS" name="ZVS 换流所需时间" unit="ns" description="死区内把 C总 充/放完所需时间 t_ZVS = γ·f_max·Lm·C总（γ = 8 半桥 / 4 全桥）；V_in 精确相消 ⇒ 与输入电压无关。判据 t_ZVS ≤ td" typical="150 ~ 350 ns" />
+            <ParamRow symbol="tZVS" name="ZVS 换流所需时间" unit="ns" description="死区内把 C总 充/放完所需时间 t_ZVS = γ·f_max·Lm·C总（γ = 8 半桥 / 4 全桥）；Vin 精确相消 ⇒ 与输入电压无关。判据 t_ZVS ≤ td" typical="150 ~ 350 ns" />
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>效率估算：</strong>总损耗为各部分损耗之和，η = Po / (Po + Ploss,total) × 100%。实际工程中建议结合热仿真和样机测试进行校准。
+            <strong>效率估算：</strong>总损耗为各部分损耗之和，η = Po / (Po + Ploss_total) × 100%。实际工程中建议结合热仿真和样机测试进行校准。
           </HighlightBox>
 
           <HighlightBox type="info">

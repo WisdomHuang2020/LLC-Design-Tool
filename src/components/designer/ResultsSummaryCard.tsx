@@ -113,7 +113,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             label="ZVS能量裕量"
             value={calculated.zvsMargin ? '可达' : '不足'}
             unit=""
-            formula={`Er（励磁电感可提供的储能）= ½·Lm·Im,off² = ${(calculated.zvsEr * 1e6).toFixed(3)}μJ ／ Ec（为 C总 充/放电所需的最小储能）= ½·(2Coss,er + Cj)·Vin,max² = ${(calculated.zvsEc * 1e6).toFixed(3)}μJ（总电容含两只管 ×2）`}
+            formula={`Er（励磁电感可提供的储能）= ½·Lm·Im_off² = ${(calculated.zvsEr * 1e6).toFixed(3)}μJ ／ Ec（为 C总 充/放电所需的最小储能）= ½·(2Coss_er + Cj)·Vin_max² = ${(calculated.zvsEc * 1e6).toFixed(3)}μJ（总电容含两只管 ×2）`}
             highlight={calculated.zvsMargin ? 'good' : 'critical'}
           />
           <ResultItem
@@ -123,10 +123,10 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             formula={`tZVS=${(calculated.tZvs * 1e9).toFixed(1)}ns / Td=${td}ns`}
             highlight={calculated.zvsTimeOk ? 'good' : 'critical'}
           />
-          <ResultItem label="谐振电流 Ir,rms（负载支路分量）" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir,rms = VFHA,rms / Rac（基波有效值；FHA 等效负载支路分量）；与 Im,rms 方和根 = 原边总电流" />
-          <ResultItem label="励磁电流 Im,rms（有效值）" value={calculated.imRms.toFixed(2)} unit="A" formula="Im,rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
-          <ResultItem label="励磁电流 Im,off（关断峰值）" value={Number.isFinite(calculated.imOff) ? calculated.imOff.toFixed(3) : '—'} unit={Number.isFinite(calculated.imOff) ? 'A' : ''} formula="Im,off = Vin,min/(8·fmax·Lm)（半桥；全桥系数 4），ZVS 能量判据用此值" />
-          <ResultItem label="原边总电流 Ip,rms" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip,rms = √(Ir,rms² + Im,rms²)，即流过 Lr、Cr 与变压器原边绕组的电流" />
+          <ResultItem label="谐振电流 Ir_rms（负载支路分量）" value={calculated.irRms.toFixed(2)} unit="A" formula="Ir_rms = VFHA_rms / Rac（基波有效值；FHA 等效负载支路分量）；与 Im_rms 方和根 = 原边总电流" />
+          <ResultItem label="励磁电流 Im_rms（有效值）" value={calculated.imRms.toFixed(2)} unit="A" formula="Im_rms = VLm/(4√3·f·Lm)（VLm=Vin/2 半桥，Vin 全桥）" />
+          <ResultItem label="励磁电流 Im_off（关断峰值）" value={Number.isFinite(calculated.imOff) ? calculated.imOff.toFixed(3) : '—'} unit={Number.isFinite(calculated.imOff) ? 'A' : ''} formula="Im_off = Vin_min/(8·fmax·Lm)（半桥；全桥系数 4），ZVS 能量判据用此值" />
+          <ResultItem label="原边总电流 Ip_rms" value={calculated.ipRms.toFixed(2)} unit="A" formula="Ip_rms = √(Ir_rms² + Im_rms²)，即流过 Lr、Cr 与变压器原边绕组的电流" />
           <ResultItem label="次级电流 RMS" value={calculated.isRms.toFixed(2)} unit="A" formula={calculated.rectifier === 'center-tapped' || calculated.rectifier === 'sync-center-tapped' ? 'Is = (π/4)·Io' : 'Is = (π/2√2)·Io'} />
           <ResultItem
             label="峰值磁密 Bpeak"
@@ -175,8 +175,8 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
               </div>
             }
           />
-          <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 C总 充放电（t_dead = γ·fmax·Lm·C总 = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C总)，C总 = 2·Coss,eq + Cj（时间口径，Coss,eq ≡ 规格书 Co(tr)）" />
-          <ResultItem label="Qmax3（ZVS 能量约束）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量：½·Lm·Im,off² ≥ ½·(2Coss,er + Cj)·Vin,max² —— 总电容为两只管之和（2Coss,er）加寄生 Cj，Coss,er ≡ 规格书 Co(er) 单管值" />
+          <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 C总 充放电（t_dead = γ·fmax·Lm·C总 = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C总)，C总 = 2·Coss_tr + Cj（时间口径，Coss_tr ≡ 规格书 Co(tr)）" />
+          <ResultItem label="Qmax3（ZVS 能量校核 · 空载/轻载）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量：½·Lm·Im_off² ≥ ½·(2Coss_er + Cj)·Vin_max² —— 总电容为两只管之和（2Coss_er）加寄生 Cj，Coss_er ≡ 规格书 Co(er) 单管值。⚠️ 它是【空载/轻载】条件的独立校核，不参与 Qmax = min(Qmax1,Qmax2) 的取小" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>
 

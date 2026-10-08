@@ -26,7 +26,7 @@ export interface SuggestionInputs {
   qmax1: number
   qmax2: number
   qmax3: number
-  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)，默认 0.95 */
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2)（qmax3 是空载 ZVS 能量校核，不进设计约束），默认 0.95 */
   qMargin: number
   gmaxEmpty: number
   zvsMargin: boolean
@@ -71,8 +71,8 @@ export interface CalculatedData {
   rac: number
   zr: number
   /**
-   * 能量相关等效输出电容 C_oss,er（pF，单管，≡ 规格书 Co(er)），随设计参数带入计算数据，
-   * 供损耗模型直接取用（硬开关 Coss 损耗 E_oss = ½·C_oss,er·V²）。
+   * 能量相关等效输出电容 Coss_er（pF，单管，≡ 规格书 Co(er)），随设计参数带入计算数据，
+   * 供损耗模型直接取用（硬开关 Coss 损耗 E_oss = ½·Coss_er·V²）。
    * ⚠️ 旧存档（localStorage）可能缺该字段 ⇒ 使用时必须兜底（losses.ts 按典型值 35 pF）。
    */
   cossEr?: number
@@ -90,7 +90,7 @@ export interface CalculatedData {
    * ⚠️ 旧存档（本地存储）可能缺此字段 —— 读取处一律写成 `=== 'peak' ? 'peak' : 'boundary'` 兜底。
    */
   qmax1Criterion?: 'boundary' | 'peak'
-  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)；旧存档可能缺此字段，用时应兜底 0.95 */
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2)（qmax3 为空载 ZVS 能量校核，不进设计约束）；旧存档可能缺此字段，用时应兜底 0.95 */
   qMargin: number
   gMin: number
   gMax: number
@@ -107,12 +107,12 @@ export interface CalculatedData {
    * ⚠️ 旧存档（本地存储）可能缺此字段，使用时须兜底。
    */
   td: number
-  /** 死区用的总电容 C总 = 2·Coss,eq + Cj（时间/电荷口径） */
+  /** 死区用的总电容 C总 = 2·Coss_tr + Cj（时间/电荷口径） */
   cossZvs: number
   irRms: number
   imRms: number
   /**
-   * 关断时刻励磁电流峰值 Im,off（A）。
+   * 关断时刻励磁电流峰值 Im_off（A）。
    * 即 ZVS 能量判据中参与换流的励磁电流，亦为关断损耗与死区体二极管损耗的正确电流取值。
    * ⚠️ 旧存档（本地存储）可能缺此字段，渲染时须兜底。
    */
@@ -144,18 +144,18 @@ export interface LossParameters {
    * 平台电荷的两种取法（两者本质相同，都是「搬走米勒电荷」；差别只是电荷从哪来）：
    * - `'qgd'`（默认，推荐）：`Q_plat = Q_gd`。规格书栅荷曲线的 Q_gd **本身就是厂商实测的
    *   `∫Crss(V) dV`**（平台段电荷），且测试电压（如 V_DD=520 V）通常贴近实际母线 ⇒ 误差最小。
-   * - `'crss'`：`Q_plat = Crss_eq · V_DS,swing`。`Crss_eq` **必须**是「对 Crss(V) 曲线积分再除以电压」
+   * - `'crss'`：`Q_plat = Crss_eq · VDS_swing`。`Crss_eq` **必须**是「对 Crss(V) 曲线积分再除以电压」
    *   得到的等效值（面积÷电压）。⚠️ 直接填规格书**某一点**的 Crss（如 600 V 处 2 pF）会把平台电荷
    *   低估数倍 —— 因为 Crss 在近 0 V 段极大，积分主要由那一段贡献。
    */
   tcrMethod: 'qgd' | 'crss'
   /** 等效反向传输电容 Crss_eq (pF) = ∫Crss dV / V_DS（仅 tcrMethod='crss' 时参与计算） */
   crssEq: number
-  /** 平台对应的 V_DS 摆幅 (V)：半桥一般就填母线电压 V_in（关断时器件从 0 承压到 V_in） */
+  /** 平台对应的 V_DS 摆幅 (V)：半桥一般就填母线电压 Vin（关断时器件从 0 承压到 Vin） */
   vdsSwing: number
   // 注：Coss 相关电容**不在此处**——损耗面板不再单独输入 Coss。
-  //     硬开关 Coss 损耗与 ZVS 能量判据统一取设计参数 `DesignParameters.cossEr`（C_oss,er ≡ Co(er)，
-  //     能量相关等效电容），死区时间/电荷判据取 `cossEq`（C_oss,eq ≡ Co(tr)）。单一来源，避免同一物理量两处输入。
+  //     硬开关 Coss 损耗与 ZVS 能量判据统一取设计参数 `DesignParameters.cossEr`（Coss_er ≡ Co(er)，
+  //     能量相关等效电容），死区时间/电荷判据取 `cossEq`（Coss_tr ≡ Co(tr)）。单一来源，避免同一物理量两处输入。
   mosfetVsd: number // V body diode
   primaryTurns: number
   coreMaterial: string

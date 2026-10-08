@@ -47,7 +47,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
 
   const effDiff = losses.efficiency - calc.efficiency
   const tdNs = Number.isFinite(calc.td) ? (calc.td * 1e9).toFixed(0) : '—'
-  // Coss,er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
+  // Coss_er 取自设计参数（单一来源）；旧存档缺该字段时与损耗模型同口径兜底
   // 整流分支的联动显示：整流方式来自**设计参数**，面板据此切换输入项与公式（二极管用的 Vf 也是设计参数，内部字段名 vd）
   const isSyncRect = calc.rectifier === 'synchronous' || calc.rectifier === 'sync-center-tapped'
   const isCtRect = calc.rectifier === 'center-tapped' || calc.rectifier === 'sync-center-tapped'
@@ -178,12 +178,12 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             </>
           )}
           <div>
-            <label className={labelClass}>Coss,er (pF)</label>
+            <label className={labelClass}>Coss_er (pF)</label>
             <div className="w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 flex items-center justify-between">
               <span className="font-mono text-sm text-text-primary">{cossErP}</span>
               <span className="text-[10px] text-text-muted">取自设计参数</span>
             </div>
-            <Note hidden={notesHidden}>单管值（≡ 规格书 Co(er)）；能量判据与损耗按 2·Coss,er + Cj / ×N<sub>sw</sub> 计入两只管</Note>
+            <Note hidden={notesHidden}>单管值（≡ 规格书 Co(er)）；能量判据与损耗按 2·Coss_er + Cj / ×N<sub>sw</sub> 计入两只管</Note>
           </div>
           <div>
             <label className={labelClass}>Vsd (V)</label>
@@ -274,7 +274,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
             <Note hidden={notesHidden}>
               当前整流方式：<b>{rectLabel}</b>（由上方「设计参数」决定）⇒
               {isSyncRect
-                ? ` 按 P_rect = Nrect·Is,sw²·Rds(on)·kT 计（Nrect = ${nRectVal}）`
+                ? ` 按 P_rect = Nrect·Is_sw²·Rds(on)·kT 计（Nrect = ${nRectVal}）`
                 : ` 按 P_rect = Nrect·Vf·(Io/2) 计（Nrect = ${nRectVal}）；Vf 与匝比 n 用的是同一个压降，改它请到「设计参数」区的「输出整流压降」`}
               {!isSyncRect && vdDesign < 0.2 ? ' ⚠️ 当前 Vf ≈ 0 ⇒ 整流损耗会被算成 0，二极管应填 0.6~1.2 V' : ''}
             </Note>
@@ -456,7 +456,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetDiode.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetDiode / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">Pdiode = Vsd·Im,off·(td−tZVS)·fsw·Nsw（净放电时间）</td>
+                <td className="py-2 text-text-secondary">Pdiode = Vsd·Im_off·(td−tZVS)·fsw·Nsw（净放电时间）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">磁芯损耗</td>
@@ -481,7 +481,7 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 text-text-secondary">
                   <b>{rectLabel}</b>：
                   {isSyncRect
-                    ? `P = Nrect(${losses.nRect})·Is,sw²·Rds(on)·kT；Is,sw = ${losses.isSw.toFixed(2)} A = (π/4)·Io（每个整流管整周期 RMS）`
+                    ? `P = Nrect(${losses.nRect})·Is_sw²·Rds(on)·kT；Is_sw = ${losses.isSw.toFixed(2)} A = (π/4)·Io（每个整流管整周期 RMS）`
                     : `P = Nrect(${losses.nRect})·Vf(${vdDesign.toFixed(2)} V)·(Io/2)；Io = ${(calc.pout / calc.vout).toFixed(2)} A（Vf 取自设计参数）`}
                 </td>
               </tr>

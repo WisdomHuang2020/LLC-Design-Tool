@@ -95,13 +95,13 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   // Qmax2：ZVS 条件（死区时间）——「死区内把 Coss 充放电刚好用完 td」对应的 Q。
   // 按 v2.10.100 与自制计算书 V02 核对后的定论（书里叫「死区限制得出最大Q值」）：
-  //   死区内励磁电流  I_{m,dead} = (V_in/2)/(4·f_max·L_m) = V_in/(γ·f_max·L_m)
-  //   死区所需时间    t_dead = C_{oss,zvs}·V_in / I_{m,dead} = γ·f_max·L_m·C_{oss,zvs}
-  //   ★ 上式分子分母的 V_in 精确相消 ⇒ t_dead 与输入电压无关，**不能用 2π·f·Lm·C 之外的 V_in 因子**。
-  //     （旧实现写成 (k+1)V_in,min²/(16 f_max²k²C V_in,max²)：反推所需死区 4.6 µs ≫ td=300 ns，
+  //   死区内励磁电流  I_{m,dead} = (Vin/2)/(4·f_max·L_m) = Vin/(γ·f_max·L_m)
+  //   死区所需时间    t_dead = C_{oss,zvs}·Vin / I_{m,dead} = γ·f_max·L_m·C_{oss,zvs}
+  //   ★ 上式分子分母的 Vin 精确相消 ⇒ t_dead 与输入电压无关，**不能用 2π·f·Lm·C 之外的 Vin 因子**。
+  //     （旧实现写成 (k+1)Vin_min²/(16 f_max²k²C Vin_max²)：反推所需死区 4.6 µs ≫ td=300 ns，
   //      即那条式根本没有编码死区约束，数值虚大 15 倍、从不成为约束，属错误式。）
   //   令 t_dead = td 并代入 L_m = k·Q·R_ac/(2π f_r1) 即得下式。
-  // 与计算书 V02 逐位复核：k=4、R_ac=337.737 Ω、C_oss,zvs=170 pF、f_max=111.803 kHz、td=300 ns
+  // 与计算书 V02 逐位复核：k=4、R_ac=337.737 Ω、Coss_zvs=170 pF、f_max=111.803 kHz、td=300 ns
   //   ⇒ 本站 0.917631 vs 计算书 0.918 ✓（同时反代 Q=0.918 得 t_dead=300.2 ns=td，自洽）。
   const zvsCoeff = topology === 'half-bridge' ? 8 : 4
   const qmax2 = fmaxFeasible
@@ -110,7 +110,7 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   // Qmax3：ZVS 能量约束（由励磁电感储能 ≥ Coss 总能量推导出的 Q 上限）
   // 推导：Lm = k·Lr = k·Q·Rac/(2π fr) 必须满足
-  //   0.5·Lm·(Vinmin/(coeff·fmax·Lm))² ≥ 0.5·Coss,total·Vin_max²
+  //   0.5·Lm·(Vinmin/(coeff·fmax·Lm))² ≥ 0.5·Coss_total·Vin_max²
   // 其中 coeff = 8（半桥）/ 4（全桥），与后续 ZVS 能量校验一致。
   const qmax3 = fmaxFeasible
     ? (2 * Math.PI * fr * vinMin * vinMin)
@@ -122,12 +122,13 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 裕量系数 m ∈ (0,1]：m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量都更大
   // （Er ∝ 1/Lm ∝ 1/Q，tZVS ∝ Lm ∝ Q）；代价是 Zr = Q·Rac 更小 ⇒ Lr 更小、Cr 更大，
   // 励磁环流占比与导通损耗上升。默认 m = 0.95。
-  // 三条约束现在的分工（v2.10.100 起 qmax2 已含死区时间 td）：
-  //   qmax1 → 增益能力（感性区够不够 Gmax）；qmax2 → 死区时间（t_dead ≤ td）；
-  //   qmax3 → ZVS 能量（Er ≥ Ec）。qmax2 生效时 t_dead = m·td ≤ td 恒成立，
-  //   后续 zvsTimeOk 退化为一致性复核；若 zvsTimeOk 报错（qmax2 未生效的情形），
-  //   正确做法仍是**调小** m（而非调大）。
-  const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
+  // 设计约束的分工：qmax1 → 增益能力（感性区够不够 Gmax）；qmax2 → 死区时间（t_dead ≤ td）。
+  // ⚠️ **qmax3 不进 min**：它是「空载 / 轻载 ZVS 能量（Er ≥ Ec）」的**校核项**，不是设计点（满载）的约束，
+  //    由下方的 zvsMargin（Er ≥ Ec）单独给出结论。实测：只要输入物理（Coss_er ≤ Coss_tr），
+  //    恒有 qmax3/qmax2 ≥ (Vin_min/Vin_max)²/(γ·f_max·td) ≈ 3 > 1 ⇒ 把它移出 min 在参数域内是**数值零影响**。
+  // qmax2 生效时 t_dead = m·td ≤ td 恒成立，后续 zvsTimeOk 退化为一致性复核；
+  // 若 zvsTimeOk 报错（qmax2 未生效的情形），正确做法仍是**调小** m（而非调大）。
+  const qmax = Math.max(0.001, Math.min(qmax1, qmax2))
   const qMargin = Number.isFinite(form.qMargin)
     ? Math.min(1, Math.max(0.05, form.qMargin))
     : 0.95 // 旧存档兜底（该字段缺失的年代默认 0.95）；当前默认见 DesignContext.defaultParams
@@ -157,8 +158,8 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // ZVS能量验证
   // 只有励磁电感储能参与 ZVS 换流；死区期间 Lr 与 Lm 串联流过同一电流 i_m，
   // 故可用能量取 ½·Lm·i_m² （保守口径，与计算书 V02 的 ½(Lm+Lr)·i_m² 相比小 (Lm+Lr)/Lm = 1+1/k 倍）。
-  // 两侧各取最坏输入：Er 用 V_in,min（励磁电流最小）、Ec 用 V_in,max（需要搬的电荷最多）——
-  // 这一配对比计算书 V02 更严格（书里 Er/Ec 都用额定 V_in=400 V）。
+  // 两侧各取最坏输入：Er 用 Vin_min（励磁电流最小）、Ec 用 Vin_max（需要搬的电荷最多）——
+  // 这一配对比计算书 V02 更严格（书里 Er/Ec 都用额定 Vin=400 V）。
   // 半桥谐振腔电压幅值为 Vin/2，因此分母为 8*f*Lm；全桥为 4*f*Lm
   const fmaxForZvs = Number.isFinite(fmax) ? fmax : fr
   const imDeadtime = magnetizingCurrentOffPeak(vinMin, fmaxForZvs, lm, topology)
@@ -166,12 +167,12 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const ec = 0.5 * cossTotal * vinMax * vinMax
   const zvsMargin = er >= ec
 
-  // ZVS 时间验证：死区内是否能完成 Coss,zvs 充放电，需要 t_ZVS ≤ td
-  //   t_ZVS = C_{oss,zvs}·V_in / I_{m,off}(V_in) = γ·f_max·Lm·C_{oss,zvs}
-  // ★ 分子分母都是同一个 V_in 下的量，V_in 精确相消 ⇒ t_ZVS **与输入电压无关**。
-  //   旧实现写成 C_{oss,total}·V_in,max / I_{m,off}(V_in,min)：分子取最高输入、分母取最低输入，
-  //   两个不同工况混用，被虚增 V_in,max/V_in,min 倍（默认 1.105 倍），且误用了能量口径电容。
-  // 与计算书 V02 复核：γ=8、f_max=111.803 kHz、Lm=1652.4 µH、C_oss,zvs=170 pF
+  // ZVS 时间验证：死区内是否能完成 Coss_zvs 充放电，需要 t_ZVS ≤ td
+  //   t_ZVS = C_{oss,zvs}·Vin / I_{m,off}(Vin) = γ·f_max·Lm·C_{oss,zvs}
+  // ★ 分子分母都是同一个 Vin 下的量，Vin 精确相消 ⇒ t_ZVS **与输入电压无关**。
+  //   旧实现写成 C_{oss,total}·Vin_max / I_{m,off}(Vin_min)：分子取最高输入、分母取最低输入，
+  //   两个不同工况混用，被虚增 Vin_max/Vin_min 倍（默认 1.105 倍），且误用了能量口径电容。
+  // 与计算书 V02 复核：γ=8、f_max=111.803 kHz、Lm=1652.4 µH、Coss_zvs=170 pF
   //   ⇒ 本站 251.248 ns vs 计算书 T_d_max 251.248 ns ✓（逐位一致）
   const tZvs = zvsCrossTime(fmaxForZvs, lm, cossZvs, topology)
   const zvsTimeOk = tZvs <= td

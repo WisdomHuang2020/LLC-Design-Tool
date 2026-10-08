@@ -45,7 +45,7 @@ export default function SymbolGlossary() {
             它是 M 曲线上取的一个点，与纵轴同族；叫 Gbnd 会被误当成与 Gmax/Gmin 同类的需求值。
             <br />
             · 另有 <span className="font-mono">k / Q / fn / fr / Zr / Rac</span> 等谐振腔量，以及
-            <span className="font-mono">C总 = 2·Coss,eq + Cj</span>（死区用总电容）等口径说明，见下表。
+            <span className="font-mono">C总 = 2·Coss_tr + Cj</span>（死区用总电容）等口径说明，见下表。
           </div>
 
           {SYMBOL_GROUPS.map((g) => (

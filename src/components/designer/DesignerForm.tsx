@@ -203,7 +203,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>MOSFET Coss,eq (pF)</label>
+            <label className={labelClass}>MOSFET Coss_tr (pF)</label>
             <input
               type="number"
               className={inputClass}
@@ -211,10 +211,10 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               onChange={(e) => update('cossEq', Number(e.target.value))}
               placeholder="等效输出电容"
             />
-            <span className="text-xs text-text-muted mt-1 block">时间相关等效（≡ 规格书 Co(tr)）：恒流充到 V<sub>DS</sub> 的<b>电荷/时间</b>与真实 Coss 相同。填<b>单管值</b> —— 死区用总电容按 <b>C总 = 2·Coss,eq + Cj</b> 计入两只管</span>
+            <span className="text-xs text-text-muted mt-1 block">时间相关等效（≡ 规格书 Co(tr)）：由 Coss(V) 曲线积分得 (1/V)∫Coss dv，恒流充到 V<sub>DS</sub> 的<b>电荷/时间</b>与真实 Coss 相同。填<b>单管值</b> —— 死区用总电容按 <b>C总 = 2·Coss_tr + Cj</b> 计入两只管</span>
           </div>
           <div>
-            <label className={labelClass}>MOSFET Coss,er (pF)</label>
+            <label className={labelClass}>MOSFET Coss_er (pF)</label>
             <input
               type="number"
               className={inputClass}
@@ -222,7 +222,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               onChange={(e) => update('cossEr', Number(e.target.value))}
               placeholder="能量相关Coss"
             />
-            <span className="text-xs text-text-muted mt-1 block">能量相关等效（≡ 规格书 Co(er)）：充到 V<sub>DS</sub> 的<b>储能</b>与真实 Coss 相同。填<b>单管值</b> —— ZVS 能量判据与 Coss 损耗按 <b>2·Coss,er + Cj</b>（两只管之和 + 寄生）计入</span>
+            <span className="text-xs text-text-muted mt-1 block">能量相关等效（≡ 规格书 Co(er)）：由 Coss(V) 曲线积分得 (2/V²)∫Coss·v dv，充到 V<sub>DS</sub> 的<b>储能</b>与真实 Coss 相同；恒有 <b>Coss_er &lt; Coss_tr</b>。填<b>单管值</b> —— ZVS 能量判据与 Coss 损耗按 <b>2·Coss_er + Cj</b>（两只管之和 + 寄生）计入</span>
           </div>
           <div>
             <label className={labelClass}>PCB 寄生电容 Cj (pF)</label>

@@ -1195,8 +1195,8 @@ export default function Operation() {
               {
                 n: '③',
                 t: '非峰值硬关断，关断电流不是峰值电流',
-                d: '关断瞬间副边已经换流完毕，原边只剩励磁电流 Im,off，远小于谐振腔峰值电流 ⇒ 关断时 V·I 的重叠面积小，损耗比传统硬关断低。（仍是硬关断，只是"电流小"）',
-                s: '本站关断损耗按 Poff = ½·Vin·Im,off·tcr,off·fsw·Nsw 计 —— 用的正是 Im,off，不是峰值电流。',
+                d: '关断瞬间副边已经换流完毕，原边只剩励磁电流 Im_off，远小于谐振腔峰值电流 ⇒ 关断时 V·I 的重叠面积小，损耗比传统硬关断低。（仍是硬关断，只是"电流小"）',
+                s: '本站关断损耗按 Poff = ½·Vin·Im_off·tcr_off·fsw·Nsw 计 —— 用的正是 Im_off，不是峰值电流。',
               },
               {
                 n: '④',
@@ -1208,7 +1208,7 @@ export default function Operation() {
                 n: '⑤',
                 t: '主 MOS 的 Cds（Coss）能量不再被浪费，被循环利用',
                 d: 'ZVS 下开关节点的 Coss / Cj 电荷由谐振腔电流搬运，储能回馈给谐振腔，而不是在开通瞬间由沟道耗散。',
-                s: '本站 Coss 损耗 E_oss = ½·Coss,er·Vin,nom²·fsw·Nsw，ZVS 达成时 ≈ 0（默认算例 0.000 W）。',
+                s: '本站 Coss 损耗 E_oss = ½·Coss_er·Vin_nom²·fsw·Nsw，ZVS 达成时 ≈ 0（默认算例 0.000 W）。',
               },
               {
                 n: '⑥',

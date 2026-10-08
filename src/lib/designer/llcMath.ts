@@ -230,7 +230,7 @@ export function qmax1Textbook(k: number, gMax: number): number {
 /**
  * 教材/常用资料给出的「最低工作频率」闭式解（ZVS 安全下限）：
  *
- *   fn,min = 1 / √( 1 + k(1 − 1/Gmax²) )    ⇒    fmin = fr / √(1 + k(1 − 1/Gmax²))
+ *   fn_min = 1 / √( 1 + k(1 − 1/Gmax²) )    ⇒    fmin = fr / √(1 + k(1 − 1/Gmax²))
  *
  * ✅ 该式**不是「忽略 Q 项的近似」**，而是「**感容分界轨迹** ∩ M = Gmax」这一点的**精确 fn 坐标**
  * （实测：该 fn 上分界轨迹对应的 Q 恰为 `qmax1Textbook`，该点增益与 Gmax 相对差 0.0000%）。
@@ -251,7 +251,7 @@ export function fminTextbook(fr: number, k: number, gMax: number): number {
 /**
  * 关断时刻励磁电流峰值 I_{m,off}（A）—— ZVS 换流与关断损耗所依据的电流。
  *
- *   I_{m,off} = Vin,min / (coeff · fmax · Lm)，  半桥 coeff = 8，全桥 coeff = 4
+ *   I_{m,off} = Vin_min / (coeff · fmax · Lm)，  半桥 coeff = 8，全桥 coeff = 4
  *
  * 物理含义：MOSFET 在半个周期结束时关断，此刻负载折算分量恰好归零
  * （次级整流管换流），原边电流只剩励磁分量，故关断瞬间的电流即 I_{m,off}。
@@ -267,14 +267,14 @@ export function fminTextbook(fr: number, k: number, gMax: number): number {
  * ⚠️ 与 f_min 不对称是**有意为之**：Q 增大恒使 M 降低 ⇒ 降压（fn>1 求 Gmin）的最坏工况是**空载**。
  * **本函数是引擎、结果卡与容差穷举共用的唯一来源。**
  */
-/** ZVS 所需能量（励磁电感储能）：Er = ½·Lm·I_m,off² */
+/** ZVS 所需能量（励磁电感储能）：Er = ½·Lm·Im_off² */
 export function zvsStoredEnergy(lm: number, imOff: number): number {
   return 0.5 * lm * imOff * imOff
 }
 
 /**
  * 死区内完成 C`总` 充放电所需时间：t_ZVS = γ·f_max·Lm·C总（γ = 8 半桥 / 4 全桥）。
- * 推导：t = C总·V_in / I_m,dead，而 I_m,dead = V_in/(γ·f_max·Lm) ⇒ **V_in 精确相消**，
+ * 推导：t = C总·Vin / Im_dead，而 Im_dead = Vin/(γ·f_max·Lm) ⇒ **Vin 精确相消**，
  * 故 t_ZVS 与输入电压无关。**引擎与容差穷举共用此式。**
  */
 export function zvsCrossTime(fmax: number, lm: number, cossZvs: number, topology: string): number {
