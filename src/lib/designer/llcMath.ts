@@ -249,12 +249,12 @@ export function fminTextbook(fr: number, k: number, gMax: number): number {
 }
 
 /**
- * 关断时刻励磁电流峰值 I_{m,off}（A）—— ZVS 换流与关断损耗所依据的电流。
+ * 关断时刻励磁电流峰值 I_{m_off}（A）—— ZVS 换流与关断损耗所依据的电流。
  *
- *   I_{m,off} = Vin_min / (coeff · fmax · Lm)，  半桥 coeff = 8，全桥 coeff = 4
+ *   I_{m_off} = Vin_min / (coeff · fmax · Lm)，  半桥 coeff = 8，全桥 coeff = 4
  *
  * 物理含义：MOSFET 在半个周期结束时关断，此刻负载折算分量恰好归零
- * （次级整流管换流），原边电流只剩励磁分量，故关断瞬间的电流即 I_{m,off}。
+ * （次级整流管换流），原边电流只剩励磁分量，故关断瞬间的电流即 I_{m_off}。
  * 该值是「死区内给 Coss 充放电」的唯一能量来源，也是关断损耗的正确电流取值。
  *
  * 单一来源：引擎（computeDesign）与损耗模型（losses）都从这里取，避免两处各写一遍。

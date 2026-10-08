@@ -438,19 +438,19 @@ export default function LossAnalysisPanel({ calc, params, setParams, collapsed, 
                 <td className="py-2 pr-4 font-medium">MOSFET 开通损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOn.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOn / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p,peak</sub>·t<sub>cr,on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr,on</sub> = Q<sub>gd</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
+                <td className="py-2 text-text-secondary">P<sub>on</sub> = ½·V<sub>in</sub>·I<sub>p_peak</sub>·t<sub>cr_on</sub>·f<sub>sw</sub>·N<sub>sw</sub>（ZVS 下 ≈0，无 V·I 重叠）；t<sub>cr_on</sub> = Q<sub>gd</sub>·R<sub>g</sub>/(V<sub>drv</sub>−V<sub>plat</sub>) = {tCrossOnNs} ns</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">MOSFET 关断损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetSwitchOff.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetSwitchOff / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m,off</sub>·t<sub>cr,off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr,off</sub> = Q<sub>gd</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
+                <td className="py-2 text-text-secondary">P<sub>off</sub> = ½·V<sub>in</sub>·I<sub>m_off</sub>·t<sub>cr_off</sub>·f<sub>sw</sub>·N<sub>sw</sub>（关断电流为励磁电流峰值，与 ZVS 无关）；t<sub>cr_off</sub> = Q<sub>gd</sub>·R<sub>g</sub>/V<sub>plat</sub> = {tCrossOffNs} ns —— 不用规格书 t<sub>f</sub></td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">Coss 损耗</td>
                 <td className="py-2 pr-4 font-mono">{losses.mosfetCoss.toFixed(3)}</td>
                 <td className="py-2 pr-4">{((losses.mosfetCoss / losses.totalLoss) * 100).toFixed(1)}%</td>
-                <td className="py-2 text-text-secondary">E_oss = ½·C<sub>oss,er</sub>·V<sub>in,nom</sub>²·f<sub>sw</sub>·N<sub>sw</sub>（C<sub>oss,er</sub> ≡ 规格书 Co(er) <b>单管值</b>，N<sub>sw</sub> = 半桥 2 / 全桥 4 只管各计一次；定义式无需 2/3 修正；ZVS 下 ≈0，储能被谐振腔回收）</td>
+                <td className="py-2 text-text-secondary">E_oss = ½·C<sub>oss_er</sub>·V<sub>in_nom</sub>²·f<sub>sw</sub>·N<sub>sw</sub>（C<sub>oss_er</sub> ≡ 规格书 Co(er) <b>单管值</b>，N<sub>sw</sub> = 半桥 2 / 全桥 4 只管各计一次；定义式无需 2/3 修正；ZVS 下 ≈0，储能被谐振腔回收）</td>
               </tr>
               <tr className="border-b border-border/50">
                 <td className="py-2 pr-4 font-medium">体二极管导通</td>

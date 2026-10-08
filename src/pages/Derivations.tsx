@@ -282,7 +282,7 @@ export default function Derivations() {
               可以看出，上方公式完美符合标准推导的化简结果 —— 两者在代数上严格恒等，本工具的计算引擎 <span className="font-mono text-primary-light">gainM()</span> 内部即采用标准式实现，与仅用于展示的等价形式数值一致（相对误差在浮点精度 1e-15 量级）。
             </p>
             <p className="text-text-secondary text-sm leading-relaxed mt-2">
-              <strong className="text-text-primary">常见笔误提醒：</strong>等价形式根号内第二项是 <InlineMath latex="f_n^2 k^2 Q^2" />（含 <InlineMath latex="f_n^2" />）。若误写成 <InlineMath latex="k^2 Q^2" />（漏掉 <InlineMath latex="f_n^2" />），在 <InlineMath latex="f_n \lt 1" /> 的升压区会严重低估增益，峰值增益偏差可达 50% 以上，务必注意。
+              <strong className="text-text-primary">常见笔误提醒：</strong>等价形式根号内第二项是 <InlineMath latex="f_n^2 k^2 Q^2" />（含 <InlineMath latex="f_n^2" />）。若误写成 <InlineMath latex="k^2 Q^2" />（漏掉 <InlineMath latex="f_n^2" />），在 <InlineMath latex="f_n \\lt 1" /> 的升压区会严重低估增益，峰值增益偏差可达 50% 以上，务必注意。
             </p>
           </div>
 
@@ -323,7 +323,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="n = \\frac{V_{in,nom}}{2(V_o + V_f)} \\quad \\text{（半桥）}, \\qquad n = \\frac{V_{in,nom}}{V_o + V_f} \\quad \\text{（全桥）}"
+            latex="n = \\frac{V_{in\\_nom}}{2(V_o + V_f)} \\quad \\text{（半桥）}, \\qquad n = \\frac{V_{in\\_nom}}{V_o + V_f} \\quad \\text{（全桥）}"
             important
             label="变压器匝比"
           />
@@ -344,7 +344,7 @@ export default function Derivations() {
           </ParamTable>
 
           <HighlightBox type="info">
-            <strong>折算关系：</strong>副边基波电压有效值 V<sub>sec,1</sub> = (2√2/π) · Vo，基波电流有效值 I<sub>sec,1</sub> = (π/2√2) · Io。折算到原边后得到 R<sub>ac</sub> = 8n²RL / π²。
+            <strong>折算关系：</strong>副边基波电压有效值 V<sub>sec_1</sub> = (2√2/π) · Vo，基波电流有效值 I<sub>sec_1</sub> = (π/2√2) · Io。折算到原边后得到 R<sub>ac</sub> = 8n²RL / π²。
           </HighlightBox>
         </FormulaSection>
 
@@ -393,7 +393,7 @@ export default function Derivations() {
 
           <p className="text-text-secondary mt-4 mb-2 font-medium">ZVS 能量条件</p>
           <MathBlock
-            latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2"
+            latex="\\frac{1}{2} L_m I_{m\\_off}^2 \\geq \\frac{1}{2} (2C_{oss\\_er} + C_j) V_{in\\_max}^2"
             important
             label="ZVS 能量判据"
           />
@@ -401,11 +401,11 @@ export default function Derivations() {
           <p className="text-text-secondary mt-2 mb-2 text-sm leading-relaxed">
             判据左侧为死区内励磁电感释放的能量，右侧为开关节点电容需被充/放电的能量。
             <strong className="text-text-primary">半桥拓扑</strong>下，
-            总电容 = 2·C<sub>oss,er</sub>（上下两个开关管输出电容之和）+
+            总电容 = 2·C<sub>oss_er</sub>（上下两个开关管输出电容之和）+
             C<sub>j</sub>（变压器原边等效寄生结电容），即
-            <InlineMath latex="2C_{oss,er} + C_j" />（本站按能量口径直接写开，不另起符号）；
+            <InlineMath latex="2C_{oss\\_er} + C_j" />（本站按能量口径直接写开，不另起符号）；
             <b>能量判据必须用 Co(er)</b>（能量相关等效），不能用 Co(tr) 或规格书标称 Coss。
-            全桥拓扑同理为四个管子的输出电容折算值。电压取 V<sub>in,max</sub>（最恶劣工况）。
+            全桥拓扑同理为四个管子的输出电容折算值。电压取 V<sub>in_max</sub>（最恶劣工况）。
             <span className="text-primary-light">本节判据与本站「工作原理」页的 ZVS 能量条件一致。</span>
           </p>
 
@@ -417,7 +417,7 @@ export default function Derivations() {
             <b>只用于死区的电荷/时间约束</b>（本站 Q<sub>max2</sub> 与 t<sub>ZVS</sub>）。
             ② <b>Coss_er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
             用于<b>能量型判据与损耗</b>（本站 E<sub>r</sub> ≥ E<sub>c</sub> 与硬开关 Coss 损耗
-            E<sub>oss</sub> = ½·C<sub>oss,er</sub>V²）。
+            E<sub>oss</sub> = ½·C<sub>oss_er</sub>V²）。
             ③ <b>规格书标称的 Coss</b>（多标在 0 V 或低压处）既不是①也不是②，数值明显偏大，
             <b>不能直接代入</b>。
           </HighlightBox>
@@ -438,7 +438,7 @@ export default function Derivations() {
             「2·C<sub>tr</sub> + 寄生」这样的<b>整桥总量</b>。本站因此回避 <b>eq</b> 记法 ——
             时间口径统一写作 <b>Coss_tr</b>（≡ Co(tr)），总量统一写作计算书的 <b>C总 = 2·Coss_tr + Cj</b>（死区用）；
             能量侧不另起符号，直接写开
-            <InlineMath latex="2C_{oss,er} + C_j" />。
+            <InlineMath latex="2C_{oss\\_er} + C_j" />。
           </p>
 
           <ParamTable>
@@ -449,11 +449,11 @@ export default function Derivations() {
           </ParamTable>
 
           <p className="text-text-secondary mt-4 mb-2">
-            其中关断时刻励磁电流峰值 I<sub>m,off</sub> 与最高工作频率 f<sub>max</sub> 相关：
+            其中关断时刻励磁电流峰值 I<sub>m_off</sub> 与最高工作频率 f<sub>max</sub> 相关：
           </p>
 
           <MathBlock
-            latex="I_{m,off} = \\frac{V_{in,min}}{8 f_{max} L_m}  \\text{（半桥）}, \\qquad I_{m,off} = \\frac{V_{in,min}}{4 f_{max} L_m}  \\text{（全桥）}"
+            latex="I_{m\\_off} = \\frac{V_{in\\_min}}{8 f_{max} L_m}  \\text{（半桥）}, \\qquad I_{m\\_off} = \\frac{V_{in\\_min}}{4 f_{max} L_m}  \\text{（全桥）}"
             label="励磁电流峰值"
           />
 
@@ -474,7 +474,7 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="G_{max} = \\frac{V_{in,nom}}{V_{in,min}}, \\qquad G_{min} = \\frac{V_{in,nom}}{V_{in,max}}"
+            latex="G_{max} = \\frac{V_{in\\_nom}}{V_{in\\_min}}, \\qquad G_{min} = \\frac{V_{in\\_nom}}{V_{in\\_max}}"
             label="所需电压增益范围"
           />
 
@@ -510,12 +510,12 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{\\text{总}}\\,R_{ac}}, \\qquad C_{\\text{总}} = 2C_{oss,eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
+            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{\\text{总}}\\,R_{ac}}, \\qquad C_{\\text{总}} = 2C_{oss\\_eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
             label="约束二 · 死区时间约束（死区内恰好完成 Coss 充放电：t_dead = γ·f_max·L_m·C总 = t_d）"
           />
 
           <MathBlock
-            latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in,min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,(2C_{oss,er}+C_j)\\,V_{in,max}^2\\,R_{ac}}"
+            latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in\\_min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,(2C_{oss\\_er}+C_j)\\,V_{in\\_max}^2\\,R_{ac}}"
             label="约束三 · ZVS 能量校核（空载 / 轻载条件，不参与 Q_max 取小；γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss_er + Cj）"
           />
 
@@ -529,7 +529,7 @@ export default function Derivations() {
             <b>Q<sub>max</sub> 为什么只取 Q<sub>max1</sub>、Q<sub>max2</sub>：</b>
             Q<sub>max1</sub>（增益能力）与 Q<sub>max2</sub>（死区时间）都是<b>设计点（满载）</b>的约束；
             而 <b>Q<sub>max3</sub> 是空载 / 轻载的 ZVS 能量条件</b>（E<sub>r</sub> ≥ E<sub>c</sub>：用 f<sub>max</sub>
-            即空载频率，并以 V<sub>in,min</sub> 求励磁电流、V<sub>in,max</sub> 求所需电荷，取最坏组合），
+            即空载频率，并以 V<sub>in_min</sub> 求励磁电流、V<sub>in_max</sub> 求所需电荷，取最坏组合），
             它不属于设计点，故<b>不作设计约束</b>，只作为<b>独立校核</b>（其结论即 E<sub>r</sub> ≥ E<sub>c</sub> 的判定）。
             对物理上成立的输入（Coss_er ≤ Coss_tr）恒有 Q<sub>max3</sub> ≳ 3·Q<sub>max2</sub>
             ⇒ 它从不成为瓶颈，移出 min 不改变任何数值，只是把语义摆正。
@@ -543,7 +543,7 @@ export default function Derivations() {
           </HighlightBox>
 
           <MathBlock
-            latex="t_{ZVS} = \\frac{C_{\\text{总}}\\,V_{in}}{I_{m,off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{\\text{总}} \\le t_d"
+            latex="t_{ZVS} = \\frac{C_{\\text{总}}\\,V_{in}}{I_{m\\_off}(V_{in})} \\equiv \\gamma\\,f_{max}\\,L_m\\,C_{\\text{总}} \\le t_d"
             label="死区时间校核：分子分母同为 Vin，Vin 精确相消 ⇒ t_ZVS 与输入电压无关；C总 = 2Coss_tr + Cj 用时间口径"
           />
 
@@ -618,12 +618,12 @@ export default function Derivations() {
           </p>
 
           <MathBlock
-            latex="V_{ds,max} = V_{in,max}  \\text{（MOSFET 电压应力）}"
+            latex="V_{ds\\_max} = V_{in\\_max}  \\text{（MOSFET 电压应力）}"
             label="原边 MOSFET"
           />
 
           <MathBlock
-            latex="I_{p,rms} = \\sqrt{I_{r,rms}^2 + I_{m,rms}^2}, \\qquad I_{r,rms} = \\frac{V_{FHA,rms}}{R_{ac}}, \\qquad I_{m,rms} = \\frac{V_{Lm}}{4\\sqrt{3} f_{r1} L_m}"
+            latex="I_{p\\_rms} = \\sqrt{I_{r\\_rms}^2 + I_{m\\_rms}^2}, \\qquad I_{r\\_rms} = \\frac{V_{FHA\\_rms}}{R_{ac}}, \\qquad I_{m\\_rms} = \\frac{V_{Lm}}{4\\sqrt{3} f_{r1} L_m}"
             label="原边电流有效值"
           />
 
@@ -633,7 +633,7 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="I_{sec,rms} = \\frac{\\pi}{4} I_o  \\text{（中心抽头）}, \\qquad I_{sec,rms} = \\frac{\\pi}{2\\sqrt{2}} I_o  \\text{（全波/全桥）}"
+            latex="I_{sec\\_rms} = \\frac{\\pi}{4} I_o  \\text{（中心抽头）}, \\qquad I_{sec\\_rms} = \\frac{\\pi}{2\\sqrt{2}} I_o  \\text{（全波/全桥）}"
             label="副边绕组电流有效值"
           />
 
@@ -672,63 +672,63 @@ export default function Derivations() {
           <div className="grid md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 导通损耗</p>
-              <MathBlock latex="P_{cond} = \\tfrac{1}{2}\\, I_{p,rms}^2 R_{ds(on)} k_T N_{sw}" />
+              <MathBlock latex="P_{cond} = \\tfrac{1}{2}\\, I_{p\\_rms}^2 R_{ds(on)} k_T N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 开通损耗</p>
-              <MathBlock latex="P_{on} = \\tfrac{1}{2} V_{in} I_{p,peak} t_{cr,on} f_{sw} N_{sw} \\quad (\\text{ZVS 下} \\approx 0)" />
+              <MathBlock latex="P_{on} = \\tfrac{1}{2} V_{in} I_{p\\_peak} t_{cr\\_on} f_{sw} N_{sw} \\quad (\\text{ZVS 下} \\approx 0)" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">MOSFET 关断损耗</p>
-              <MathBlock latex="P_{off} = \\tfrac{1}{2} V_{in} I_{m,off} t_{cr,off} f_{sw} N_{sw}" />
+              <MathBlock latex="P_{off} = \\tfrac{1}{2} V_{in} I_{m\\_off} t_{cr\\_off} f_{sw} N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">交叉时间（由栅极回路算出）</p>
-              <MathBlock latex="t_{cr} = \frac{Q_{plat} R_g}{\Delta V_{gate}}, \quad \Delta V_{gate} = V_{plat}\ (\text{关断}),\ V_{drv} - V_{plat}\ (\text{开通})" />
+              <MathBlock latex="t_{cr} = \\frac{Q_{plat} R_g}{\\Delta V_{gate}}, \\quad \\Delta V_{gate} = V_{plat}\\ (\\text{关断}),\\ V_{drv} - V_{plat}\\ (\\text{开通})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">平台电荷的两种取法（等价）</p>
-              <MathBlock latex="Q_{plat} = Q_{gd}\ \ (\text{法一，默认})" />
-              <MathBlock latex="Q_{plat} = \overline{C}_{rss}\, V_{DS}, \quad \overline{C}_{rss} = \frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV\ \ (\text{法二})" />
+              <MathBlock latex="Q_{plat} = Q_{gd}\\ \\ (\\text{法一，默认})" />
+              <MathBlock latex="Q_{plat} = \\overline{C}_{rss}\\, V_{DS}, \\quad \\overline{C}_{rss} = \\frac{1}{V_{DS}}\\int_0^{V_{DS}} C_{rss}(V)\\,dV\\ \\ (\\text{法二})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">体二极管导通损耗</p>
-              <MathBlock latex="P_{diode} = V_{sd} I_{m,off} (t_d - t_{ZVS}) f_{sw} N_{sw}" />
+              <MathBlock latex="P_{diode} = V_{sd} I_{m\\_off} (t_d - t_{ZVS}) f_{sw} N_{sw}" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">副边整流电流口径（中心抽头 / 全桥共用）</p>
-              <MathBlock latex="I_{s,sw} = \\frac{\\pi}{4} I_o, \\qquad N_{rect} = 2\\ (\\text{中心抽头}) \\ / \\ 4\\ (\\text{全波桥})" />
+              <MathBlock latex="I_{s\\_sw} = \\frac{\\pi}{4} I_o, \\qquad N_{rect} = 2\\ (\\text{中心抽头}) \\ / \\ 4\\ (\\text{全波桥})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">整流损耗（同步须乘 kT）</p>
-              <MathBlock latex="P_{rect} = N_{rect} I_{s,sw}^2 R_{ds(on)} k_T\ \ (\text{同步整流})" />
-              <MathBlock latex="P_{rect} = N_{rect} V_f \frac{I_o}{2}\ \ (\text{二极管整流；}V_f\text{ 取自设计参数})" />
+              <MathBlock latex="P_{rect} = N_{rect} I_{s\\_sw}^2 R_{ds(on)} k_T\\ \\ (\\text{同步整流})" />
+              <MathBlock latex="P_{rect} = N_{rect} V_f \\frac{I_o}{2}\\ \\ (\\text{二极管整流；}V_f\\text{ 取自设计参数})" />
             </div>
             <div className="p-4 rounded-lg border border-border bg-surface-elevated/30">
               <p className="text-text-muted text-xs uppercase tracking-wider mb-2">磁芯损耗（默认走手册法）</p>
-              <MathBlock latex="P_{core} = P_{cv} V_e k_{wave}\ \ (\text{手册法，默认})" />
-              <MathBlock latex="P_{core} = C_m f_{sw}^{\alpha} B_{peak}^{\beta} V_e\ \ (\text{Steinmetz 对照})" />
+              <MathBlock latex="P_{core} = P_{cv} V_e k_{wave}\\ \\ (\\text{手册法，默认})" />
+              <MathBlock latex="P_{core} = C_m f_{sw}^{\\alpha} B_{peak}^{\\beta} V_e\\ \\ (\\text{Steinmetz 对照})" />
             </div>
           </div>
 
           <MathBlock
-            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p,rms}^2 R_{dc,pri}\\left[1 + (f_{sw}/f_0)^2\\right]"
+            latex="B_{peak} = \\frac{V_p}{4 N_p A_e f_{sw}}, \\qquad P_{Cu} = I_{p\\_rms}^2 R_{dc\\_pri}\\left[1 + (f_{sw}/f_0)^2\\right]"
             label="磁密与原边铜损"
           />
 
           <MathBlock
-            latex="P_{res} = \\underbrace{I_{p,rms}^2 R_{dc,Lr}}_{\\text{Lr 铜损}} + \\underbrace{P_{cv,Lr} V_{e,Lr}}_{\\text{Lr 铁损（正弦，不乘 } k_{wave}\\text{）}} + \\underbrace{I_{p,rms}^2 R_{esr,Cr}}_{\\text{Cr 损耗}}"
+            latex="P_{res} = \\underbrace{I_{p\\_rms}^2 R_{dc\\_Lr}}_{\\text{Lr 铜损}} + \\underbrace{P_{cv\\_Lr} V_{e\\_Lr}}_{\\text{Lr 铁损（正弦，不乘 } k_{wave}\\text{）}} + \\underbrace{I_{p\\_rms}^2 R_{esr\\_Cr}}_{\\text{Cr 损耗}}"
             label="谐振元件损耗（三项）"
           />
 
           <HighlightBox type="warning">
             <strong>开关损耗的交叉时间 t<sub>cr</sub> 必须算，不能抄规格书的 t<sub>r</sub>/t<sub>f</sub>：</strong>
             规格书的 t<sub>r</sub>/t<sub>f</sub> 是<b>特定测试条件</b>下（如 V<sub>DD</sub>=400 V、I<sub>D</sub>≈5 A、R<sub>G</sub>=10 Ω、V<sub>GS</sub>=10 V）
-            测得的<b>漏极电流 10%↔90% 过渡时间</b>；而损耗积分 <InlineMath latex="\int v\,i\,dt" /> 需要的是
+            测得的<b>漏极电流 10%↔90% 过渡时间</b>；而损耗积分 <InlineMath latex="\\int v\\,i\\,dt" /> 需要的是
             <b>V<sub>DS</sub> 与 I<sub>D</sub> 重叠（米勒平台）的时长</b> —— 测试条件不同、物理量也不是同一个。
             正确做法是按栅极电荷守恒算：米勒平台期间栅压恒定在 V<sub>plat</sub>，栅极电流
-            <InlineMath latex="I_g = \Delta V_{gate}/R_g" />，移走平台电荷 Q<sub>plat</sub> 所需时间
-            <InlineMath latex="t_{cr} = Q_{plat} R_g / \Delta V_{gate}" />。
+            <InlineMath latex="I_g = \\Delta V_{gate}/R_g" />，移走平台电荷 Q<sub>plat</sub> 所需时间
+            <InlineMath latex="t_{cr} = Q_{plat} R_g / \\Delta V_{gate}" />。
             其中 R<sub>g</sub> 取<b>回路总电阻</b>（器件内部 R<sub>G</sub> + 外部 R<sub>g</sub> + 驱动阻抗），
             不是规格书测试条件里的那个 10 Ω。
             <br />
@@ -745,8 +745,8 @@ export default function Derivations() {
             且其测试电压（如 V<sub>DD</sub> = 520 V）通常贴近实际母线 ⇒ 误差最小。
             <br />
             <b>法二 · Crss 积分法（备选）：</b>
-            <InlineMath latex="Q_{plat} = \bar{C}_{rss}\, V_{DS}" />，其中
-            <InlineMath latex="\bar{C}_{rss} = \frac{1}{V_{DS}}\int_0^{V_{DS}} C_{rss}(V)\,dV" />
+            <InlineMath latex="Q_{plat} = \\bar{C}_{rss}\\, V_{DS}" />，其中
+            <InlineMath latex="\\bar{C}_{rss} = \\frac{1}{V_{DS}}\\int_0^{V_{DS}} C_{rss}(V)\\,dV" />
             是<b>对 Crss(V) 曲线积分后再除以电压</b>得到的等效电容。
             <br />
             ⚠️ <b>法二最容易错的地方：用「某一点的 Crss」代替「积分平均」。</b>
@@ -762,7 +762,7 @@ export default function Derivations() {
                   <tr>
                     <th className="text-left py-1 pr-3 font-medium">取法</th>
                     <th className="text-left py-1 pr-3 font-medium">平台电荷 Q<sub>plat</sub></th>
-                    <th className="text-left py-1 pr-3 font-medium">关断交叉时间 t<sub>cr,off</sub></th>
+                    <th className="text-left py-1 pr-3 font-medium">关断交叉时间 t<sub>cr_off</sub></th>
                   </tr>
                 </thead>
                 <tbody className="font-mono text-text-secondary">
@@ -792,13 +792,13 @@ export default function Derivations() {
             <br />
             <b>结论</b>：两种方法<b>都能用</b>，前提是「法二必须真的做积分」。
             有 Q<sub>gd</sub> 时优先用它（厂商已替你积分且条件贴近实际）；只有电容曲线、没有栅荷曲线时，
-            才自己按曲线积分求 <InlineMath latex="\bar{C}_{rss}" />，并用法一或 Q<sub>g</sub> 量级复核。
+            才自己按曲线积分求 <InlineMath latex="\\bar{C}_{rss}" />，并用法一或 Q<sub>g</sub> 量级复核。
             设计工具页的「平台电荷取法」可切换，并会把两法的 Q 与 t<sub>cr</sub> 并列显示，便于互校。
           </HighlightBox>
 
           <HighlightBox type="warning">
             <strong>整流与谐振元件损耗的三处易错口径：</strong>
-            ① <b>N<sub>rect</sub> 与 I<sub>s,sw</sub> 必须同一口径</b> —— I<sub>s,sw</sub> 是「每个整流器件整周期的 RMS」，
+            ① <b>N<sub>rect</sub> 与 I<sub>s_sw</sub> 必须同一口径</b> —— I<sub>s_sw</sub> 是「每个整流器件整周期的 RMS」，
             两种拓扑下都等于 (π/4)·I<sub>o</sub>：中心抽头绕组本身只导通半波（RMS = π·I<sub>o</sub>/4，直接就是每管值），
             全波桥的<b>绕组</b> RMS 是 π·I<sub>o</sub>/(2√2)，但每个管只导半周 ⇒ 再除 √2 后同样落到 π·I<sub>o</sub>/4。
             若把中心抽头按「绕组 RMS 再除一次 √2」处理，功率会<b>整整少算一半</b>；
@@ -810,11 +810,11 @@ export default function Derivations() {
           <HighlightBox type="warning">
             <strong>Coss 损耗的电容口径：</strong>
             硬开关（非 ZVS）时 Coss 储能全部在开通瞬间由沟道耗散，
-            <b>必须用能量相关等效电容 C<sub>oss,er</sub>（≡ 规格书 Co(er)）</b>：
-            <InlineMath latex="E_{oss} = \frac{1}{2} C_{oss,er} V_{DS}^2" />
-            是 C<sub>oss,er</sub> 的<b>定义式</b>，不需要任何「非线性修正系数」。
+            <b>必须用能量相关等效电容 C<sub>oss_er</sub>（≡ 规格书 Co(er)）</b>：
+            <InlineMath latex="E_{oss} = \\frac{1}{2} C_{oss\\_er} V_{DS}^2" />
+            是 C<sub>oss_er</sub> 的<b>定义式</b>，不需要任何「非线性修正系数」。
             用时间口径的 Co(tr)、或规格书标称 Coss（多为 0 V 值）都会算错。
-            本站 C<sub>oss,er</sub> 取自<b>设计参数</b>（单一来源，与死区时间 t<sub>d</sub> 同一做法）。
+            本站 C<sub>oss_er</sub> 取自<b>设计参数</b>（单一来源，与死区时间 t<sub>d</sub> 同一做法）。
           </HighlightBox>
 
           <HighlightBox type="warning">
@@ -920,7 +920,7 @@ export default function Derivations() {
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">匝比（半桥）</td>
-                  <td className="px-4 py-3"><InlineMath latex="n = \\frac{V_{in,nom}}{2(V_o + V_f)}" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="n = \\frac{V_{in\\_nom}}{2(V_o + V_f)}" /></td>
                   <td className="px-4 py-3">考虑整流压降</td>
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
@@ -945,7 +945,7 @@ export default function Derivations() {
                 </tr>
                 <tr className="hover:bg-surface-elevated/30">
                   <td className="px-4 py-3 text-text-primary font-medium">ZVS 能量</td>
-                  <td className="px-4 py-3"><InlineMath latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2" /></td>
+                  <td className="px-4 py-3"><InlineMath latex="\\frac{1}{2} L_m I_{m\\_off}^2 \\geq \\frac{1}{2} (2C_{oss\\_er} + C_j) V_{in\\_max}^2" /></td>
                   <td className="px-4 py-3">确保零电压开通</td>
                 </tr>
               </tbody>

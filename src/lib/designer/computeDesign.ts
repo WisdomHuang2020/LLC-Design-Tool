@@ -95,8 +95,8 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
 
   // Qmax2：ZVS 条件（死区时间）——「死区内把 Coss 充放电刚好用完 td」对应的 Q。
   // 按 v2.10.100 与自制计算书 V02 核对后的定论（书里叫「死区限制得出最大Q值」）：
-  //   死区内励磁电流  I_{m,dead} = (Vin/2)/(4·f_max·L_m) = Vin/(γ·f_max·L_m)
-  //   死区所需时间    t_dead = C_{oss,zvs}·Vin / I_{m,dead} = γ·f_max·L_m·C_{oss,zvs}
+  //   死区内励磁电流  I_{m_dead} = (Vin/2)/(4·f_max·L_m) = Vin/(γ·f_max·L_m)
+  //   死区所需时间    t_dead = C_{oss_zvs}·Vin / I_{m_dead} = γ·f_max·L_m·C_{oss_zvs}
   //   ★ 上式分子分母的 Vin 精确相消 ⇒ t_dead 与输入电压无关，**不能用 2π·f·Lm·C 之外的 Vin 因子**。
   //     （旧实现写成 (k+1)Vin_min²/(16 f_max²k²C Vin_max²)：反推所需死区 4.6 µs ≫ td=300 ns，
   //      即那条式根本没有编码死区约束，数值虚大 15 倍、从不成为约束，属错误式。）
@@ -168,9 +168,9 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   const zvsMargin = er >= ec
 
   // ZVS 时间验证：死区内是否能完成 Coss_zvs 充放电，需要 t_ZVS ≤ td
-  //   t_ZVS = C_{oss,zvs}·Vin / I_{m,off}(Vin) = γ·f_max·Lm·C_{oss,zvs}
+  //   t_ZVS = C_{oss_zvs}·Vin / I_{m_off}(Vin) = γ·f_max·Lm·C_{oss_zvs}
   // ★ 分子分母都是同一个 Vin 下的量，Vin 精确相消 ⇒ t_ZVS **与输入电压无关**。
-  //   旧实现写成 C_{oss,total}·Vin_max / I_{m,off}(Vin_min)：分子取最高输入、分母取最低输入，
+  //   旧实现写成 C_{oss_total}·Vin_max / I_{m_off}(Vin_min)：分子取最高输入、分母取最低输入，
   //   两个不同工况混用，被虚增 Vin_max/Vin_min 倍（默认 1.105 倍），且误用了能量口径电容。
   // 与计算书 V02 复核：γ=8、f_max=111.803 kHz、Lm=1652.4 µH、Coss_zvs=170 pF
   //   ⇒ 本站 251.248 ns vs 计算书 T_d_max 251.248 ns ✓（逐位一致）

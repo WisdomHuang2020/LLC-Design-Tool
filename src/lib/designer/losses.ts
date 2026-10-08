@@ -106,7 +106,7 @@ export function calculateLosses(calc: CalculatedData, lp: LossParameters): LossR
   const fsw = calc.fsw
   const ipRms = calc.ipRms
   const ipPeak = ipRms * Math.sqrt(2)
-  // 关断时刻励磁电流峰值 I_{m,off}：关断损耗与死区体二极管损耗的正确电流取值。
+  // 关断时刻励磁电流峰值 I_{m_off}：关断损耗与死区体二极管损耗的正确电流取值。
   // 优先用引擎算好的 calc.imOff；旧存档（本地存储）可能缺该字段，用同一公式兜底重算。
   const imOff =
     Number.isFinite(calc.imOff) && calc.imOff > 0

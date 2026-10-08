@@ -924,16 +924,16 @@ export default function Operation() {
                   ZVS 能量条件（半桥）：
                 </p>
                 <MathBlock
-                  latex="\\frac{1}{2} L_m I_{m,off}^2 \\geq \\frac{1}{2} (2C_{oss,er} + C_j) V_{in,max}^2"
+                  latex="\\frac{1}{2} L_m I_{m\\_off}^2 \\geq \\frac{1}{2} (2C_{oss\\_er} + C_j) V_{in\\_max}^2"
                   important
                 />
                 <p className="text-text-secondary text-xs mt-1 leading-relaxed">
-                  其中 Lm 为励磁电感，I<sub>m,off</sub> 为关断时刻的励磁电流峰值，
-                  V<sub>in,max</sub> 为最高输入电压（最恶劣工况）；右边是开关节点等效总输出电容的储能
-                  —— 半桥时为 2·C<sub>oss,er</sub> + C<sub>j</sub>（两只开关管的输出电容之和 + 变压器/PCB 寄生），
-                  <b>必须用能量相关等效电容 C<sub>oss,er</sub>（≡ 规格书 Co(er)）</b>，
+                  其中 Lm 为励磁电感，I<sub>m_off</sub> 为关断时刻的励磁电流峰值，
+                  V<sub>in_max</sub> 为最高输入电压（最恶劣工况）；右边是开关节点等效总输出电容的储能
+                  —— 半桥时为 2·C<sub>oss_er</sub> + C<sub>j</sub>（两只开关管的输出电容之和 + 变压器/PCB 寄生），
+                  <b>必须用能量相关等效电容 C<sub>oss_er</sub>（≡ 规格书 Co(er)）</b>，
                   <span className="text-primary-light">这与本站「公式推导」页的 ZVS 能量判据完全一致</span>。
-                  关断时刻励磁电流峰值 I<sub>m,off</sub> = V<sub>in,min</sub> / (8 f<sub>max</sub> Lm)（半桥）。
+                  关断时刻励磁电流峰值 I<sub>m_off</sub> = V<sub>in_min</sub> / (8 f<sub>max</sub> Lm)（半桥）。
                 </p>
               </div>
             </div>
