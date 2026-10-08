@@ -60,7 +60,7 @@ export const SYMBOL_GROUPS: SymbolGroup[] = [
       { symbol: 'Mbnd', name: '感性区增益上限', unit: '-', desc: '感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值', typical: '数值求解' },
       { symbol: 'Qmax1', name: '增益能力约束 Q', unit: '-', desc: '本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；表单可切换为【峰值判据】Mpeak = Gmax —— 该判据数值更宽松，但工作点已落在容性区，不推荐', typical: '0.3 ~ 1.0' },
       { symbol: 'Qmax2', name: '死区时间约束 Q', unit: '-', desc: '死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss_tr + Cj（时间口径）', typical: '0.3 ~ 1.5' },
-      { symbol: 'Qmax3', name: 'ZVS 能量校核 Q（空载 / 轻载）', unit: '-', desc: '由励磁电感储能 ≥ 结电容总能量（2Coss_er + Cj：两只管之和 + 寄生）决定，Coss_er 为单管值。⚠️ 它是【空载/轻载】条件的独立校核，不参与 Qmax = min(Qmax1,Qmax2) 的取小', typical: '数值求解' },
+      { symbol: 'Qmax3', name: 'ZVS 能量约束 Q（空载 / 轻载）', unit: '-', desc: '由励磁电感储能 ≥ 结电容总能量（2Coss_er + Cj：两只管之和 + 寄生）决定，Coss_er 为单管值。⚠️ 与 Qmax1/Qmax2 同属对 Q 的上限约束，参与 Qmax = min(三者)；频率越高它越紧（Qmax3 ∝ 1/f_max²）', typical: '数值求解' },
       { symbol: 'Er', name: '可提供的 ZVS 储能', unit: 'J', desc: '关断时刻励磁电感储存的能量 Er = ½·Lm·Im_off²（用 Vin_min 求 Im_off，取最坏）', typical: '数十 μJ' },
       { symbol: 'Ec', name: 'ZVS 所需能量', unit: 'J', desc: '把开关节点电容 C总 从 0 充/放到 Vin 所需能量 Ec = ½·(2·Coss_er + Cj)·Vin_max²（用 Vin_max，取最坏）；Er ≥ Ec 才够 ZVS', typical: '数 μJ ~ 数十 μJ' },
       { symbol: 'fmin', name: '调频下限（满载低输入）', unit: 'Hz', desc: '满载增益曲线与 M = Gmax 的交点频率 —— 最低母线满载是最坏工况，需要最低频率', typical: '数十 ~ 百余 kHz' },

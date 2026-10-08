@@ -500,8 +500,8 @@ export default function Derivations() {
           </p>
 
           <p className="text-text-secondary mt-4 mb-2">
-            Q<sub>max</sub> 由两条<b>设计约束</b>（Q<sub>max1</sub> 增益能力、Q<sub>max2</sub> 死区时间）取最严者得到；
-            第三个 ZVS 能量式（Q<sub>max3</sub>）是<b>空载 / 轻载校核</b>、不参与取小。下面三个式子（<b>前两个进 min、第三个仅作校核</b>）：
+            Q<sub>max</sub> 由<b>三条上限</b>（Q<sub>max1</sub> 增益能力、Q<sub>max2</sub> 死区时间、Q<sub>max3</sub> 空载 / 轻载 ZVS 能量）
+            <b>取最严者</b>得到 —— 三条都是对 Q 的上限，没有"哪条可以不算"：
           </p>
 
           <MathBlock
@@ -516,23 +516,26 @@ export default function Derivations() {
 
           <MathBlock
             latex="Q_{max3} = \\frac{2\\pi f_{r1}\\,V_{in\\_min}^2}{\\gamma^2\\,f_{max}^2\\,k\\,(2C_{oss\\_er}+C_j)\\,V_{in\\_max}^2\\,R_{ac}}"
-            label="约束三 · ZVS 能量校核（空载 / 轻载条件，不参与 Q_max 取小；γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss_er + Cj）"
+            label="约束三 · ZVS 能量约束（空载 / 轻载条件；γ = 8 半桥 / 4 全桥；总电容按能量口径写开 = 2Coss_er + Cj）"
           />
 
           <MathBlock
-            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}), \\qquad Q_s = m \\cdot Q_{max}"
+            latex="Q_{max} = \\min(Q_{max1}, Q_{max2}, Q_{max3}), \\qquad Q_s = m \\cdot Q_{max}"
             important
             label="最大允许 Q 与设计 Q（m 为裕量系数，默认 0.857）"
           />
 
           <p className="text-text-secondary text-sm mt-2 mb-2">
-            <b>Q<sub>max</sub> 为什么只取 Q<sub>max1</sub>、Q<sub>max2</sub>：</b>
-            Q<sub>max1</sub>（增益能力）与 Q<sub>max2</sub>（死区时间）都是<b>设计点（满载）</b>的约束；
-            而 <b>Q<sub>max3</sub> 是空载 / 轻载的 ZVS 能量条件</b>（E<sub>r</sub> ≥ E<sub>c</sub>：用 f<sub>max</sub>
-            即空载频率，并以 V<sub>in_min</sub> 求励磁电流、V<sub>in_max</sub> 求所需电荷，取最坏组合），
-            它不属于设计点，故<b>不作设计约束</b>，只作为<b>独立校核</b>（其结论即 E<sub>r</sub> ≥ E<sub>c</sub> 的判定）。
-            对物理上成立的输入（Coss_er ≤ Coss_tr）恒有 Q<sub>max3</sub> ≳ 3·Q<sub>max2</sub>
-            ⇒ 它从不成为瓶颈，移出 min 不改变任何数值，只是把语义摆正。
+            <b>三条上限谁最严，取决于「死区占开关周期的比例」：</b>
+            三条都对 Q 设上限 —— Q<sub>max1</sub> 保增益能力、Q<sub>max2</sub> 保死区内完成 Coss 充放电、
+            Q<sub>max3</sub> 保空载 / 轻载的 ZVS 能量（E<sub>r</sub> ≥ E<sub>c</sub>：用 f<sub>max</sub> 即空载频率，
+            并以 V<sub>in_min</sub> 求励磁电流、V<sub>in_max</sub> 求所需电荷，取最坏组合）。
+            Q<sub>max3</sub> 与 Q<sub>max2</sub> 谁更紧，由
+            <b>Q<sub>max3</sub>/Q<sub>max2</sub> = (V<sub>in_min</sub>/V<sub>in_max</sub>)²·(C<sub>总</sub>时间口径 / C<sub>总</sub>能量口径) / (γ·f<sub>max</sub>·t<sub>d</sub>)</b>
+            决定：死区 t<sub>d</sub> 越小该比值越大（Q<sub>max3</sub> 更松、由 Q<sub>max2</sub> 主导）；
+            但<b>频率越高 Q<sub>max3</sub> 越紧</b>（Q<sub>max3</sub> ∝ 1/f<sub>max</sub>²，而 Q<sub>max2</sub> ∝ 1/f<sub>max</sub>），
+            当 <b>f<sub>r</sub>·t<sub>d</sub> ≳ 0.09</b>（死区约占开关周期 9% 以上）时它即成为最紧约束
+            —— 高频设计（如 500 kHz）常见；本站默认算例（100 kHz、t<sub>d</sub>/T ≈ 3%）则由 Q<sub>max2</sub> 生效。
           </p>
 
           <HighlightBox type="warning">
@@ -582,7 +585,7 @@ export default function Derivations() {
             <ParamRow symbol="Mbnd" name="感性区增益上限" unit="-" description="感容分界点（Im Zin = 0）处的增益；感性区内 M 随 fn 单调下降，此即真正可达的上限，判「够不够」须用此值" typical="数值求解" />
             <ParamRow symbol="Qmax1" name="增益能力约束 Q" unit="-" description="本站默认取【分界判据】：满足 Mbnd(k,Q) = Gmax 的最大 Q（数值二分，与教材闭式差 <1e-12）；表单可切换为【峰值判据】Mpeak = Gmax —— 该判据数值更宽松，但工作点已落在容性区，不推荐" typical="0.3 ~ 1.0" />
             <ParamRow symbol="Qmax2" name="死区时间约束 Q" unit="-" description="死区内刚好完成 C总 充放电（t_dead = td）对应的 Q；C总 = 2·Coss_tr + Cj（时间口径）" typical="0.3 ~ 1.5" />
-            <ParamRow symbol="Qmax3" name="ZVS 能量校核 Q（空载 / 轻载）" unit="-" description="由励磁电感储能 ≥ 结电容总能量（2Coss_er + Cj：两只管之和 + 寄生）决定，Coss_er 为单管值。⚠️ 它是【空载/轻载】条件的独立校核，不参与 Qmax = min(Qmax1,Qmax2) 的取小" typical="数值求解" />
+            <ParamRow symbol="Qmax3" name="ZVS 能量约束 Q（空载 / 轻载）" unit="-" description="由励磁电感储能 ≥ 结电容总能量（2Coss_er + Cj：两只管之和 + 寄生）决定，Coss_er 为单管值。⚠️ 与 Qmax1/Qmax2 同属对 Q 的上限约束，参与 Qmax = min(三者)；频率越高它越紧（Qmax3 ∝ 1/f_max²）" typical="数值求解" />
             <ParamRow symbol="Er" name="可提供的 ZVS 储能" unit="J" description="关断时刻励磁电感储存的能量 Er = ½·Lm·Im_off²（用 Vin_min 求 Im_off，取最坏）" typical="数十 μJ" />
             <ParamRow symbol="Ec" name="ZVS 所需能量" unit="J" description="把开关节点电容 C总 从 0 充/放到 Vin 所需能量 Ec = ½·(2·Coss_er + Cj)·Vin_max²（用 Vin_max，取最坏）；Er ≥ Ec 才够 ZVS" typical="数 μJ ~ 数十 μJ" />
             <ParamRow symbol="fmin" name="调频下限（满载低输入）" unit="Hz" description="满载增益曲线与 M = Gmax 的交点频率 —— 最低母线满载是最坏工况，需要最低频率" typical="数十 ~ 百余 kHz" />

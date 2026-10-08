@@ -26,7 +26,7 @@ export interface SuggestionInputs {
   qmax1: number
   qmax2: number
   qmax3: number
-  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2)（qmax3 是空载 ZVS 能量校核，不进设计约束），默认 0.95 */
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)（三者均对 Q 设上限），默认 0.95 */
   qMargin: number
   gmaxEmpty: number
   zvsMargin: boolean
@@ -90,7 +90,7 @@ export interface CalculatedData {
    * ⚠️ 旧存档（本地存储）可能缺此字段 —— 读取处一律写成 `=== 'peak' ? 'peak' : 'boundary'` 兜底。
    */
   qmax1Criterion?: 'boundary' | 'peak'
-  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2)（qmax3 为空载 ZVS 能量校核，不进设计约束）；旧存档可能缺此字段，用时应兜底 0.95 */
+  /** Q 裕量系数：q = qMargin · min(qmax1,qmax2,qmax3)；旧存档可能缺此字段，用时应兜底 0.95 */
   qMargin: number
   gMin: number
   gMax: number

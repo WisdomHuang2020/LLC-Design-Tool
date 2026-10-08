@@ -21,7 +21,7 @@ export interface DesignParameters {
   ioMax: number
   k: number
   /**
-   * Q 裕量系数 m ∈ (0,1]，实际设计 Q = m · Qmax（Qmax = min(Qmax1,Qmax2)；Qmax3 为空载 ZVS 能量校核，不参与取小）。
+   * Q 裕量系数 m ∈ (0,1]，实际设计 Q = m · Qmax（Qmax = min(Qmax1,Qmax2,Qmax3)，三者均对 Q 设上限）。
    * m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量更大；
    * 代价是 Zr=Q·Rac 更小 ⇒ Lr 更小、Cr 更大，励磁环流占比与导通损耗上升。
    * 默认 0.95。

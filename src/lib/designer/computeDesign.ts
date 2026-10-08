@@ -122,13 +122,18 @@ export function computeDesign(form: DesignParameters, lossParams: LossParameters
   // 裕量系数 m ∈ (0,1]：m 越小 → Q 越小 → 峰值增益能力更强、ZVS 能量与 ZVS 时间裕量都更大
   // （Er ∝ 1/Lm ∝ 1/Q，tZVS ∝ Lm ∝ Q）；代价是 Zr = Q·Rac 更小 ⇒ Lr 更小、Cr 更大，
   // 励磁环流占比与导通损耗上升。默认 m = 0.95。
-  // 设计约束的分工：qmax1 → 增益能力（感性区够不够 Gmax）；qmax2 → 死区时间（t_dead ≤ td）。
-  // ⚠️ **qmax3 不进 min**：它是「空载 / 轻载 ZVS 能量（Er ≥ Ec）」的**校核项**，不是设计点（满载）的约束，
-  //    由下方的 zvsMargin（Er ≥ Ec）单独给出结论。实测：只要输入物理（Coss_er ≤ Coss_tr），
-  //    恒有 qmax3/qmax2 ≥ (Vin_min/Vin_max)²/(γ·f_max·td) ≈ 3 > 1 ⇒ 把它移出 min 在参数域内是**数值零影响**。
+  // 设计约束：三条**都**是对 Q 的上限，取最严者。
+  //   qmax1 → 增益能力（感性区够不够 Gmax）；qmax2 → 死区时间（t_dead ≤ td）；
+  //   qmax3 → 空载 / 轻载 ZVS 能量（Er ≥ Ec）。
+  // ⚠️ 三条里没有"永远不算数"的那条：qmax3 与 qmax2 的相对大小由
+  //   qmax3/qmax2 = (Vin_min/Vin_max)² · (C总_时间口径 / C总_能量口径) / (γ·f_max·td) 决定 ——
+  //   · td 越小该比值越大（Qmax3 更松，Qmax2 主导）；
+  //   · **频率越高 qmax3 越紧**（qmax3 ∝ 1/f_max²、qmax2 ∝ 1/f_max）；
+  //   · 判据：γ·f_max·td·(Vin_max/Vin_min)² > C总_时间/C总_能量（≈ f_r·td ≳ 0.09，即死区占周期约 9% 以上）
+  //     时 qmax3 转为最紧约束 —— 高频设计（如 500 kHz）常见，实测 fsw 500 kHz 时 qmax3=0.560 < qmax2=0.918。
   // qmax2 生效时 t_dead = m·td ≤ td 恒成立，后续 zvsTimeOk 退化为一致性复核；
   // 若 zvsTimeOk 报错（qmax2 未生效的情形），正确做法仍是**调小** m（而非调大）。
-  const qmax = Math.max(0.001, Math.min(qmax1, qmax2))
+  const qmax = Math.max(0.001, Math.min(qmax1, qmax2, qmax3))
   const qMargin = Number.isFinite(form.qMargin)
     ? Math.min(1, Math.max(0.05, form.qMargin))
     : 0.95 // 旧存档兜底（该字段缺失的年代默认 0.95）；当前默认见 DesignContext.defaultParams

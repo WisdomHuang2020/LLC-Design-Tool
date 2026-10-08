@@ -67,7 +67,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
           <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
-          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1, Qmax2)；Qmax3 为空载 ZVS 能量校核、不参与取小）；等价定义 Q = Zr / Rac" />
+          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1, Qmax2, Qmax3)，三者均对 Q 设上限）；等价定义 Q = Zr / Rac" />
           <ResultItem label="电感比 k" value={calculated.k.toFixed(3)} unit="" formula="k = Lm / Lr" />
           <ResultItem
             label="所需增益 Gmin"
@@ -176,7 +176,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
             }
           />
           <ResultItem label="Qmax2（死区时间约束）" value={Number.isFinite(calculated.qmax2) ? calculated.qmax2.toFixed(3) : '—'} unit="" formula="死区内刚好完成 C总 充放电（t_dead = γ·fmax·Lm·C总 = td）对应的 Q：Qmax2 = 2π·fr·td/(γ·fmax·k·Rac·C总)，C总 = 2·Coss_tr + Cj（时间口径，Coss_tr ≡ 规格书 Co(tr)）" />
-          <ResultItem label="Qmax3（ZVS 能量校核 · 空载/轻载）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量：½·Lm·Im_off² ≥ ½·(2Coss_er + Cj)·Vin_max² —— 总电容为两只管之和（2Coss_er）加寄生 Cj，Coss_er ≡ 规格书 Co(er) 单管值。⚠️ 它是【空载/轻载】条件的独立校核，不参与 Qmax = min(Qmax1,Qmax2) 的取小" />
+          <ResultItem label="Qmax3（ZVS 能量约束 · 空载/轻载）" value={Number.isFinite(calculated.qmax3) ? calculated.qmax3.toFixed(3) : '—'} unit="" formula="励磁电感储能 ≥ 结电容总能量：½·Lm·Im_off² ≥ ½·(2Coss_er + Cj)·Vin_max² —— 总电容为两只管之和（2Coss_er）加寄生 Cj，Coss_er ≡ 规格书 Co(er) 单管值。⚠️ 它是【空载/轻载】条件的上限约束，参与 Qmax = min(Qmax1, Qmax2, Qmax3)；频率越高它越紧（∝1/f_max²）" />
           <ResultItem label="等效AC电阻 Rac" value={calculated.rac.toFixed(2)} unit="Ω" formula="Rac = 8n²Vout²/(π²Po)" />
         </div>
 

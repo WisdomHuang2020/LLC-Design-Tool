@@ -35,25 +35,27 @@ export function generateSuggestions(
     s.push({ text: `电感比k=${k.toFixed(3)}满足空载降压约束（kmax=${kMax.toFixed(3)}）：Region 1 空载增益下限 k/(k+1)=${gmaxEmpty.toFixed(3)} ≤ Gmin=${mRequiredMin.toFixed(3)}，裕量良好。`, level: 'good' })
   }
 
-  // 2. Qmax 对比：**设计约束**（Qmax1 增益能力 / Qmax2 死区时间）里哪条最紧
-  //    ⚠️ Qmax3 只是「空载 / 轻载 ZVS 能量」的**校核项**，不参与设计 Q 的取小（见 computeDesign.ts）。
+  // 2. Qmax 对比：三条上限（增益能力 / 死区时间 / 空载 ZVS 能量）里哪条最紧
+  //    ⚠️ 三条**都**参与取小，没有"永远不算数"的一条：qmax3 与 qmax2 谁更紧取决于
+  //       (Vin_min/Vin_max)²·(C总_时间/C总_能量)/(γ·f_max·td) —— 频率越高 qmax3 越紧（∝1/f_max²）。
   //    ⚠️ Qmax1 分支只作**信息**（good）：「Qmax1 最紧」在增益受限的设计里几乎是必然结果，本身不需要动作；
   //       它的后果（增益裕量够不够）由第 4 条按 Mbnd 判定，避免同一件事报两次、且报警无对应动作。
-  //       Qmax2 最紧时能给出具体杠杆（死区时间 / Lm），故保留 warn。
-  const qmaxMin = Math.min(qmax1, qmax2)
+  //       Qmax2 / Qmax3 最紧时能给出具体杠杆（死区时间、Lm、器件 Coss），故保留 warn。
+  const qmaxMin = Math.min(qmax1, qmax2, qmax3)
   const critLabel = params.qmax1Criterion === 'peak' ? '峰值判据（备选，工作点落在容性区）' : '感容分界判据'
   if (qmax1 === qmaxMin) {
     s.push({
-      text: `设计约束中最紧的是 Qmax1=${fmt(qmax1)}（${critLabel}）：瓶颈在增益能力（ZVS 死区侧 Qmax2=${fmt(qmax2)} 宽裕）。`,
+      text: `三条上限中最紧的是 Qmax1=${fmt(qmax1)}（${critLabel}）：瓶颈在增益能力（ZVS 死区侧 Qmax2=${fmt(qmax2)}、空载能量侧 Qmax3=${fmt(qmax3)} 均宽裕）。`,
       level: 'good',
     })
   } else if (qmax2 === qmaxMin) {
-    s.push({ text: `Qmax2(ZVS死区限制)=${qmax2.toFixed(3)} 为设计约束中最紧者，ZVS 时间条件是设计瓶颈。建议增大死区时间或减小 Lm。`, level: 'warn' })
+    s.push({ text: `Qmax2(ZVS死区限制)=${qmax2.toFixed(3)} 为最紧约束，ZVS 时间条件是设计瓶颈。建议增大死区时间或减小 Lm。`, level: 'warn' })
+  } else {
+    s.push({ text: `Qmax3(空载ZVS能量限制)=${qmax3.toFixed(3)} 为最紧约束，空载能量条件是设计瓶颈。建议增大死区时间、选用低 Coss 器件，或降低开关频率。`, level: 'warn' })
   }
-  const zvsEnergyChkOk = qmax3 >= qmaxMin
   s.push({
-    text: `Qmax 分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)} ⇒ Qmax = min(Qmax1,Qmax2) = ${fmt(qmaxMin)}；另 Qmax3（空载 ZVS 能量校核）=${fmt(qmax3)}，${zvsEnergyChkOk ? '高于设计上限、校核通过' : '⚠️ 低于设计上限，极端轻载可能失去 ZVS'}。裕量系数 m=${margin.toFixed(2)} → 设计 Q=${q.toFixed(3)}。`,
-    level: zvsEnergyChkOk ? 'good' : 'warn',
+    text: `Qmax 分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)} ⇒ Qmax = min(三者) = ${fmt(qmaxMin)}；裕量系数 m=${margin.toFixed(2)} → 设计 Q=${q.toFixed(3)}。`,
+    level: 'good',
   })
 
   // 3. Q 值：本流程里 Q 不是自由变量（Q = m·Qmax），此处只陈述其连带效应，不预判结果。
