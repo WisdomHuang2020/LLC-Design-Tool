@@ -4,6 +4,7 @@
 
 - 线上地址：https://wisdomhuang2020.github.io/LLC-Design-Tool/
 - 仓库地址：git@github.com:WisdomHuang2020/LLC-Design-Tool.git
+- 个人网站：https://www.power-knowledge.tech/
 
 ## 功能
 
