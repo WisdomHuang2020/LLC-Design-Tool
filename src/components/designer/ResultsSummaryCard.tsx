@@ -67,7 +67,7 @@ export default function ResultsSummaryCard({ calculated, td, collapsed, onToggle
           <ResultItem label="谐振电感 Lr" value={(calculated.lr * 1e6).toFixed(2)} unit="μH" formula="Lr = Zr / (2π·fr)" />
           <ResultItem label="谐振电容 Cr" value={(calculated.cr * 1e9).toFixed(2)} unit="nF" formula="Cr = 1/(2π·fr·Zr)" />
           <ResultItem label="励磁电感 Lm" value={(calculated.lm * 1e6).toFixed(2)} unit="μH" formula="Lm = k·Lr" />
-          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1~3)）；等价定义 Q = Zr / Rac" />
+          <ResultItem label="品质因数 Q" value={calculated.q.toFixed(3)} unit="" formula="Q = m · Qmax（满载，Qmax = min(Qmax1, Qmax2)；Qmax3 为空载 ZVS 能量校核、不参与取小）；等价定义 Q = Zr / Rac" />
           <ResultItem label="电感比 k" value={calculated.k.toFixed(3)} unit="" formula="k = Lm / Lr" />
           <ResultItem
             label="所需增益 Gmin"

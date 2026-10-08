@@ -100,7 +100,7 @@ export const SYMBOL_GROUPS: SymbolGroup[] = [
   {
     group: '电容口径',
     rows: [
-      { symbol: 'Coss_tr', name: '时间相关等效输出电容（≡ Co(tr)）', unit: 'pF', desc: '单管值。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量', typical: '查规格书 Co(tr)' },
+      { symbol: 'Coss_tr', name: '时间相关等效输出电容（≡ Co(tr)，也写作 Coss_eq）', unit: 'pF', desc: '单管值。与 Coss_eq、规格书 Co(tr) 是同一个量的三种写法。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量', typical: '查规格书 Co(tr)' },
       { symbol: 'Coss_er', name: '能量相关等效输出电容（≡ Co(er)）', unit: 'pF', desc: '单管值。由 Coss(V) 曲线积分得到：Coss_er = (2/V²)·∫Coss·v dv（按 v 加权，偏向高压段）。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss_er·V²，定义式无需修正系数）。恒有 Coss_er < Coss_tr', typical: '查规格书 Co(er)' },
       { symbol: 'Cj', name: 'PCB / 变压器寄生电容', unit: 'pF', desc: '经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容', typical: '50 ~ 150 pF' },
       { symbol: 'C总', name: '死区时间用总电容', unit: 'pF', desc: 'C总 = 2·Coss_tr + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss_er + Cj，两者不是同一个电容', typical: '数值求解' },

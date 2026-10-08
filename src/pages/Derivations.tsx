@@ -411,8 +411,9 @@ export default function Derivations() {
 
           <HighlightBox type="info">
             <strong>三个容易混淆的 Coss 口径（选用前必读）：</strong>
-            ① <b>Coss_tr ≡ 规格书 Co(tr)</b>（时间/电荷相关等效）：恒流充电下充到 V<sub>DS</sub> 所需
-            <b>电荷相同</b>（故时间也相同），对应真实 Q<sub>oss</sub>(V)；
+            ① <b>Coss_tr ≡ Coss_eq ≡ 规格书 Co(tr)</b>（<b>同一个量的三种写法</b>：本站符号写作
+            <b>Coss_tr</b>、等价写法 <b>Coss_eq</b>（部分规格书/计算书如此写）、规格书符号 <b>Co(tr)</b>）：
+            恒流充电下充到 V<sub>DS</sub> 所需<b>电荷相同</b>（故时间也相同），对应真实 Q<sub>oss</sub>(V)；
             <b>只用于死区的电荷/时间约束</b>（本站 Q<sub>max2</sub> 与 t<sub>ZVS</sub>）。
             ② <b>Coss_er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
             用于<b>能量型判据与损耗</b>（本站 E<sub>r</sub> ≥ E<sub>c</sub> 与硬开关 Coss 损耗
@@ -441,7 +442,7 @@ export default function Derivations() {
           </p>
 
           <ParamTable>
-            <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
+            <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)，也写作 Coss_eq）" unit="pF" description="单管值。与 Coss_eq、规格书 Co(tr) 是同一个量的三种写法。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
             <ParamRow symbol="Coss_er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_er = (2/V²)·∫Coss·v dv（按 v 加权，偏向高压段）。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss_er·V²，定义式无需修正系数）。恒有 Coss_er < Coss_tr" typical="查规格书 Co(er)" />
             <ParamRow symbol="Cj" name="PCB / 变压器寄生电容" unit="pF" description="经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="50 ~ 150 pF" />
             <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss_tr + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss_er + Cj，两者不是同一个电容" typical="数值求解" />
@@ -500,7 +501,7 @@ export default function Derivations() {
 
           <p className="text-text-secondary mt-4 mb-2">
             Q<sub>max</sub> 由两条<b>设计约束</b>（Q<sub>max1</sub> 增益能力、Q<sub>max2</sub> 死区时间）取最严者得到；
-            第三条 ZVS 能量式（Q<sub>max3</sub>）是<b>空载 / 轻载校核</b>、不参与取小。三条定义式如下（与本工具计算引擎的实现逐字对应）：
+            第三个 ZVS 能量式（Q<sub>max3</sub>）是<b>空载 / 轻载校核</b>、不参与取小。下面三个式子（<b>前两个进 min、第三个仅作校核</b>）：
           </p>
 
           <MathBlock
