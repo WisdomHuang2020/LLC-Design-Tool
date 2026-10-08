@@ -538,6 +538,27 @@ export default function Derivations() {
             —— 高频设计（如 500 kHz）常见；本站默认算例（100 kHz、t<sub>d</sub>/T ≈ 3%）则由 Q<sub>max2</sub> 生效。
           </p>
 
+          <HighlightBox type="info">
+            <strong>两个 ZVS 式子的分工 —— 别把它们当成同一公式的两种近似：</strong>
+            <br />
+            ① <b>Q<sub>max2</sub>（电荷 / 时间判据）</b>：死区内必须把开关节点电荷搬完
+            （<InlineMath latex="I_{avg}\,t_d \ge Q_{oss}" />）。驱动电流与所需电荷<b>同步正比于 V<sub>in</sub></b>，
+            故 <b>V<sub>in</sub> 精确相消</b> —— 充放电时间与输入电压无关。
+            此式<b>必须配电荷等效电容 Coss_tr（= Q<sub>oss</sub>(V)/V）</b>。
+            <br />
+            ② <b>Q<sub>max3</sub>（能量判据）</b>：励磁储能须 ≥ 结电容储能
+            （<InlineMath latex="\frac{1}{2}L_m I_m^2 \ge E_{oss}" />）。
+            此式<b>必须配能量等效电容 Coss_er（= 2E<sub>oss</sub>(V)/V²）</b>，并取输入电压的保守组合。
+            <br />
+            ⚠️ <b>同一颗器件的这两个等效电容可差数倍</b>（本站默认 60 pF 与 35 pF；强非线性器件可差 5~7 倍）
+            ⇒ <b>把能量等效电容代进时间式（或反之）会把需求算错几倍</b> —— 这是最常见的错。
+            <br />
+            ⚠️ <b>谁更严</b>：由上式的比值判据决定 —— <b>开关频率越高、死区越小，时间式（Q<sub>max2</sub>）越紧</b>；
+            能量式通常更宽，它判的是「物理上到底能不能 ZVS」的<b>极限</b>（若连它都不满足，绝无可能 ZVS）。
+            因此若时间式成为瓶颈，正解是<b>调整死区（含自适应死区）或采用 Burst 模式</b>，
+            而<b>不是把 L<sub>m</sub> 做小</b> —— L<sub>m</sub> 小会使励磁环流、导通与磁芯损耗上升，牺牲满载效率。
+          </HighlightBox>
+
           <HighlightBox type="warning">
             <strong>死区时间约束即「约束二（Q<sub>max2</sub>）」本身。</strong>
             Q<sub>max2</sub> 的含义就是「死区内刚好把 C<sub>总</sub> 充放电用完 t<sub>d</sub>」所对应的 Q，
