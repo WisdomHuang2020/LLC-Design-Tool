@@ -225,15 +225,15 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
             <span className="text-xs text-text-muted mt-1 block">能量相关等效（≡ 规格书 Co(er)）：由 Coss(V) 曲线积分得 (2/V²)∫Coss·v dv，充到 V<sub>DS</sub> 的<b>储能</b>与真实 Coss 相同；恒有 <b>Coss_er &lt; Coss_tr</b>。填<b>单管值</b> —— ZVS 能量判据与 Coss 损耗按 <b>2·Coss_er + Cj</b>（两只管之和 + 寄生）计入</span>
           </div>
           <div>
-            <label className={labelClass}>PCB 寄生电容 Cj (pF)</label>
+            <label className={labelClass}>开关节点杂散电容 Cj (pF)</label>
             <input
               type="number"
               className={inputClass}
               value={form.cj}
               onChange={(e) => update('cj', Number(e.target.value))}
-              placeholder="PCB寄生"
+              placeholder="节点杂散"
             />
-            <span className="text-xs text-text-muted mt-1 block">PCB走线/变压器寄生</span>
+            <span className="text-xs text-text-muted mt-1 block">开关节点全部杂散：PCB 走线/焊盘 + 变压器原边↔副边与铁芯寄生；<b>不含</b>副边整流管结电容（空载时副边无电流、不反射到原边）</span>
           </div>
           <div>
             <label className={labelClass}>死区时间 Td (ns)</label>

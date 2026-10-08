@@ -444,7 +444,7 @@ export default function Derivations() {
           <ParamTable>
             <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)，也写作 Coss_eq）" unit="pF" description="单管值。与 Coss_eq、规格书 Co(tr) 是同一个量的三种写法。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
             <ParamRow symbol="Coss_er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_er = (2/V²)·∫Coss·v dv（按 v 加权，偏向高压段）。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss_er·V²，定义式无需修正系数）。恒有 Coss_er < Coss_tr" typical="查规格书 Co(er)" />
-            <ParamRow symbol="Cj" name="PCB / 变压器寄生电容" unit="pF" description="经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="50 ~ 150 pF" />
+            <ParamRow symbol="Cj" name="开关节点杂散电容（PCB / 变压器寄生）" unit="pF" description="开关节点上的全部杂散：PCB 焊盘/走线 + 变压器原边↔副边与铁芯的寄生电容。⚠️ 不含副边整流管结电容 —— 空载时副边无电流、不反射到原边参与节点充放电。经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="随布板/变压器实测（本站默认 50 pF）" />
             <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss_tr + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss_er + Cj，两者不是同一个电容" typical="数值求解" />
           </ParamTable>
 
@@ -529,7 +529,8 @@ export default function Derivations() {
             <b>三条上限谁最严，取决于「死区占开关周期的比例」：</b>
             三条都对 Q 设上限 —— Q<sub>max1</sub> 保增益能力、Q<sub>max2</sub> 保死区内完成 Coss 充放电、
             Q<sub>max3</sub> 保空载 / 轻载的 ZVS 能量（E<sub>r</sub> ≥ E<sub>c</sub>：用 f<sub>max</sub> 即空载频率，
-            并以 V<sub>in_min</sub> 求励磁电流、V<sub>in_max</sub> 求所需电荷，取最坏组合）。
+            并以 V<sub>in_min</sub> 求励磁电流、V<sub>in_max</sub> 求所需电荷 —— 这是<b>跨工况的保守构造</b>
+            （两个条件并不同时出现，故它比任一真实工作点都严，约保守 10~20%），<b>不是某个真实工作点</b>）。
             Q<sub>max3</sub> 与 Q<sub>max2</sub> 谁更紧，由
             <b>Q<sub>max3</sub>/Q<sub>max2</sub> = (V<sub>in_min</sub>/V<sub>in_max</sub>)²·(C<sub>总</sub>时间口径 / C<sub>总</sub>能量口径) / (γ·f<sub>max</sub>·t<sub>d</sub>)</b>
             决定：死区 t<sub>d</sub> 越小该比值越大（Q<sub>max3</sub> 更松、由 Q<sub>max2</sub> 主导）；

@@ -1,7 +1,7 @@
 {
   "name": "llc-design-tool",
   "private": true,
-  "version": "2.10.142",
+  "version": "2.10.143",
   "license": "MIT",
   "type": "module",
   "scripts": {
