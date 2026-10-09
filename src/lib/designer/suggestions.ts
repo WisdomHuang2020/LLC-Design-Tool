@@ -49,9 +49,15 @@ export function generateSuggestions(
       level: 'good',
     })
   } else if (qmax2 === qmaxMin) {
-    s.push({ text: `Qmax2(ZVS死区限制)=${qmax2.toFixed(3)} 为最紧约束，ZVS 时间条件是设计瓶颈。建议增大死区时间或减小 Lm。`, level: 'warn' })
+    s.push({
+      text: `Qmax2(ZVS 死区限制)=${qmax2.toFixed(3)} 为最紧约束：是「死区时间」在管这个设计（设计 Q 已按 m·Qmax2 取满，t_ZVS = m·td ≤ td 恒成立 —— 本质是"死区决定了能用多大的 Q"，不是不合格）。⇒ 想【提高 Q 以降励磁环流、提效率】：减小 k（Qmax2 ∝ 1/k）、降低 C总（换低 Coss_tr 器件或把布板/变压器杂散 Cj 做小）、提高裕量系数 m，或启用自适应死区；想【加大 ZVS 裕量】：降低 m。`,
+      level: 'warn',
+    })
   } else {
-    s.push({ text: `Qmax3(空载ZVS能量限制)=${qmax3.toFixed(3)} 为最紧约束，空载能量条件是设计瓶颈。建议增大死区时间、选用低 Coss 器件，或降低开关频率。`, level: 'warn' })
+    s.push({
+      text: `Qmax3(空载 ZVS 能量限制)=${qmax3.toFixed(3)} 为最紧约束：空载励磁储能不足以覆盖结电容储能。⇒ 想【提高 Q】：换更低 Coss_er 的器件、或降低开关频率（Qmax3 ∝ 1/f_max²）。⚠️ 死区时间对它无影响 —— 能量式不含 td。`,
+      level: 'warn',
+    })
   }
   s.push({
     text: `Qmax 分解：Qmax1=${fmt(qmax1)}, Qmax2=${fmt(qmax2)}, Qmax3=${fmt(qmax3)} ⇒ Qmax = min(三者) = ${fmt(qmaxMin)}；裕量系数 m=${margin.toFixed(2)} → 设计 Q=${q.toFixed(3)}。`,
@@ -118,11 +124,11 @@ export function generateSuggestions(
 
   // 5. ZVS分析
   if (!zvsMargin) {
-    s.push({ text: `ZVS条件不满足！Er=${(er*1e6).toFixed(3)}μJ < Ec=${(ec*1e6).toFixed(3)}μJ。建议增大死区时间、减小Lm或选用低Coss器件。`, level: 'critical' })
+    s.push({ text: `ZVS 条件不满足！Er=${(er*1e6).toFixed(3)}μJ < Ec=${(ec*1e6).toFixed(3)}μJ（空载励磁储能不足以覆盖结电容储能）。⇒【增大 Er】：减小 Lm（因 Er = ½Lm·Im_off² 而 Im_off ∝ 1/Lm ⇒ Er ∝ 1/Lm）或减小 k；【降低 Ec】：换更低 Coss_er 的器件。⚠️ 死区时间对它无影响 —— 能量式不含 td。`, level: 'critical' })
   } else {
     const zvsRatio = er / ec
     if (zvsRatio < 1.2) {
-      s.push({ text: `ZVS裕量较小（Er/Ec=${zvsRatio.toFixed(2)}），建议增大励磁电流或死区时间。`, level: 'warn' })
+      s.push({ text: `ZVS 裕量较小（Er/Ec=${zvsRatio.toFixed(2)}），建议增大励磁储能：减小 Lm（Er ∝ 1/Lm）或减小 k，或换更低 Coss_er 的器件。⚠️ 死区时间对它无影响。`, level: 'warn' })
     } else {
       s.push({ text: `ZVS条件良好（Er=${(er*1e6).toFixed(3)}μJ / Ec=${(ec*1e6).toFixed(3)}μJ，裕量比${zvsRatio.toFixed(2)}）。`, level: 'good' })
     }
