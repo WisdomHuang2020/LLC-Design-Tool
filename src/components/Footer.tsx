@@ -55,15 +55,29 @@ export default function Footer() {
             <p className="text-text-muted text-sm">
               © 2026 LLC Design Tool. 结果仅供工程估算与学习参考。
             </p>
-            {/* ICP 备案号：工信部要求网站底部展示并链接至 beian.miit.gov.cn */}
-            <a
-              href="https://beian.miit.gov.cn/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-text-muted hover:text-text-secondary text-sm transition-colors"
-            >
-              苏ICP备2026073104号-1
-            </a>
+            {/* 备案信息：工信部（ICP 备案）与公安部（公安联网备案）均要求网站底部公开展示。
+                ICP 在前、公安图标居中、公安备案号在后，同一行排列。
+                图标路径用相对 './'：同一份 dist 要同时服务自有域名根路径与 GitHub Pages
+                子路径，写成绝对 '/beian.png' 会在 Pages 子路径下 404。 */}
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-2 gap-y-1">
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-text-muted hover:text-text-secondary text-sm transition-colors"
+              >
+                苏ICP备2026073104号-1
+              </a>
+              <a
+                href="https://beian.mps.gov.cn/#/query/webSearch?code=32021402005238"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 text-text-muted hover:text-text-secondary text-sm transition-colors"
+              >
+                <img src="./beian.png" alt="" className="h-4 w-auto" />
+                苏公网安备32021402005238号
+              </a>
+            </div>
           </div>
           <div className="flex items-center gap-5">
             <span
