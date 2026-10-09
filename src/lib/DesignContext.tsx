@@ -93,9 +93,10 @@ export interface CurvesState {
 // 逐项来源（书原文 → 本站字段）：
 //   Vin 380/400/420 V → vinMin/vinNom/vinMax ｜ Vo 24 V → vout ｜ Io 4 A（Po = 96 W）→ pout
 //   η = 0.96 → efficiency 96 ｜ fr = 100 kHz → fsw ｜ k = 4 → k
-//   Coss_tr 60 pF / Coss_er 35 pF / Cj 50 pF → cossEq/cossEr/cj（2026-10-08 用户指定）
+//   Coss_tr 170 pF / Coss_er 35 pF / Cj 50 pF → cossEq/cossEr/cj（2026-10-09 用户指定）
 //   Td = 300 ns → td ｜ Iomax = 4.8 A（β = 1.2）→ ioMax ｜ Vd = 0 → vd ｜ Q 降额系数 α = 0.857 → qMargin
-// ℹ️ 死区总电容 C总 = 2×60 + 50 = 170 pF（与计算书 V02 的 2×35 + 100 同值）⇒ 默认算例与书逐位一致、全绿。
+// ⚠️ 死区总电容 C总 = 2×170 + 50 = 390 pF ⇒ ZVS 死区约束（Qmax2 ≈ 0.400）成为最紧约束，
+//    本默认算例会带 1 条 warn（「ZVS 时间条件是设计瓶颈」）—— 这是用户指定输入值的必然结果，**不是回归缺陷**。
 const defaultParams: DesignParameters = {
   vinMin: 380,
   vinMax: 420,
@@ -109,7 +110,7 @@ const defaultParams: DesignParameters = {
   loadMin: 100,
   loadMax: 100,
   // 新增参数默认值
-  cossEq: 60,
+  cossEq: 170,
   cossEr: 35,
   cj: 50,
   td: 300,
