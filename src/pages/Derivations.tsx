@@ -411,7 +411,8 @@ export default function Derivations() {
 
           <HighlightBox type="info">
             <strong>三个容易混淆的 Coss 口径（选用前必读）：</strong>
-            ① <b>Coss_tr ≡ 规格书 Co(tr)</b>（<b>同一个量</b>）：
+            ① <b>Coss_tr ≡ Coss_eq ≡ 规格书 Co(tr)</b>（<b>同一个量的三种写法</b>：本站符号写作
+            <b>Coss_tr</b>、等价写法 <b>Coss_eq</b>（部分规格书/计算书如此写）、规格书符号 <b>Co(tr)</b>）：
             恒流充电下充到 V<sub>DS</sub> 所需<b>电荷相同</b>（故时间也相同），对应真实 Q<sub>oss</sub>(V)；
             <b>只用于死区的电荷/时间约束</b>（本站 Q<sub>max2</sub> 与 t<sub>ZVS</sub>）。
             ② <b>Coss_er ≡ 规格书 Co(er)</b>（能量相关等效）：充到 V<sub>DS</sub> 时<b>储能相同</b>；
@@ -441,7 +442,7 @@ export default function Derivations() {
           </p>
 
           <ParamTable>
-            <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)）" unit="pF" description="单管值，即规格书的 Co(tr)。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
+            <ParamRow symbol="Coss_tr" name="时间相关等效输出电容（≡ Co(tr)，也写作 Coss_eq）" unit="pF" description="单管值。与 Coss_eq、规格书 Co(tr) 是同一个量的三种写法。由 Coss(V) 曲线积分得到：Coss_tr = (1/V)·∫Coss dv（等权平均，由低压段主导）。恒流充到 V_DS 的电荷/时间与真实 Coss 相同 ⇒ 用于死区时间约束；不是整桥总量" typical="查规格书 Co(tr)" />
             <ParamRow symbol="Coss_er" name="能量相关等效输出电容（≡ Co(er)）" unit="pF" description="单管值。由 Coss(V) 曲线积分得到：Coss_er = (2/V²)·∫Coss·v dv（按 v 加权，偏向高压段）。充到 V_DS 的储能与真实 Coss 相同 ⇒ 用于 ZVS 能量判据与硬开关 Coss 损耗（½·Coss_er·V²，定义式无需修正系数）。恒有 Coss_er < Coss_tr" typical="查规格书 Co(er)" />
             <ParamRow symbol="Cj" name="开关节点杂散电容（PCB / 变压器寄生）" unit="pF" description="开关节点上的全部杂散：PCB 焊盘/走线 + 变压器原边↔副边与铁芯的寄生电容。⚠️ 不含副边整流管结电容 —— 空载时副边无电流、不反射到原边参与节点充放电。经验取值，随布板与变压器结构变；与两只管的 Coss 相加后构成总电容" typical="随布板/变压器实测（本站默认 50 pF）" />
             <ParamRow symbol="C总" name="死区时间用总电容" unit="pF" description="C总 = 2·Coss_tr + Cj（半桥）。死区的电荷/时间约束用它；⚠ 能量判据用的是 2·Coss_er + Cj，两者不是同一个电容" typical="数值求解" />
@@ -509,7 +510,7 @@ export default function Derivations() {
           />
 
           <MathBlock
-            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{\\text{总}}\\,R_{ac}}, \\qquad C_{\\text{总}} = 2C_{oss\\_eq} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
+            latex="Q_{max2} = \\frac{2\\pi f_{r1}\\,t_d}{\\gamma\\,f_{max}\\,k\\,C_{\\text{总}}\\,R_{ac}}, \\qquad C_{\\text{总}} = 2C_{oss\\_tr} + C_j,\\quad \\gamma = 8\\,(\\text{半桥})/4\\,(\\text{全桥})"
             label="约束二 · 死区时间约束（死区内恰好完成 Coss 充放电：t_dead = γ·f_max·L_m·C总 = t_d）"
           />
 
