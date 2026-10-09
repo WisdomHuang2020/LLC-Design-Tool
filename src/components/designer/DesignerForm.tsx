@@ -211,7 +211,7 @@ export default function DesignerForm({ form, update, onCalculate, onReset, needs
               onChange={(e) => update('cossEq', Number(e.target.value))}
               placeholder="等效输出电容"
             />
-            <span className="text-xs text-text-muted mt-1 block">时间相关等效（<b>与 Coss_eq、规格书 Co(tr) 是同一个量的三种写法</b>）：由 Coss(V) 曲线积分得 (1/V)∫Coss dv，恒流充到 V<sub>DS</sub> 的<b>电荷/时间</b>与真实 Coss 相同。填<b>单管值</b> —— 死区用总电容按 <b>C总 = 2·Coss_tr + Cj</b> 计入两只管</span>
+            <span className="text-xs text-text-muted mt-1 block">时间相关等效（<b>≡ 规格书 Co(tr)</b>）：由 Coss(V) 曲线积分得 (1/V)∫Coss dv，恒流充到 V<sub>DS</sub> 的<b>电荷/时间</b>与真实 Coss 相同。填<b>单管值</b> —— 死区用总电容按 <b>C总 = 2·Coss_tr + Cj</b> 计入两只管</span>
           </div>
           <div>
             <label className={labelClass}>MOSFET Coss_er (pF)</label>
